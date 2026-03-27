@@ -1,16 +1,143 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect, useMemo } from "react";
+import { Fuel, MapPin, RefreshCw } from "lucide-react";
+import FuelPriceCard from "@/components/FuelPriceCard";
+import StationCard from "@/components/StationCard";
+import StationMap from "@/components/StationMap";
+import BottomNav, { type TabType } from "@/components/BottomNav";
+import { currentFuelPrices, gasStations, calculateDistance, type GasStation } from "@/data/fuelData";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const [activeTab, setActiveTab] = useState<TabType>("prices");
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState(false);
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => setLocationError(true)
+      );
+    }
+  }, []);
+
+  const stationsWithDistance = useMemo(() => {
+    return gasStations
+      .map((s) => ({
+        ...s,
+        distance: userLocation
+          ? calculateDistance(userLocation.lat, userLocation.lng, s.lat, s.lng)
+          : undefined,
+      }))
+      .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
+  }, [userLocation]);
+
+  const handleNavigate = (station: GasStation) => {
+    window.open(
+      `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`,
+      "_blank"
+    );
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="bg-card border-b border-border px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40">
+        <div className="flex items-center justify-between py-3 max-w-md mx-auto">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
+              <Fuel className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-heading font-bold text-foreground text-lg leading-tight">BencinApp</h1>
+              <p className="text-[10px] text-muted-foreground">Precios y estaciones en Chile</p>
+            </div>
+          </div>
+          {userLocation && (
+            <div className="flex items-center gap-1 text-xs text-fuel-blue">
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="font-medium">GPS activo</span>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <main className="max-w-md mx-auto px-4 py-4">
+        {/* Prices Tab */}
+        {activeTab === "prices" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-heading font-bold text-foreground text-xl">Precios Actuales</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Promedio nacional · Actualizado hoy
+                </p>
+              </div>
+              <button className="p-2 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {currentFuelPrices.map((fuel) => (
+                <FuelPriceCard key={fuel.type} fuel={fuel} />
+              ))}
+            </div>
+
+            <div className="bg-card rounded-xl p-4 border border-border">
+              <h3 className="font-heading font-semibold text-foreground text-sm mb-2">
+                💡 Consejo del día
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Los precios de la bencina suelen bajar los jueves por la noche cuando ENAP publica las nuevas tarifas semanales. ¡Planifica tu carga!
+              </p>
+            </div>
+
+            {locationError && (
+              <div className="bg-fuel-amber/10 border border-fuel-amber/30 rounded-xl p-3">
+                <p className="text-xs text-accent-foreground">
+                  📍 Activa tu ubicación para ver las estaciones más cercanas y las distancias en el mapa.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Map Tab */}
+        {activeTab === "map" && (
+          <div className="space-y-3">
+            <h2 className="font-heading font-bold text-foreground text-xl">Estaciones Cercanas</h2>
+            <div className="h-[calc(100vh-220px)] rounded-xl overflow-hidden border border-border shadow-sm">
+              <StationMap
+                stations={stationsWithDistance}
+                userLocation={userLocation}
+                onStationClick={(s) => handleNavigate(s)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Stations List Tab */}
+        {activeTab === "stations" && (
+          <div className="space-y-3">
+            <div>
+              <h2 className="font-heading font-bold text-foreground text-xl">Todas las Estaciones</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {stationsWithDistance.length} estaciones encontradas
+                {userLocation ? " · Ordenadas por distancia" : ""}
+              </p>
+            </div>
+            <div className="space-y-3">
+              {stationsWithDistance.map((station) => (
+                <StationCard key={station.id} station={station} onNavigate={handleNavigate} />
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      <BottomNav active={activeTab} onChange={setActiveTab} />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
