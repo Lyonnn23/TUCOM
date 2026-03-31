@@ -1,5 +1,6 @@
-import { MapPin, Clock, Navigation } from "lucide-react";
-import type { GasStation } from "@/data/fuelData";
+import { MapPin, Navigation, MessageSquarePlus } from "lucide-react";
+import type { GasStation } from "@/hooks/useGasStations";
+import ReportPriceDialog from "./ReportPriceDialog";
 
 interface StationCardProps {
   station: GasStation;
@@ -30,12 +31,15 @@ const StationCard = ({ station, onNavigate }: StationCardProps) => {
             </p>
           )}
         </div>
-        <button
-          onClick={() => onNavigate?.(station)}
-          className="bg-primary text-primary-foreground rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
-        >
-          Ir
-        </button>
+        <div className="flex items-center gap-1.5">
+          <ReportPriceDialog station={station} />
+          <button
+            onClick={() => onNavigate?.(station)}
+            className="bg-primary text-primary-foreground rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
+          >
+            Waze
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-4 gap-2 mt-3">
