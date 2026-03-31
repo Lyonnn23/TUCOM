@@ -24,6 +24,7 @@ const Index = () => {
   }, []);
 
   const stationsWithDistance = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return gasStations
       .map((s) => ({
         ...s,
@@ -31,8 +32,9 @@ const Index = () => {
           ? calculateDistance(userLocation.lat, userLocation.lng, s.lat, s.lng)
           : undefined,
       }))
+      .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [userLocation]);
+  }, [userLocation, searchQuery]);
 
   const handleNavigate = (station: GasStation) => {
     window.open(
