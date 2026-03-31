@@ -1,18 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Fuel, MapPin, RefreshCw } from "lucide-react";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
 import StationMap from "@/components/StationMap";
 import BottomNav, { type TabType } from "@/components/BottomNav";
-import { currentFuelPrices, gasStations, calculateDistance, type GasStation } from "@/data/fuelData";
+import { useFuelPrices } from "@/hooks/useFuelPrices";
+import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>("prices");
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
+
+  const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
+  const { data: stations, isLoading: stationsLoading } = useGasStations();
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -25,7 +29,7 @@ const Index = () => {
 
   const stationsWithDistance = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
-    return gasStations
+    return (stations ?? [])
       .map((s) => ({
         ...s,
         distance: userLocation
@@ -34,13 +38,12 @@ const Index = () => {
       }))
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [userLocation, searchQuery]);
+  }, [stations, userLocation, searchQuery]);
 
   const handleNavigate = (station: GasStation) => {
-    window.open(
-      `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`,
-      "_blank"
-    );
+    // Try Waze first (works on mobile), fallback to Google Maps
+    const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
+    window.open(wazeUrl, "_blank");
   };
 
   return (
@@ -77,16 +80,25 @@ const Index = () => {
                   Promedio nacional · Actualizado hoy
                 </p>
               </div>
-              <button className="p-2 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => refetchPrices()}
+                className="p-2 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <RefreshCw className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3">
-              {currentFuelPrices.map((fuel) => (
-                <FuelPriceCard key={fuel.type} fuel={fuel} />
-              ))}
-            </div>
+            {pricesLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(fuelPrices ?? []).map((fuel) => (
+                  <FuelPriceCard key={fuel.type} fuel={fuel} />
+                ))}
+              </div>
+            )}
 
             <div className="bg-card rounded-xl p-4 border border-border">
               <h3 className="font-heading font-semibold text-foreground text-sm mb-2">
@@ -140,11 +152,17 @@ const Index = () => {
                 className="pl-9 bg-card border-border rounded-xl text-sm"
               />
             </div>
-            <div className="space-y-3">
-              {stationsWithDistance.map((station) => (
-                <StationCard key={station.id} station={station} onNavigate={handleNavigate} />
-              ))}
-            </div>
+            {stationsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {stationsWithDistance.map((station) => (
+                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>
