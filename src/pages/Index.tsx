@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Fuel, MapPin, RefreshCw } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
@@ -41,7 +41,6 @@ const Index = () => {
   }, [stations, userLocation, searchQuery]);
 
   const handleNavigate = (station: GasStation) => {
-    // Try Waze first (works on mobile), fallback to Google Maps
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
     window.open(wazeUrl, "_blank");
   };
@@ -49,27 +48,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40">
+      <header className="bg-gradient-to-r from-primary to-secondary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-lg">
         <div className="flex items-center justify-between py-3 max-w-md mx-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-              <Fuel className="w-5 h-5 text-primary-foreground" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner">
+              <Zap className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-heading font-bold text-foreground text-lg leading-tight">BencinApp</h1>
-              <p className="text-[10px] text-muted-foreground">Precios y estaciones en Chile</p>
+              <h1 className="font-heading font-extrabold text-white text-xl leading-tight tracking-tight">TÜcom</h1>
+              <p className="text-[10px] text-white/70">Bencina inteligente 🇨🇱</p>
             </div>
           </div>
           {userLocation && (
-            <div className="flex items-center gap-1 text-xs text-fuel-blue">
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="font-medium">GPS activo</span>
+            <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
+              <MapPin className="w-3 h-3" />
+              <span className="font-medium">GPS</span>
             </div>
           )}
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 py-4">
+      <main className="max-w-md mx-auto px-4 py-5">
         {/* Prices Tab */}
         {activeTab === "prices" && (
           <div className="space-y-4">
@@ -82,7 +81,7 @@ const Index = () => {
               </div>
               <button
                 onClick={() => refetchPrices()}
-                className="p-2 rounded-lg bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
@@ -90,7 +89,7 @@ const Index = () => {
 
             {pricesLoading ? (
               <div className="space-y-3">
-                {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+                {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
               </div>
             ) : (
               <div className="space-y-3">
@@ -100,8 +99,8 @@ const Index = () => {
               </div>
             )}
 
-            <div className="bg-card rounded-xl p-4 border border-border">
-              <h3 className="font-heading font-semibold text-foreground text-sm mb-2">
+            <div className="bg-gradient-to-r from-fuel-amber/15 to-fuel-pink/10 rounded-2xl p-4 border border-fuel-amber/20">
+              <h3 className="font-heading font-semibold text-foreground text-sm mb-1.5">
                 💡 Consejo del día
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -110,9 +109,9 @@ const Index = () => {
             </div>
 
             {locationError && (
-              <div className="bg-fuel-amber/10 border border-fuel-amber/30 rounded-xl p-3">
-                <p className="text-xs text-accent-foreground">
-                  📍 Activa tu ubicación para ver las estaciones más cercanas y las distancias en el mapa.
+              <div className="bg-fuel-cyan/10 border border-fuel-cyan/25 rounded-2xl p-3">
+                <p className="text-xs text-foreground">
+                  📍 Activa tu ubicación para ver las estaciones más cercanas y navegar con Waze.
                 </p>
               </div>
             )}
@@ -123,7 +122,7 @@ const Index = () => {
         {activeTab === "map" && (
           <div className="space-y-3">
             <h2 className="font-heading font-bold text-foreground text-xl">Estaciones Cercanas</h2>
-            <div className="h-[calc(100vh-220px)] rounded-xl overflow-hidden border border-border shadow-sm">
+            <div className="h-[calc(100vh-220px)] rounded-2xl overflow-hidden border border-border shadow-md">
               <StationMap
                 stations={stationsWithDistance}
                 userLocation={userLocation}
@@ -149,12 +148,12 @@ const Index = () => {
                 placeholder="Buscar por nombre, marca o dirección..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 bg-card border-border rounded-xl text-sm"
+                className="pl-9 bg-card border-border rounded-2xl text-sm"
               />
             </div>
             {stationsLoading ? (
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
+                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
               </div>
             ) : (
               <div className="space-y-3">
