@@ -10,6 +10,7 @@ import { currentFuelPrices, gasStations, calculateDistance, type GasStation } fr
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>("prices");
+  const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
 
