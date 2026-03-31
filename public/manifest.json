@@ -1,11 +1,11 @@
 {
-  "name": "BencinApp",
-  "short_name": "BencinApp",
+  "name": "TÜcom",
+  "short_name": "TÜcom",
   "description": "Precios de bencina y estaciones cercanas en Chile",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f5f5f7",
-  "theme_color": "#2d9d6a",
+  "background_color": "#f0eef6",
+  "theme_color": "#7c3aed",
   "orientation": "portrait",
   "icons": [
     {
