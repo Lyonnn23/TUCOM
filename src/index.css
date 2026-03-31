@@ -2,97 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 25% 10%;
+    --background: 245 30% 96%;
+    --foreground: 240 20% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 10%;
+    --card-foreground: 240 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 10%;
+    --popover-foreground: 240 20% 12%;
 
-    --primary: 152 60% 40%;
+    --primary: 262 70% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 220 25% 10%;
+    --secondary: 195 85% 50%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 245 20% 93%;
+    --muted-foreground: 240 10% 48%;
 
-    --accent: 38 95% 55%;
-    --accent-foreground: 220 25% 10%;
+    --accent: 340 80% 60%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 152 60% 40%;
+    --border: 245 18% 90%;
+    --input: 245 18% 90%;
+    --ring: 262 70% 58%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --fuel-green: 152 60% 40%;
+    --fuel-green: 158 65% 42%;
     --fuel-amber: 38 95% 55%;
     --fuel-red: 0 75% 55%;
     --fuel-blue: 215 80% 55%;
+    --fuel-purple: 262 70% 58%;
+    --fuel-pink: 340 80% 60%;
+    --fuel-cyan: 195 85% 50%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary: 262 70% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 262 70% 58%;
   }
 
   .dark {
-    --background: 220 25% 8%;
-    --foreground: 220 15% 95%;
+    --background: 240 20% 7%;
+    --foreground: 240 15% 95%;
 
-    --card: 220 25% 12%;
-    --card-foreground: 220 15% 95%;
+    --card: 240 20% 11%;
+    --card-foreground: 240 15% 95%;
 
-    --popover: 220 25% 12%;
-    --popover-foreground: 220 15% 95%;
+    --popover: 240 20% 11%;
+    --popover-foreground: 240 15% 95%;
 
-    --primary: 152 60% 45%;
+    --primary: 262 70% 62%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 220 15% 95%;
+    --secondary: 195 85% 50%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 20% 18%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 240 18% 16%;
+    --muted-foreground: 240 10% 55%;
 
-    --accent: 38 95% 55%;
-    --accent-foreground: 220 25% 10%;
+    --accent: 340 80% 60%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 152 60% 45%;
+    --border: 240 18% 18%;
+    --input: 240 18% 18%;
+    --ring: 262 70% 62%;
 
-    --fuel-green: 152 60% 45%;
+    --fuel-green: 158 65% 48%;
     --fuel-amber: 38 95% 55%;
     --fuel-red: 0 75% 55%;
     --fuel-blue: 215 80% 55%;
+    --fuel-purple: 262 70% 62%;
+    --fuel-pink: 340 80% 60%;
+    --fuel-cyan: 195 85% 50%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 262 70% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 262 70% 58%;
   }
 }
 
@@ -103,11 +109,11 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Outfit', sans-serif;
   }
 }
 
