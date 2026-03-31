@@ -131,6 +131,15 @@ const Index = () => {
                 {userLocation ? " · Ordenadas por distancia" : ""}
               </p>
             </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre, marca o dirección..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-card border-border rounded-xl text-sm"
+              />
+            </div>
             <div className="space-y-3">
               {stationsWithDistance.map((station) => (
                 <StationCard key={station.id} station={station} onNavigate={handleNavigate} />
