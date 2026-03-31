@@ -14,7 +14,139 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      fuel_prices: {
+        Row: {
+          change_percent: number
+          fuel_type: string
+          id: string
+          price: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          change_percent?: number
+          fuel_type: string
+          id?: string
+          price: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          change_percent?: number
+          fuel_type?: string
+          id?: string
+          price?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gas_stations: {
+        Row: {
+          address: string
+          brand: string
+          created_at: string
+          id: string
+          is_open: boolean
+          lat: number
+          lng: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          brand: string
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          lat: number
+          lng: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          brand?: string
+          created_at?: string
+          id?: string
+          is_open?: boolean
+          lat?: number
+          lng?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reported_prices: {
+        Row: {
+          created_at: string
+          fuel_type: string
+          id: string
+          price: number
+          station_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fuel_type: string
+          id?: string
+          price: number
+          station_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fuel_type?: string
+          id?: string
+          price?: number
+          station_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reported_prices_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "gas_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      station_prices: {
+        Row: {
+          created_at: string
+          fuel_type: string
+          id: string
+          price: number
+          reported_by: string | null
+          station_id: string
+        }
+        Insert: {
+          created_at?: string
+          fuel_type: string
+          id?: string
+          price: number
+          reported_by?: string | null
+          station_id: string
+        }
+        Update: {
+          created_at?: string
+          fuel_type?: string
+          id?: string
+          price?: number
+          reported_by?: string | null
+          station_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_prices_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "gas_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
