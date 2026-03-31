@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { GasStation } from "@/data/fuelData";
+import type { GasStation } from "@/hooks/useGasStations";
 
 // Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
