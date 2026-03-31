@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Fuel, MapPin, RefreshCw } from "lucide-react";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
