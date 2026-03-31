@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Fuel, MapPin, RefreshCw } from "lucide-react";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
@@ -8,6 +10,7 @@ import { currentFuelPrices, gasStations, calculateDistance, type GasStation } fr
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>("prices");
+  const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
 
@@ -21,6 +24,7 @@ const Index = () => {
   }, []);
 
   const stationsWithDistance = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return gasStations
       .map((s) => ({
         ...s,
@@ -28,8 +32,9 @@ const Index = () => {
           ? calculateDistance(userLocation.lat, userLocation.lng, s.lat, s.lng)
           : undefined,
       }))
+      .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [userLocation]);
+  }, [userLocation, searchQuery]);
 
   const handleNavigate = (station: GasStation) => {
     window.open(
@@ -125,6 +130,15 @@ const Index = () => {
                 {stationsWithDistance.length} estaciones encontradas
                 {userLocation ? " · Ordenadas por distancia" : ""}
               </p>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre, marca o dirección..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-card border-border rounded-xl text-sm"
+              />
             </div>
             <div className="space-y-3">
               {stationsWithDistance.map((station) => (
