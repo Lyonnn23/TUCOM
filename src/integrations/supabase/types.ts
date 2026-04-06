@@ -19,7 +19,9 @@ export type Database = {
           change_percent: number
           fuel_type: string
           id: string
+          name: string | null
           price: number
+          trend: string | null
           unit: string
           updated_at: string
         }
@@ -27,7 +29,9 @@ export type Database = {
           change_percent?: number
           fuel_type: string
           id?: string
+          name?: string | null
           price: number
+          trend?: string | null
           unit?: string
           updated_at?: string
         }
@@ -35,7 +39,9 @@ export type Database = {
           change_percent?: number
           fuel_type?: string
           id?: string
+          name?: string | null
           price?: number
+          trend?: string | null
           unit?: string
           updated_at?: string
         }
