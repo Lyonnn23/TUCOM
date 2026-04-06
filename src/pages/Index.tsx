@@ -63,12 +63,32 @@ const Index = () => {
               <p className="text-[10px] text-white/70">Bencina inteligente 🇨🇱</p>
             </div>
           </div>
-          {userLocation && (
-            <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
-              <MapPin className="w-3 h-3" />
-              <span className="font-medium">GPS</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {userLocation && (
+              <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
+                <MapPin className="w-3 h-3" />
+                <span className="font-medium">GPS</span>
+              </div>
+            )}
+            {user ? (
+              <button
+                onClick={signOut}
+                className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1.5 backdrop-blur-sm hover:bg-white/25 transition-colors"
+              >
+                <User className="w-3 h-3" />
+                <span className="font-medium max-w-[60px] truncate">{user.user_metadata?.display_name || user.email?.split("@")[0]}</span>
+                <LogOut className="w-3 h-3 ml-0.5" />
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/auth")}
+                className="flex items-center gap-1 text-xs text-white bg-white/20 rounded-full px-3 py-1.5 backdrop-blur-sm hover:bg-white/30 transition-colors font-medium"
+              >
+                <LogIn className="w-3 h-3" />
+                Entrar
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
