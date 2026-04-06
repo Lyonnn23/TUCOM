@@ -46,7 +46,7 @@ const ReportPriceDialog = ({ station }: ReportPriceDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
         <button className="p-1.5 rounded-lg bg-accent text-accent-foreground hover:bg-accent/80 transition-colors">
           <MessageSquarePlus className="w-4 h-4" />
