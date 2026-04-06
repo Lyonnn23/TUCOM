@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Fuel, MapPin, RefreshCw, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
@@ -8,8 +9,11 @@ import BottomNav, { type TabType } from "@/components/BottomNav";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("prices");
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
