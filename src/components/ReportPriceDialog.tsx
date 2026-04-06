@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageSquarePlus } from "lucide-react";
 import { useReportPrice } from "@/hooks/useReportPrice";
+import { useAuth } from "@/hooks/useAuth";
 import type { GasStation } from "@/hooks/useGasStations";
 
 interface ReportPriceDialogProps {
@@ -23,6 +25,16 @@ const ReportPriceDialog = ({ station }: ReportPriceDialogProps) => {
   const [fuelType, setFuelType] = useState("");
   const [price, setPrice] = useState("");
   const reportPrice = useReportPrice();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleOpen = (isOpen: boolean) => {
+    if (isOpen && !user) {
+      navigate("/auth");
+      return;
+    }
+    setOpen(isOpen);
+  };
 
   const handleSubmit = () => {
     const numPrice = parseInt(price, 10);
@@ -34,7 +46,7 @@ const ReportPriceDialog = ({ station }: ReportPriceDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
         <button className="p-1.5 rounded-lg bg-accent text-accent-foreground hover:bg-accent/80 transition-colors">
           <MessageSquarePlus className="w-4 h-4" />

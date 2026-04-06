@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, Fuel, MapPin, RefreshCw, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
@@ -8,8 +9,11 @@ import BottomNav, { type TabType } from "@/components/BottomNav";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("prices");
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -59,12 +63,32 @@ const Index = () => {
               <p className="text-[10px] text-white/70">Bencina inteligente 🇨🇱</p>
             </div>
           </div>
-          {userLocation && (
-            <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
-              <MapPin className="w-3 h-3" />
-              <span className="font-medium">GPS</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {userLocation && (
+              <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
+                <MapPin className="w-3 h-3" />
+                <span className="font-medium">GPS</span>
+              </div>
+            )}
+            {user ? (
+              <button
+                onClick={signOut}
+                className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1.5 backdrop-blur-sm hover:bg-white/25 transition-colors"
+              >
+                <User className="w-3 h-3" />
+                <span className="font-medium max-w-[60px] truncate">{user.user_metadata?.display_name || user.email?.split("@")[0]}</span>
+                <LogOut className="w-3 h-3 ml-0.5" />
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/auth")}
+                className="flex items-center gap-1 text-xs text-white bg-white/20 rounded-full px-3 py-1.5 backdrop-blur-sm hover:bg-white/30 transition-colors font-medium"
+              >
+                <LogIn className="w-3 h-3" />
+                Entrar
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
