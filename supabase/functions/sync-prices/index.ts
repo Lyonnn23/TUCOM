@@ -160,10 +160,18 @@ Deno.serve(async (req) => {
       const batch = estaciones.slice(i, i + batchSize);
       const codigos = batch.filter((s: any) => s.codigo).map((s: any) => `cne_${s.codigo}`);
 
-      const { data: matchedStations } = await supabase
+      if (i === 0) {
+        console.log("Sample codigos:", codigos.slice(0, 5));
+      }
+
+      const { data: matchedStations, error: matchErr } = await supabase
         .from("gas_stations")
         .select("id, place_id")
         .in("place_id", codigos);
+
+      if (i === 0) {
+        console.log(`Batch 0: ${codigos.length} codigos, ${matchedStations?.length || 0} matched, error: ${matchErr?.message || 'none'}`);
+      }
 
       if (!matchedStations || matchedStations.length === 0) continue;
 
