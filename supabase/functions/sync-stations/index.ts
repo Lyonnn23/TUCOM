@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Upsert into database
+    // Insert into database (skip existing place_ids)
     let inserted = 0;
     for (const place of uniquePlaces.values()) {
       if (!place.location) continue;
@@ -122,18 +122,24 @@ Deno.serve(async (req) => {
       const name = place.displayName?.text || "Estación";
       const brand = detectBrand(name);
 
-      const { error } = await supabase.from("gas_stations").upsert(
-        {
-          name,
-          brand,
-          address: place.formattedAddress || "",
-          lat: place.location.latitude,
-          lng: place.location.longitude,
-          place_id: place.id,
-          is_open: place.regularOpeningHours?.openNow ?? true,
-        },
-        { onConflict: "place_id" }
-      );
+      // Check if already exists
+      const { data: existing } = await supabase
+        .from("gas_stations")
+        .select("id")
+        .eq("place_id", place.id)
+        .maybeSingle();
+
+      if (existing) continue;
+
+      const { error } = await supabase.from("gas_stations").insert({
+        name,
+        brand,
+        address: place.formattedAddress || "",
+        lat: place.location.latitude,
+        lng: place.location.longitude,
+        place_id: place.id,
+        is_open: place.regularOpeningHours?.openNow ?? true,
+      });
 
       if (!error) inserted++;
     }
