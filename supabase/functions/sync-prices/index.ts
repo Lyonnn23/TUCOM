@@ -177,16 +177,17 @@ Deno.serve(async (req) => {
 
       const placeIdToId = new Map(matchedStations.map((s) => [s.place_id, s.id]));
 
-      const upsertRows: { station_id: string; fuel_type: string; price: number }[] = [];
+      const upsertMap = new Map<string, { station_id: string; fuel_type: string; price: number }>();
       for (const station of batch) {
         const stationId = placeIdToId.get(`cne_${station.codigo}`);
         if (!stationId) continue;
         const prices = extractPrices(station);
         for (const [ft, price] of Object.entries(prices)) {
-          upsertRows.push({ station_id: stationId, fuel_type: ft, price });
+          upsertMap.set(`${stationId}_${ft}`, { station_id: stationId, fuel_type: ft, price });
         }
       }
 
+      const upsertRows = [...upsertMap.values()];
       if (upsertRows.length > 0) {
         const { error: upsertErr } = await supabase.from("station_prices").upsert(upsertRows, { onConflict: "station_id,fuel_type" });
         if (upsertErr) {
