@@ -51,24 +51,34 @@ function getFuelName(type: string): string {
 }
 
 // Extract prices from the nested precios object in CNE v4 API
+// Keys: "93", "95", "97", "DI" (+ "A93" etc. for autoservicio)
+// Values: { precio: "1234.000", ... }
 function extractPrices(station: any): Record<string, number> {
   const result: Record<string, number> = {};
   const precios = station.precios;
   if (!precios) return result;
 
-  // precios is an object with fuel names as keys
-  for (const [key, val] of Object.entries(precios)) {
-    const lower = key.toLowerCase();
-    const price = typeof val === "object" && val !== null ? (val as any).precio || (val as any).value : Number(val);
-    const numPrice = Number(price);
-    if (!numPrice || numPrice <= 0) continue;
+  // Map CNE keys to our fuel types - prefer attended ("93") over self-service ("A93")
+  const keyMap: Record<string, string> = {
+    "93": "gasoline93", "A93": "gasoline93",
+    "95": "gasoline95", "A95": "gasoline95",
+    "97": "gasoline97", "A97": "gasoline97",
+    "DI": "diesel", "ADI": "diesel",
+  };
 
-    if (lower.includes("93")) result.gasoline93 = numPrice;
-    else if (lower.includes("95")) result.gasoline95 = numPrice;
-    else if (lower.includes("97")) result.gasoline97 = numPrice;
-    else if (lower.includes("diesel") || lower.includes("petróleo") || lower.includes("petroleo"))
-      result.diesel = numPrice;
+  // Process attended first, then autoservicio (attended takes priority)
+  for (const cneKey of ["93", "95", "97", "DI", "A93", "A95", "A97", "ADI"]) {
+    const fuelType = keyMap[cneKey];
+    if (!fuelType || result[fuelType]) continue; // skip if already set (attended priority)
+    
+    const entry = precios[cneKey];
+    if (!entry) continue;
+    
+    const priceStr = typeof entry === "object" ? entry.precio : entry;
+    const numPrice = parseFloat(String(priceStr));
+    if (numPrice > 0) result[fuelType] = Math.round(numPrice);
   }
+
   return result;
 }
 
