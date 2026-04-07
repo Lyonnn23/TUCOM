@@ -1,74 +1,55 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.101.0";
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.101.0/cors";
 
-const GOOGLE_MAPS_API_KEY = Deno.env.get("GOOGLE_MAPS_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const CNE_API_EMAIL = Deno.env.get("CNE_API_EMAIL")!;
+const CNE_API_PASSWORD = Deno.env.get("CNE_API_PASSWORD")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-interface PlaceResult {
-  id: string;
-  displayName?: { text: string };
-  formattedAddress?: string;
-  location?: { latitude: number; longitude: number };
-  regularOpeningHours?: { openNow?: boolean };
-}
+async function loginCNE(): Promise<string> {
+  const res = await fetch("https://api.cne.cl/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ email: CNE_API_EMAIL, password: CNE_API_PASSWORD }),
+  });
 
-async function searchGasStations(lat: number, lng: number, brand: string): Promise<PlaceResult[]> {
-  const url = "https://places.googleapis.com/v1/places:searchNearby";
-  const body = {
-    includedTypes: ["gas_station"],
-    maxResultCount: 20,
-    locationRestriction: {
-      circle: {
-        center: { latitude: lat, longitude: lng },
-        radius: 25000.0,
-      },
-    },
-    languageCode: "es",
-  };
-
-  // If brand specified, use text search instead
-  if (brand) {
-    const textUrl = "https://places.googleapis.com/v1/places:searchText";
-    const textBody = {
-      textQuery: `${brand} gasolinera estación de servicio`,
-      locationBias: {
-        circle: {
-          center: { latitude: lat, longitude: lng },
-          radius: 50000.0,
-        },
-      },
-      includedType: "gas_station",
-      maxResultCount: 20,
-      languageCode: "es",
-    };
-
-    const res = await fetch(textUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY!,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.regularOpeningHours",
-      },
-      body: JSON.stringify(textBody),
-    });
-    const data = await res.json();
-    return data.places || [];
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`CNE login failed (${res.status}): ${text}`);
   }
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY!,
-      "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.regularOpeningHours",
-    },
-    body: JSON.stringify(body),
-  });
   const data = await res.json();
-  return data.places || [];
+  if (!data.token) throw new Error("CNE login response missing token");
+  return data.token;
+}
+
+async function fetchEstaciones(token: string): Promise<any[]> {
+  const res = await fetch("https://api.cne.cl/api/v4/estaciones", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`CNE estaciones failed (${res.status}): ${text}`);
+  }
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : (data.data || []);
+}
+
+function detectBrand(name: string, distribuidor?: string): string {
+  const text = `${name} ${distribuidor || ""}`.toLowerCase();
+  if (text.includes("copec")) return "Copec";
+  if (text.includes("shell")) return "Shell";
+  if (text.includes("aramco")) return "Aramco";
+  if (text.includes("petrobras")) return "Petrobras";
+  if (text.includes("terpel")) return "Terpel";
+  if (text.includes("enex")) return "Enex";
+  if (text.includes("esmax")) return "Esmax";
+  if (text.includes("uno-x") || text.includes("unox")) return "Uno-X";
+  return distribuidor || "Otro";
 }
 
 Deno.serve(async (req) => {
@@ -76,76 +57,117 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  if (!GOOGLE_MAPS_API_KEY) {
-    return new Response(JSON.stringify({ error: "GOOGLE_MAPS_API_KEY not configured" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
   try {
-    const { lat, lng, brands } = await req.json();
-    
-    if (!lat || !lng) {
-      return new Response(JSON.stringify({ error: "lat and lng required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    console.log("Logging in to CNE API...");
+    const token = await loginCNE();
+    console.log("CNE login successful");
+
+    console.log("Fetching all estaciones from CNE (nationwide)...");
+    const estaciones = await fetchEstaciones(token);
+    console.log(`Fetched ${estaciones.length} estaciones from CNE`);
+
+    if (estaciones.length === 0) {
+      return new Response(
+        JSON.stringify({ success: false, message: "No stations returned from CNE" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const brandList = brands || ["Copec", "Shell", "Aramco"];
-    const allPlaces: PlaceResult[] = [];
-
-    // Do a generic nearby search first (catches all brands)
-    const genericPlaces = await searchGasStations(lat, lng, "");
-    allPlaces.push(...genericPlaces);
-
-    // Then search specific brands for broader coverage
-    for (const brand of brandList) {
-      const places = await searchGasStations(lat, lng, brand);
-      allPlaces.push(...places);
+    // Log sample station to understand structure
+    if (estaciones.length > 0) {
+      console.log("Sample station keys:", Object.keys(estaciones[0]));
+      console.log("Sample station:", JSON.stringify(estaciones[0]).substring(0, 800));
     }
 
-    // Deduplicate by place_id
-    const uniquePlaces = new Map<string, PlaceResult>();
-    for (const place of allPlaces) {
-      if (place.id && !uniquePlaces.has(place.id)) {
-        uniquePlaces.set(place.id, place);
+    let inserted = 0;
+    let updated = 0;
+    let skipped = 0;
+
+    for (const station of estaciones) {
+      // Extract station data - try common CNE field names
+      const name = station.nombre_ee || station.razon_social || station.nombre || "Estación";
+      const address = station.direccion_ee || station.direccion || "";
+      const lat = parseFloat(station.latitud || station.lat || "0");
+      const lng = parseFloat(station.longitud || station.lng || station.lon || "0");
+      const distribuidor = station.nombre_distribuidor || station.distribuidor || "";
+      const brand = detectBrand(name, distribuidor);
+
+      // Skip if no valid coordinates
+      if (!lat || !lng || lat === 0 || lng === 0) {
+        skipped++;
+        continue;
+      }
+
+      // Use CNE station ID as a stable identifier
+      const cneId = station.id?.toString() || station.id_ee?.toString() || null;
+      const placeId = cneId ? `cne_${cneId}` : null;
+
+      if (placeId) {
+        // Check if already exists by place_id
+        const { data: existing } = await supabase
+          .from("gas_stations")
+          .select("id")
+          .eq("place_id", placeId)
+          .maybeSingle();
+
+        if (existing) {
+          // Update existing station
+          await supabase
+            .from("gas_stations")
+            .update({ name, brand, address, lat, lng, is_open: true })
+            .eq("id", existing.id);
+          updated++;
+        } else {
+          // Insert new station
+          const { error } = await supabase.from("gas_stations").insert({
+            name,
+            brand,
+            address,
+            lat,
+            lng,
+            place_id: placeId,
+            is_open: true,
+          });
+          if (!error) inserted++;
+          else console.error("Insert error:", error.message);
+        }
+      } else {
+        // No ID, try to match by proximity
+        const { data: nearby } = await supabase
+          .from("gas_stations")
+          .select("id")
+          .gte("lat", lat - 0.0005)
+          .lte("lat", lat + 0.0005)
+          .gte("lng", lng - 0.0005)
+          .lte("lng", lng + 0.0005)
+          .maybeSingle();
+
+        if (!nearby) {
+          const { error } = await supabase.from("gas_stations").insert({
+            name,
+            brand,
+            address,
+            lat,
+            lng,
+            is_open: true,
+          });
+          if (!error) inserted++;
+        } else {
+          updated++;
+        }
       }
     }
 
-    // Insert into database (skip existing place_ids)
-    let inserted = 0;
-    for (const place of uniquePlaces.values()) {
-      if (!place.location) continue;
-
-      const name = place.displayName?.text || "Estación";
-      const brand = detectBrand(name);
-
-      // Check if already exists
-      const { data: existing } = await supabase
-        .from("gas_stations")
-        .select("id")
-        .eq("place_id", place.id)
-        .maybeSingle();
-
-      if (existing) continue;
-
-      const { error } = await supabase.from("gas_stations").insert({
-        name,
-        brand,
-        address: place.formattedAddress || "",
-        lat: place.location.latitude,
-        lng: place.location.longitude,
-        place_id: place.id,
-        is_open: place.regularOpeningHours?.openNow ?? true,
-      });
-
-      if (!error) inserted++;
-    }
+    console.log(`Sync complete: ${inserted} inserted, ${updated} updated, ${skipped} skipped`);
 
     return new Response(
-      JSON.stringify({ success: true, found: uniquePlaces.size, inserted }),
+      JSON.stringify({
+        success: true,
+        totalFromCNE: estaciones.length,
+        inserted,
+        updated,
+        skipped,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
@@ -156,14 +178,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-
-function detectBrand(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("copec")) return "Copec";
-  if (n.includes("shell")) return "Shell";
-  if (n.includes("aramco")) return "Aramco";
-  if (n.includes("petrobras")) return "Petrobras";
-  if (n.includes("terpel")) return "Terpel";
-  if (n.includes("enex")) return "Enex";
-  return "Otro";
-}
