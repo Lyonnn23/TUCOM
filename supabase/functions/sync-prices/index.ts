@@ -126,33 +126,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Aggregate national averages
-    const buckets: Record<string, number[]> = {
-      gasoline93: [], gasoline95: [], gasoline97: [], diesel: [],
-    };
-
-    for (const station of estaciones) {
-      const prices = extractPrices(station, true); // attended only for national avg
-      for (const [ft, price] of Object.entries(prices)) {
-        if (buckets[ft]) buckets[ft].push(price);
-      }
-    }
-
-    // Upsert national averages
-    for (const [fuelType, values] of Object.entries(buckets)) {
-      if (values.length === 0) continue;
-      const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-      const oldPrice = oldPriceMap[fuelType];
-      const trend = oldPrice ? (avg < oldPrice ? "down" : avg > oldPrice ? "up" : "stable") : "stable";
-      const changePercent = oldPrice ? Math.round(((avg - oldPrice) / oldPrice) * 10000) / 100 : 0;
-
-      await supabase.from("fuel_prices").upsert(
-        { fuel_type: fuelType, price: avg, name: getFuelName(fuelType), trend, previous_price: oldPrice || null, change_percent: changePercent },
-        { onConflict: "fuel_type" }
-      );
-      console.log(`${fuelType}: ${values.length} stations, avg $${avg}`);
-    }
-
     // Batch upsert station prices - match by place_id (cne_<codigo>)
     let stationPricesUpdated = 0;
     const batchSize = 50;
@@ -160,18 +133,10 @@ Deno.serve(async (req) => {
       const batch = estaciones.slice(i, i + batchSize);
       const codigos = batch.filter((s: any) => s.codigo).map((s: any) => `cne_${s.codigo}`);
 
-      if (i === 0) {
-        console.log("Sample codigos:", codigos.slice(0, 5));
-      }
-
-      const { data: matchedStations, error: matchErr } = await supabase
+      const { data: matchedStations } = await supabase
         .from("gas_stations")
         .select("id, place_id")
         .in("place_id", codigos);
-
-      if (i === 0) {
-        console.log(`Batch 0: ${codigos.length} codigos, ${matchedStations?.length || 0} matched, error: ${matchErr?.message || 'none'}`);
-      }
 
       if (!matchedStations || matchedStations.length === 0) continue;
 
@@ -195,6 +160,29 @@ Deno.serve(async (req) => {
         }
         stationPricesUpdated += upsertRows.length;
       }
+    }
+
+    // Compute national averages from station_prices (correct per-station data)
+    const { data: avgData } = await supabase.rpc("aggregate_reported_prices"); // trigger median calc
+    
+    const fuelTypes = ["gasoline93", "gasoline95", "gasoline97", "diesel"];
+    for (const fuelType of fuelTypes) {
+      const { data: avgRow } = await supabase
+        .from("station_prices")
+        .select("price")
+        .eq("fuel_type", fuelType);
+
+      if (!avgRow || avgRow.length === 0) continue;
+      const avg = Math.round(avgRow.reduce((sum, r) => sum + r.price, 0) / avgRow.length);
+      const oldPrice = oldPriceMap[fuelType];
+      const trend = oldPrice ? (avg < oldPrice ? "down" : avg > oldPrice ? "up" : "stable") : "stable";
+      const changePercent = oldPrice ? Math.round(((avg - oldPrice) / oldPrice) * 10000) / 100 : 0;
+
+      await supabase.from("fuel_prices").upsert(
+        { fuel_type: fuelType, price: avg, name: getFuelName(fuelType), trend, previous_price: oldPrice || null, change_percent: changePercent },
+        { onConflict: "fuel_type" }
+      );
+      console.log(`${fuelType}: ${avgRow.length} stations, avg $${avg}`);
     }
 
     // Check for price drops and send push notifications
