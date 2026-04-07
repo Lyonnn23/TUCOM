@@ -162,27 +162,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Compute national averages from station_prices (correct per-station data)
-    const { data: avgData } = await supabase.rpc("aggregate_reported_prices"); // trigger median calc
-    
-    const fuelTypes = ["gasoline93", "gasoline95", "gasoline97", "diesel"];
-    for (const fuelType of fuelTypes) {
-      const { data: avgRow } = await supabase
-        .from("station_prices")
-        .select("price")
-        .eq("fuel_type", fuelType);
-
-      if (!avgRow || avgRow.length === 0) continue;
-      const avg = Math.round(avgRow.reduce((sum, r) => sum + r.price, 0) / avgRow.length);
-      const oldPrice = oldPriceMap[fuelType];
+    // Compute national averages from station_prices via DB function
+    const { data: avgData } = await supabase.rpc("get_fuel_price_averages");
+    for (const row of avgData ?? []) {
+      const avg = Number(row.avg_price);
+      const oldPrice = oldPriceMap[row.fuel_type];
       const trend = oldPrice ? (avg < oldPrice ? "down" : avg > oldPrice ? "up" : "stable") : "stable";
       const changePercent = oldPrice ? Math.round(((avg - oldPrice) / oldPrice) * 10000) / 100 : 0;
 
       await supabase.from("fuel_prices").upsert(
-        { fuel_type: fuelType, price: avg, name: getFuelName(fuelType), trend, previous_price: oldPrice || null, change_percent: changePercent },
+        { fuel_type: row.fuel_type, price: avg, name: getFuelName(row.fuel_type), trend, previous_price: oldPrice || null, change_percent: changePercent },
         { onConflict: "fuel_type" }
       );
-      console.log(`${fuelType}: ${avgRow.length} stations, avg $${avg}`);
+      console.log(`${row.fuel_type}: ${row.station_count} stations, avg $${avg}`);
     }
 
     // Check for price drops and send push notifications
