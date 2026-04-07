@@ -188,7 +188,10 @@ Deno.serve(async (req) => {
       }
 
       if (upsertRows.length > 0) {
-        await supabase.from("station_prices").upsert(upsertRows, { onConflict: "station_id,fuel_type" });
+        const { error: upsertErr } = await supabase.from("station_prices").upsert(upsertRows, { onConflict: "station_id,fuel_type" });
+        if (upsertErr) {
+          console.error(`Station prices batch ${i} error:`, upsertErr.message);
+        }
         stationPricesUpdated += upsertRows.length;
       }
     }
