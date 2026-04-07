@@ -106,12 +106,12 @@ const BenefitsTab = () => {
                       {benefit.brand}
                     </span>
                     {benefit.discount_fixed && (
-                      <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                         -${benefit.discount_fixed}/L
                       </span>
                     )}
                     {benefit.discount_percent && (
-                      <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                         -{benefit.discount_percent}%
                       </span>
                     )}
