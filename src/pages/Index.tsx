@@ -17,6 +17,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>("prices");
+  const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
@@ -55,6 +56,11 @@ const Index = () => {
     }
   }, []);
 
+  const availableBrands = useMemo(() => {
+    const brands = new Set((stations ?? []).map((s) => s.brand));
+    return Array.from(brands).sort();
+  }, [stations]);
+
   const stationsWithDistance = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return (stations ?? [])
@@ -64,9 +70,10 @@ const Index = () => {
           ? calculateDistance(userLocation.lat, userLocation.lng, s.lat, s.lng)
           : undefined,
       }))
+      .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [stations, userLocation, searchQuery]);
+  }, [stations, userLocation, searchQuery, selectedBrand]);
 
   const handleNavigate = (station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
@@ -209,6 +216,33 @@ const Index = () => {
                 className="pl-9 bg-card border-border rounded-2xl text-sm"
               />
             </div>
+            {availableBrands.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+                <button
+                  onClick={() => setSelectedBrand("all")}
+                  className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                    selectedBrand === "all"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  Todas
+                </button>
+                {availableBrands.map((brand) => (
+                  <button
+                    key={brand}
+                    onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+                    className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                      selectedBrand === brand
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {brand}
+                  </button>
+                ))}
+              </div>
+            )}
             {stationsLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
