@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS update_station_prices_updated_at ON public.station_prices;
