@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
@@ -20,6 +20,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>("prices");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -73,8 +74,16 @@ const Index = () => {
       }))
       .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
-      .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [stations, userLocation, searchQuery, selectedBrand]);
+      .sort((a, b) => {
+        if (sortByFuel !== "distance") {
+          const fuelKey = sortByFuel as keyof typeof a.prices;
+          const priceA = a.prices[fuelKey] || 99999;
+          const priceB = b.prices[fuelKey] || 99999;
+          if (priceA !== priceB) return priceA - priceB;
+        }
+        return (a.distance ?? 999) - (b.distance ?? 999);
+      });
+  }, [stations, userLocation, searchQuery, selectedBrand, sortByFuel]);
 
   const handleNavigate = (station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
@@ -249,6 +258,31 @@ const Index = () => {
                 ))}
               </div>
             )}
+            {/* Sort by fuel price */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                {[
+                  { key: "distance", label: "Distancia" },
+                  { key: "gasoline93", label: "93" },
+                  { key: "gasoline95", label: "95" },
+                  { key: "gasoline97", label: "97" },
+                  { key: "diesel", label: "Diésel" },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setSortByFuel(opt.key)}
+                    className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+                      sortByFuel === opt.key
+                        ? "bg-secondary text-secondary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {stationsLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
