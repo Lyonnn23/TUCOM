@@ -98,10 +98,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Log sample to debug structure
-    if (estaciones.length > 0) {
-      console.log("Sample precios:", JSON.stringify(estaciones[0].precios).substring(0, 500));
+    // Log a few samples to understand price keys
+    const precioKeys = new Set<string>();
+    for (const s of estaciones.slice(0, 200)) {
+      if (s.precios) Object.keys(s.precios).forEach(k => precioKeys.add(k));
     }
+    console.log("All precio keys found:", [...precioKeys]);
 
     // Aggregate national averages
     const buckets: Record<string, number[]> = {
