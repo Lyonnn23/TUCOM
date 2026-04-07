@@ -20,9 +20,31 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
-  const { data: stations, isLoading: stationsLoading } = useGasStations();
+  const { data: stations, isLoading: stationsLoading, refetch: refetchStations } = useGasStations();
+
+  const handleSyncStations = async () => {
+    if (!userLocation) {
+      toast.error("Activa tu ubicación para buscar estaciones cercanas");
+      return;
+    }
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-stations", {
+        body: { lat: userLocation.lat, lng: userLocation.lng },
+      });
+      if (error) throw error;
+      toast.success(`Se encontraron ${data?.found ?? 0} estaciones`);
+      refetchStations();
+    } catch (err: any) {
+      toast.error("Error al sincronizar estaciones");
+      console.error(err);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     if ("geolocation" in navigator) {
