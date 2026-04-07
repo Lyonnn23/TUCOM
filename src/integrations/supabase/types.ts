@@ -68,6 +68,7 @@ export type Database = {
           fuel_type: string
           id: string
           name: string | null
+          previous_price: number | null
           price: number
           trend: string | null
           unit: string
@@ -78,6 +79,7 @@ export type Database = {
           fuel_type: string
           id?: string
           name?: string | null
+          previous_price?: number | null
           price: number
           trend?: string | null
           unit?: string
@@ -88,6 +90,7 @@ export type Database = {
           fuel_type?: string
           id?: string
           name?: string | null
+          previous_price?: number | null
           price?: number
           trend?: string | null
           unit?: string
@@ -131,6 +134,33 @@ export type Database = {
           name?: string
           place_id?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string | null
         }
         Relationships: []
       }
