@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar } from "lucide-react";
+import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
@@ -160,12 +161,15 @@ const Index = () => {
                   Promedio nacional · Actualizado hoy
                 </p>
               </div>
-              <button
-                onClick={() => refetchPrices()}
-                className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <PushNotificationToggle />
+                <button
+                  onClick={() => refetchPrices()}
+                  className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {pricesLoading ? (
