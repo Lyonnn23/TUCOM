@@ -93,18 +93,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    const brandList = brands || ["Copec", "Shell", "Aramco", "Petrobras", "Terpel"];
+    const brandList = brands || ["Copec", "Shell", "Aramco"];
     const allPlaces: PlaceResult[] = [];
 
-    // Search for each brand
+    // Do a generic nearby search first (catches all brands)
+    const genericPlaces = await searchGasStations(lat, lng, "");
+    allPlaces.push(...genericPlaces);
+
+    // Then search specific brands for broader coverage
     for (const brand of brandList) {
       const places = await searchGasStations(lat, lng, brand);
       allPlaces.push(...places);
     }
-
-    // Also do a generic nearby search
-    const genericPlaces = await searchGasStations(lat, lng, "");
-    allPlaces.push(...genericPlaces);
 
     // Deduplicate by place_id
     const uniquePlaces = new Map<string, PlaceResult>();
