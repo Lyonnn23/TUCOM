@@ -270,8 +270,9 @@ const Index = () => {
               <div>
                 <h2 className="font-heading font-bold text-foreground text-xl">Todas las Estaciones</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {stationsWithDistance.length} estaciones encontradas
-                  {userLocation ? " · Ordenadas por distancia" : ""}
+                  {stationsWithDistance.length} estaciones
+                  {radiusKm ? ` en ${radiusKm} km` : ""}
+                  {userLocation ? " · Por distancia" : ""}
                 </p>
               </div>
               <button
