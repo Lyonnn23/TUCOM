@@ -94,6 +94,7 @@ const Index = () => {
       const fuelKey = mapFuelFilter as keyof typeof s.prices;
       return (s.prices[fuelKey] ?? 0) > 0;
     });
+  }, [stationsWithDistance, mapFuelFilter]);
 
   const handleNavigate = (station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
