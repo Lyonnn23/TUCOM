@@ -1,15 +1,6 @@
-import { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps";
+import { useState } from "react";
 import type { GasStation } from "@/hooks/useGasStations";
-
-// Fix default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
 
 interface StationMapProps {
   stations: GasStation[];
@@ -17,75 +8,80 @@ interface StationMapProps {
   onStationClick?: (station: GasStation) => void;
 }
 
+const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+
 const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps) => {
-  const mapRef = useRef<L.Map | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [selected, setSelected] = useState<GasStation | null>(null);
 
-  const center = userLocation || { lat: -33.4489, lng: -70.6693 };
+  const center = userLocation || { lat: -33.45, lng: -70.65 };
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+  if (!GOOGLE_MAPS_KEY) {
+    return (
+      <div className="h-full flex items-center justify-center bg-muted rounded-2xl">
+        <p className="text-sm text-muted-foreground text-center px-4">
+          Configurando Google Maps...
+        </p>
+      </div>
+    );
+  }
 
-    const map = L.map(containerRef.current, {
-      center: [center.lat, center.lng],
-      zoom: 13,
-      zoomControl: false,
-    });
+  return (
+    <APIProvider apiKey={GOOGLE_MAPS_KEY}>
+      <Map
+        defaultCenter={center}
+        defaultZoom={13}
+        gestureHandling="greedy"
+        disableDefaultUI={false}
+        mapId="tucom-map"
+        style={{ width: "100%", height: "100%" }}
+      >
+        {/* User location */}
+        {userLocation && (
+          <AdvancedMarker position={userLocation}>
+            <div className="w-4 h-4 bg-primary rounded-full border-2 border-white shadow-lg animate-pulse" />
+          </AdvancedMarker>
+        )}
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
+        {/* Station markers */}
+        {stations.map((station) => (
+          <AdvancedMarker
+            key={station.id}
+            position={{ lat: station.lat, lng: station.lng }}
+            onClick={() => setSelected(station)}
+          >
+            <Pin
+              background={station.isOpen ? "#22c55e" : "#ef4444"}
+              borderColor={station.isOpen ? "#16a34a" : "#dc2626"}
+              glyphColor="#fff"
+            />
+          </AdvancedMarker>
+        ))}
 
-    mapRef.current = map;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    // Clear existing markers
-    map.eachLayer((layer) => {
-      if (layer instanceof L.Marker) map.removeLayer(layer);
-    });
-
-    // User location marker
-    if (userLocation) {
-      const userIcon = L.divIcon({
-        html: `<div style="width:16px;height:16px;background:hsl(215,80%,55%);border:3px solid white;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8],
-        className: "",
-      });
-
-      L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-        .addTo(map)
-        .bindPopup("Tu ubicación");
-
-      map.setView([userLocation.lat, userLocation.lng], 13);
-    }
-
-    // Station markers
-    stations.forEach((station) => {
-      const marker = L.marker([station.lat, station.lng])
-        .addTo(map)
-        .bindPopup(
-          `<div style="font-size:13px;">
-            <strong>${station.name}</strong><br/>
-            93: $${station.prices.gasoline93} · 95: $${station.prices.gasoline95}<br/>
-            ${station.isOpen ? "🟢 Abierta" : "🔴 Cerrada"}
-          </div>`
-        );
-
-      marker.on("click", () => onStationClick?.(station));
-    });
-  }, [stations, userLocation, onStationClick]);
-
-  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+        {/* Info window */}
+        {selected && (
+          <InfoWindow
+            position={{ lat: selected.lat, lng: selected.lng }}
+            onCloseClick={() => setSelected(null)}
+          >
+            <div className="p-1 min-w-[160px]">
+              <h3 className="font-bold text-sm">{selected.name}</h3>
+              <p className="text-xs text-gray-500">{selected.brand}</p>
+              <p className="text-xs mt-1">{selected.address}</p>
+              {selected.distance !== undefined && (
+                <p className="text-xs text-blue-600 font-medium mt-1">{selected.distance} km</p>
+              )}
+              <button
+                onClick={() => onStationClick?.(selected)}
+                className="mt-2 w-full bg-blue-600 text-white text-xs py-1.5 rounded-md font-medium hover:bg-blue-700"
+              >
+                Ir con Waze
+              </button>
+            </div>
+          </InfoWindow>
+        )}
+      </Map>
+    </APIProvider>
+  );
 };
 
 export default StationMap;
