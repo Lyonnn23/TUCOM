@@ -207,9 +207,7 @@ Deno.serve(async (req) => {
         success: true,
         totalEstaciones: estaciones.length,
         stationPricesUpdated,
-        preciosNacionales: Object.fromEntries(
-          Object.entries(buckets).map(([k, v]) => [k, v.length > 0 ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null])
-        ),
+        preciosNacionales: Object.fromEntries((avgData ?? []).map((r: any) => [r.fuel_type, Number(r.avg_price)])),
         priceDrops: drops,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
