@@ -14,9 +14,9 @@ const fuelColors: Record<string, string> = {
 
 const fuelEmoji: Record<string, string> = {
   gasoline93: "⛽",
-  gasoline95: "🔵",
-  gasoline97: "🟣",
-  diesel: "🟢",
+  gasoline95: "⛽",
+  gasoline97: "⛽",
+  diesel: "🛢️",
 };
 
 const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
