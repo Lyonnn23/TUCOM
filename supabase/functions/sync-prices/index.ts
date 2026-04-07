@@ -158,7 +158,7 @@ Deno.serve(async (req) => {
     const batchSize = 50;
     for (let i = 0; i < estaciones.length; i += batchSize) {
       const batch = estaciones.slice(i, i + batchSize);
-      const codigos = batch.map((s: any) => `cne_${s.codigo}`).filter(Boolean);
+      const codigos = batch.filter((s: any) => s.codigo).map((s: any) => `cne_${s.codigo}`);
 
       const { data: matchedStations } = await supabase
         .from("gas_stations")
