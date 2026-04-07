@@ -82,8 +82,8 @@ Deno.serve(async (req) => {
       console.log("Sample distribuidor:", JSON.stringify(estaciones[0].distribuidor));
     }
 
-    // Batch process stations
-    const upsertRows: any[] = [];
+    // Batch process stations - deduplicate by codigo
+    const stationMap = new Map<string, any>();
     let skipped = 0;
 
     for (const station of estaciones) {
@@ -99,8 +99,11 @@ Deno.serve(async (req) => {
 
       if (!lat || !lng || lat === 0 || lng === 0) { skipped++; continue; }
 
-      upsertRows.push({
-        place_id: `cne_${codigo}`,
+      const placeId = `cne_${codigo}`;
+      if (stationMap.has(placeId)) { skipped++; continue; }
+
+      stationMap.set(placeId, {
+        place_id: placeId,
         name: razonSocial,
         brand,
         address,
@@ -108,6 +111,9 @@ Deno.serve(async (req) => {
         lng,
         is_open: station.en_mantenimiento === 0,
       });
+    }
+
+    const upsertRows = [...stationMap.values()];
     }
 
     // Batch upsert in chunks
