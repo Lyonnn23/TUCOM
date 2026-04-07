@@ -1,13 +1,17 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.101.0";
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.101.0/cors";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
 // CNE publishes weekly fuel prices for Chile
 // Source: https://www.cne.cl/estadisticas/hidrocarburo/
-// We'll fetch from a known endpoint or fallback to manual update
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,21 +19,28 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Fetch current prices before update for comparison
+    const { data: oldPrices } = await supabase
+      .from("fuel_prices")
+      .select("fuel_type, price");
+
+    const oldPriceMap: Record<string, number> = {};
+    for (const p of oldPrices ?? []) {
+      oldPriceMap[p.fuel_type] = p.price;
+    }
+
     // Try fetching CNE data
     const cneUrl = "https://api.cne.cl/v3/combustibles/vehicular/estaciones/";
     let pricesUpdated = false;
 
     try {
       const res = await fetch(cneUrl, {
-        headers: { "Accept": "application/json" },
+        headers: { Accept: "application/json" },
       });
 
       if (res.ok) {
         const data = await res.json();
-        // Process CNE data if available
         if (data && data.data) {
-          // CNE data usually has average prices by region
-          // We'll aggregate national averages
           const prices: Record<string, number[]> = {
             gasoline93: [],
             gasoline95: [],
@@ -67,7 +78,6 @@ Deno.serve(async (req) => {
         const res = await fetch(bencinaUrl);
         if (res.ok) {
           const data = await res.json();
-          // Process bencina en linea data
           if (data) {
             console.log("Bencina en linea data fetched");
             pricesUpdated = true;
@@ -75,6 +85,42 @@ Deno.serve(async (req) => {
         }
       } catch {
         console.log("Bencina en linea API not available");
+      }
+    }
+
+    // Check for price drops and send push notifications
+    if (pricesUpdated) {
+      const { data: newPrices } = await supabase
+        .from("fuel_prices")
+        .select("fuel_type, price, name");
+
+      const drops: string[] = [];
+      for (const p of newPrices ?? []) {
+        const oldPrice = oldPriceMap[p.fuel_type];
+        if (oldPrice && p.price < oldPrice) {
+          const diff = oldPrice - p.price;
+          drops.push(`${p.name || p.fuel_type}: -$${diff}/L`);
+        }
+      }
+
+      if (drops.length > 0) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/send-push-notifications`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+              title: "📉 ¡Bajó la bencina!",
+              body: drops.join(" · "),
+              data: { url: "/" },
+            }),
+          });
+          console.log("Push notifications sent for price drops:", drops);
+        } catch (pushErr) {
+          console.error("Failed to send push notifications:", pushErr);
+        }
       }
     }
 

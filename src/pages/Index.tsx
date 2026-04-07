@@ -161,12 +161,15 @@ const Index = () => {
                   Promedio nacional · Actualizado hoy
                 </p>
               </div>
-              <button
-                onClick={() => refetchPrices()}
-                className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-2">
+                <PushNotificationToggle />
+                <button
+                  onClick={() => refetchPrices()}
+                  className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {pricesLoading ? (
