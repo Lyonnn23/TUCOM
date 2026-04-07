@@ -18,23 +18,36 @@ export interface GasStation {
   isOpen: boolean;
 }
 
+const PRICE_RANGES: Record<string, { min: number; max: number }> = {
+  gasoline93: { min: 1000, max: 3000 },
+  gasoline95: { min: 1000, max: 3000 },
+  gasoline97: { min: 1000, max: 3000 },
+  diesel: { min: 800, max: 3000 },
+};
+
+function sanitizePrice(type: string, value: number | null | undefined) {
+  const price = Number(value ?? 0);
+  const range = PRICE_RANGES[type];
+
+  if (!range || !Number.isFinite(price)) return 0;
+  if (price < range.min || price > range.max) return 0;
+  return price;
+}
+
 export function useGasStations() {
   return useQuery({
     queryKey: ["gas-stations"],
     queryFn: async (): Promise<GasStation[]> => {
-      const { data: stations, error: stErr } = await supabase
-        .from("gas_stations")
-        .select("*");
+      const { data: stations, error: stErr } = await supabase.from("gas_stations").select("*");
       if (stErr) throw stErr;
 
-      const { data: prices, error: prErr } = await supabase
-        .from("station_prices")
-        .select("*");
+      const { data: prices, error: prErr } = await supabase.from("station_prices").select("*");
       if (prErr) throw prErr;
 
       return (stations ?? []).map((s) => {
         const sp = (prices ?? []).filter((p) => p.station_id === s.id);
-        const getPrice = (type: string) => sp.find((p) => p.fuel_type === type)?.price ?? 0;
+        const getPrice = (type: string) => sanitizePrice(type, sp.find((p) => p.fuel_type === type)?.price);
+
         return {
           id: s.id,
           name: s.name,
