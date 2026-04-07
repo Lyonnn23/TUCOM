@@ -9,8 +9,14 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const VALID_PRICE_RANGES: Record<string, { min: number; max: number }> = {
+  gasoline93: { min: 1000, max: 3000 },
+  gasoline95: { min: 1000, max: 3000 },
+  gasoline97: { min: 1000, max: 3000 },
+  diesel: { min: 800, max: 3000 },
 };
 
 async function loginCNE(): Promise<string> {
@@ -19,10 +25,12 @@ async function loginCNE(): Promise<string> {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ email: CNE_API_EMAIL, password: CNE_API_PASSWORD }),
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`CNE login failed (${res.status}): ${text}`);
   }
+
   const data = await res.json();
   if (!data.token) throw new Error("CNE login response missing token");
   return data.token;
@@ -32,10 +40,12 @@ async function fetchEstaciones(token: string): Promise<any[]> {
   const res = await fetch("https://api.cne.cl/api/v4/estaciones", {
     headers: { Authorization: `Bearer ${token}` },
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`CNE estaciones failed (${res.status}): ${text}`);
   }
+
   const data = await res.json();
   return Array.isArray(data) ? data : (data.data || []);
 }
@@ -50,23 +60,29 @@ function getFuelName(type: string): string {
   return names[type] || type;
 }
 
-// Extract prices from the nested precios object in CNE v4 API
-// Keys: "93", "95", "97", "DI" (+ "A93" etc. for autoservicio)
-// Values: { precio: "1234.000", ... }
-// attendedOnly: if true, only return attended prices (for national average)
+function isReasonablePrice(fuelType: string, price: number): boolean {
+  const range = VALID_PRICE_RANGES[fuelType];
+  return Boolean(range) && Number.isFinite(price) && price >= range.min && price <= range.max;
+}
+
 function extractPrices(station: any, attendedOnly = false): Record<string, number> {
   const result: Record<string, number> = {};
   const precios = station.precios;
   if (!precios) return result;
 
   const attendedKeys: [string, string][] = [
-    ["93", "gasoline93"], ["95", "gasoline95"], ["97", "gasoline97"], ["DI", "diesel"],
+    ["93", "gasoline93"],
+    ["95", "gasoline95"],
+    ["97", "gasoline97"],
+    ["DI", "diesel"],
   ];
   const selfServiceKeys: [string, string][] = [
-    ["A93", "gasoline93"], ["A95", "gasoline95"], ["A97", "gasoline97"], ["ADI", "diesel"],
+    ["A93", "gasoline93"],
+    ["A95", "gasoline95"],
+    ["A97", "gasoline97"],
+    ["ADI", "diesel"],
   ];
 
-  // Always process attended prices
   for (const [cneKey, fuelType] of attendedKeys) {
     const entry = precios[cneKey];
     if (!entry) continue;
@@ -74,7 +90,6 @@ function extractPrices(station: any, attendedOnly = false): Record<string, numbe
     if (numPrice > 0) result[fuelType] = Math.round(numPrice);
   }
 
-  // Only add self-service if not attendedOnly and not already set
   if (!attendedOnly) {
     for (const [cneKey, fuelType] of selfServiceKeys) {
       if (result[fuelType]) continue;
@@ -88,13 +103,44 @@ function extractPrices(station: any, attendedOnly = false): Record<string, numbe
   return result;
 }
 
+function createBuckets() {
+  return {
+    gasoline93: [] as number[],
+    gasoline95: [] as number[],
+    gasoline97: [] as number[],
+    diesel: [] as number[],
+  };
+}
+
+function computeNationalAverages(estaciones: any[]) {
+  const buckets = createBuckets();
+
+  for (const station of estaciones) {
+    const prices = extractPrices(station, true);
+    for (const [fuelType, price] of Object.entries(prices)) {
+      if (fuelType in buckets && isReasonablePrice(fuelType, price)) {
+        buckets[fuelType as keyof typeof buckets].push(price);
+      }
+    }
+  }
+
+  return {
+    buckets,
+    averages: {
+      gasoline93: buckets.gasoline93.length > 0 ? Math.round(buckets.gasoline93.reduce((a, b) => a + b, 0) / buckets.gasoline93.length) : null,
+      gasoline95: buckets.gasoline95.length > 0 ? Math.round(buckets.gasoline95.reduce((a, b) => a + b, 0) / buckets.gasoline95.length) : null,
+      gasoline97: buckets.gasoline97.length > 0 ? Math.round(buckets.gasoline97.reduce((a, b) => a + b, 0) / buckets.gasoline97.length) : null,
+      diesel: buckets.diesel.length > 0 ? Math.round(buckets.diesel.reduce((a, b) => a + b, 0) / buckets.diesel.length) : null,
+    } as Record<string, number | null>,
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // Fetch current prices for comparison
     const { data: oldPrices } = await supabase.from("fuel_prices").select("fuel_type, price");
     const oldPriceMap: Record<string, number> = {};
     for (const p of oldPrices ?? []) oldPriceMap[p.fuel_type] = p.price;
@@ -114,21 +160,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Log detailed precios from a few stations to verify key mapping
-    for (const s of estaciones.slice(0, 5)) {
-      if (s.precios) {
-        const p: Record<string, string> = {};
-        for (const [k, v] of Object.entries(s.precios)) {
-          const entry = v as any;
-          p[k] = typeof entry === "object" ? `${entry.precio} (${JSON.stringify(entry).substring(0, 100)})` : String(entry);
-        }
-        console.log(`Station ${s.razon_social}: precios =`, JSON.stringify(p));
-      }
-    }
+    const { buckets, averages } = computeNationalAverages(estaciones);
 
-    // Batch upsert station prices - match by place_id (cne_<codigo>)
     let stationPricesUpdated = 0;
     const batchSize = 200;
+
     for (let i = 0; i < estaciones.length; i += batchSize) {
       const batch = estaciones.slice(i, i + batchSize);
       const codigos = batch.filter((s: any) => s.codigo).map((s: any) => `cne_${s.codigo}`);
@@ -141,46 +177,60 @@ Deno.serve(async (req) => {
       if (!matchedStations || matchedStations.length === 0) continue;
 
       const placeIdToId = new Map(matchedStations.map((s) => [s.place_id, s.id]));
-
       const upsertMap = new Map<string, { station_id: string; fuel_type: string; price: number }>();
+
       for (const station of batch) {
         const stationId = placeIdToId.get(`cne_${station.codigo}`);
         if (!stationId) continue;
+
         const prices = extractPrices(station);
-        for (const [ft, price] of Object.entries(prices)) {
-          upsertMap.set(`${stationId}_${ft}`, { station_id: stationId, fuel_type: ft, price });
+        for (const [fuelType, price] of Object.entries(prices)) {
+          if (!isReasonablePrice(fuelType, price)) continue;
+          upsertMap.set(`${stationId}_${fuelType}`, { station_id: stationId, fuel_type: fuelType, price });
         }
       }
 
       const upsertRows = [...upsertMap.values()];
       if (upsertRows.length > 0) {
-        const { error: upsertErr } = await supabase.from("station_prices").upsert(upsertRows, { onConflict: "station_id,fuel_type" });
+        const { error: upsertErr } = await supabase
+          .from("station_prices")
+          .upsert(upsertRows, { onConflict: "station_id,fuel_type" });
+
         if (upsertErr) {
           console.error(`Station prices batch ${i} error:`, upsertErr.message);
+        } else {
+          stationPricesUpdated += upsertRows.length;
         }
-        stationPricesUpdated += upsertRows.length;
       }
     }
 
-    // Compute national averages from station_prices via DB function
-    const { data: avgData } = await supabase.rpc("get_fuel_price_averages");
-    for (const row of avgData ?? []) {
-      const avg = Number(row.avg_price);
-      const oldPrice = oldPriceMap[row.fuel_type];
+    for (const fuelType of ["gasoline93", "gasoline95", "gasoline97", "diesel"]) {
+      const avg = averages[fuelType];
+      if (avg === null) continue;
+
+      const oldPrice = oldPriceMap[fuelType];
       const trend = oldPrice ? (avg < oldPrice ? "down" : avg > oldPrice ? "up" : "stable") : "stable";
       const changePercent = oldPrice ? Math.round(((avg - oldPrice) / oldPrice) * 10000) / 100 : 0;
 
       await supabase.from("fuel_prices").upsert(
-        { fuel_type: row.fuel_type, price: avg, name: getFuelName(row.fuel_type), trend, previous_price: oldPrice || null, change_percent: changePercent },
+        {
+          fuel_type: fuelType,
+          price: avg,
+          name: getFuelName(fuelType),
+          trend,
+          previous_price: oldPrice || null,
+          change_percent: changePercent,
+        },
         { onConflict: "fuel_type" }
       );
-      console.log(`${row.fuel_type}: ${row.station_count} stations, avg $${avg}`);
+
+      console.log(`${fuelType}: ${buckets[fuelType as keyof typeof buckets].length} stations, avg $${avg}`);
     }
 
-    // Check for price drops and send push notifications
     const { data: newPrices } = await supabase.from("fuel_prices").select("fuel_type, price, name");
     const drops: string[] = [];
     const changedFuelTypes: string[] = [];
+
     for (const p of newPrices ?? []) {
       const oldPrice = oldPriceMap[p.fuel_type];
       if (oldPrice && p.price < oldPrice) {
@@ -193,10 +243,17 @@ Deno.serve(async (req) => {
       try {
         await fetch(`${SUPABASE_URL}/functions/v1/send-push-notifications`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-          body: JSON.stringify({ title: "📉 ¡Bajó la bencina!", body: drops.join(" · "), data: { url: "/" }, changed_fuel_types: changedFuelTypes }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            title: "📉 ¡Bajó la bencina!",
+            body: drops.join(" · "),
+            data: { url: "/" },
+            changed_fuel_types: changedFuelTypes,
+          }),
         });
-        console.log("Push notifications sent:", drops);
       } catch (pushErr) {
         console.error("Push notification error:", pushErr);
       }
@@ -207,7 +264,7 @@ Deno.serve(async (req) => {
         success: true,
         totalEstaciones: estaciones.length,
         stationPricesUpdated,
-        preciosNacionales: Object.fromEntries((avgData ?? []).map((r: any) => [r.fuel_type, Number(r.avg_price)])),
+        preciosNacionales: averages,
         priceDrops: drops,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
