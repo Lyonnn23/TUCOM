@@ -1,6 +1,6 @@
-import { Fuel, Map, List } from "lucide-react";
+import { Fuel, Map, List, Tag } from "lucide-react";
 
-export type TabType = "prices" | "map" | "stations";
+export type TabType = "prices" | "map" | "stations" | "benefits";
 
 interface BottomNavProps {
   active: TabType;
@@ -11,6 +11,7 @@ const tabs: { id: TabType; label: string; icon: typeof Fuel }[] = [
   { id: "prices", label: "Precios", icon: Fuel },
   { id: "map", label: "Mapa", icon: Map },
   { id: "stations", label: "Estaciones", icon: List },
+  { id: "benefits", label: "Beneficios", icon: Tag },
 ];
 
 const BottomNav = ({ active, onChange }: BottomNavProps) => {

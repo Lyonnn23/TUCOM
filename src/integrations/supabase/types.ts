@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      fuel_benefits: {
+        Row: {
+          brand: string
+          conditions: string | null
+          created_at: string
+          day_of_week: number[]
+          discount_description: string
+          discount_fixed: number | null
+          discount_percent: number | null
+          fuel_types: string[]
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          payment_method: string
+          updated_at: string
+        }
+        Insert: {
+          brand: string
+          conditions?: string | null
+          created_at?: string
+          day_of_week?: number[]
+          discount_description: string
+          discount_fixed?: number | null
+          discount_percent?: number | null
+          fuel_types?: string[]
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          payment_method: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          conditions?: string | null
+          created_at?: string
+          day_of_week?: number[]
+          discount_description?: string
+          discount_fixed?: number | null
+          discount_percent?: number | null
+          fuel_types?: string[]
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          payment_method?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fuel_prices: {
         Row: {
           change_percent: number
