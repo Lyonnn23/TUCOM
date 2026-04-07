@@ -8,7 +8,7 @@ interface StationCardProps {
   onNavigateGoogle?: (station: GasStation) => void;
 }
 
-const StationCard = ({ station, onNavigate }: StationCardProps) => {
+const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps) => {
   return (
     <div className="bg-card rounded-xl p-4 shadow-sm border border-border">
       <div className="flex items-start justify-between">
@@ -34,6 +34,12 @@ const StationCard = ({ station, onNavigate }: StationCardProps) => {
         </div>
         <div className="flex items-center gap-1.5">
           <ReportPriceDialog station={station} />
+          <button
+            onClick={() => onNavigateGoogle?.(station)}
+            className="bg-muted text-foreground rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-muted/80 transition-colors"
+          >
+            Maps
+          </button>
           <button
             onClick={() => onNavigate?.(station)}
             className="bg-primary text-primary-foreground rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
