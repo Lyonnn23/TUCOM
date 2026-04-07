@@ -202,9 +202,60 @@ const Index = () => {
         {activeTab === "map" && (
           <div className="space-y-3">
             <h2 className="font-heading font-bold text-foreground text-xl">Estaciones Cercanas</h2>
-            <div className="h-[calc(100vh-220px)] rounded-2xl overflow-hidden border border-border shadow-md">
+            {/* Radius selector */}
+            <div className="flex items-center gap-2">
+              <Radar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <div className="flex gap-1.5">
+                {[
+                  { value: null, label: "Sin límite" },
+                  { value: 1, label: "1 km" },
+                  { value: 5, label: "5 km" },
+                  { value: 10, label: "10 km" },
+                  { value: 25, label: "25 km" },
+                ].map((opt) => (
+                  <button
+                    key={String(opt.value)}
+                    onClick={() => setRadiusKm(opt.value)}
+                    className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+                      radiusKm === opt.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Fuel type filter */}
+            <div className="flex items-center gap-2">
+              <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <div className="flex gap-1.5">
+                {[
+                  { key: "all", label: "Todos" },
+                  { key: "gasoline93", label: "93" },
+                  { key: "gasoline95", label: "95" },
+                  { key: "gasoline97", label: "97" },
+                  { key: "diesel", label: "Diésel" },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setMapFuelFilter(opt.key)}
+                    className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+                      mapFuelFilter === opt.key
+                        ? "bg-secondary text-secondary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">{mapStations.length} estaciones en el mapa</p>
+            <div className="h-[calc(100vh-300px)] rounded-2xl overflow-hidden border border-border shadow-md">
               <StationMap
-                stations={stationsWithDistance}
+                stations={mapStations}
                 userLocation={userLocation}
                 onStationClick={(s) => handleNavigate(s)}
               />
