@@ -74,8 +74,16 @@ const Index = () => {
       }))
       .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
-      .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [stations, userLocation, searchQuery, selectedBrand]);
+      .sort((a, b) => {
+        if (sortByFuel !== "distance") {
+          const fuelKey = sortByFuel as keyof typeof a.prices;
+          const priceA = a.prices[fuelKey] || 99999;
+          const priceB = b.prices[fuelKey] || 99999;
+          if (priceA !== priceB) return priceA - priceB;
+        }
+        return (a.distance ?? 999) - (b.distance ?? 999);
+      });
+  }, [stations, userLocation, searchQuery, selectedBrand, sortByFuel]);
 
   const handleNavigate = (station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
