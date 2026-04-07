@@ -56,6 +56,11 @@ const Index = () => {
     }
   }, []);
 
+  const availableBrands = useMemo(() => {
+    const brands = new Set((stations ?? []).map((s) => s.brand));
+    return Array.from(brands).sort();
+  }, [stations]);
+
   const stationsWithDistance = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     return (stations ?? [])
@@ -65,9 +70,10 @@ const Index = () => {
           ? calculateDistance(userLocation.lat, userLocation.lng, s.lat, s.lng)
           : undefined,
       }))
+      .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
-  }, [stations, userLocation, searchQuery]);
+  }, [stations, userLocation, searchQuery, selectedBrand]);
 
   const handleNavigate = (station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
