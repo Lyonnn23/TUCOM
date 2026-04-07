@@ -80,6 +80,11 @@ const Index = () => {
     window.open(wazeUrl, "_blank");
   };
 
+  const handleNavigateGoogle = (station: GasStation) => {
+    const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`;
+    window.open(gmapsUrl, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -250,7 +255,7 @@ const Index = () => {
             ) : (
               <div className="space-y-3">
                 {stationsWithDistance.map((station) => (
-                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} />
+                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} />
                 ))}
               </div>
             )}
