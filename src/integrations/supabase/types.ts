@@ -243,6 +243,14 @@ export type Database = {
     }
     Functions: {
       aggregate_reported_prices: { Args: never; Returns: undefined }
+      get_fuel_price_averages: {
+        Args: never
+        Returns: {
+          avg_price: number
+          fuel_type: string
+          station_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
