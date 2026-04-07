@@ -1,10 +1,11 @@
-import { MapPin, Navigation, MessageSquarePlus } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 
 interface StationCardProps {
   station: GasStation;
   onNavigate?: (station: GasStation) => void;
+  onNavigateGoogle?: (station: GasStation) => void;
 }
 
 const StationCard = ({ station, onNavigate }: StationCardProps) => {
