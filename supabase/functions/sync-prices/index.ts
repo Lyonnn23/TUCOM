@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
 
     // Batch upsert station prices - match by place_id (cne_<codigo>)
     let stationPricesUpdated = 0;
-    const batchSize = 50;
+    const batchSize = 200;
     for (let i = 0; i < estaciones.length; i += batchSize) {
       const batch = estaciones.slice(i, i + batchSize);
       const codigos = batch.filter((s: any) => s.codigo).map((s: any) => `cne_${s.codigo}`);
