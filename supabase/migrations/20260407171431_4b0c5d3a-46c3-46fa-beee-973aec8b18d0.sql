@@ -1,0 +1,1 @@
+DELETE FROM fuel_prices WHERE fuel_type IN ('Bencina 93', 'Bencina 95', 'Bencina 97', 'Diésel');
