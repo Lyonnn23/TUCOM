@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     };
 
     for (const station of estaciones) {
-      const prices = extractPrices(station);
+      const prices = extractPrices(station, true); // attended only for national avg
       for (const [ft, price] of Object.entries(prices)) {
         if (buckets[ft]) buckets[ft].push(price);
       }
