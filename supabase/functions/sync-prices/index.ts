@@ -53,30 +53,36 @@ function getFuelName(type: string): string {
 // Extract prices from the nested precios object in CNE v4 API
 // Keys: "93", "95", "97", "DI" (+ "A93" etc. for autoservicio)
 // Values: { precio: "1234.000", ... }
-function extractPrices(station: any): Record<string, number> {
+// attendedOnly: if true, only return attended prices (for national average)
+function extractPrices(station: any, attendedOnly = false): Record<string, number> {
   const result: Record<string, number> = {};
   const precios = station.precios;
   if (!precios) return result;
 
-  // Map CNE keys to our fuel types - prefer attended ("93") over self-service ("A93")
-  const keyMap: Record<string, string> = {
-    "93": "gasoline93", "A93": "gasoline93",
-    "95": "gasoline95", "A95": "gasoline95",
-    "97": "gasoline97", "A97": "gasoline97",
-    "DI": "diesel", "ADI": "diesel",
-  };
+  const attendedKeys: [string, string][] = [
+    ["93", "gasoline93"], ["95", "gasoline95"], ["97", "gasoline97"], ["DI", "diesel"],
+  ];
+  const selfServiceKeys: [string, string][] = [
+    ["A93", "gasoline93"], ["A95", "gasoline95"], ["A97", "gasoline97"], ["ADI", "diesel"],
+  ];
 
-  // Process attended first, then autoservicio (attended takes priority)
-  for (const cneKey of ["93", "95", "97", "DI", "A93", "A95", "A97", "ADI"]) {
-    const fuelType = keyMap[cneKey];
-    if (!fuelType || result[fuelType]) continue; // skip if already set (attended priority)
-    
+  // Always process attended prices
+  for (const [cneKey, fuelType] of attendedKeys) {
     const entry = precios[cneKey];
     if (!entry) continue;
-    
-    const priceStr = typeof entry === "object" ? entry.precio : entry;
-    const numPrice = parseFloat(String(priceStr));
+    const numPrice = parseFloat(String(typeof entry === "object" ? entry.precio : entry));
     if (numPrice > 0) result[fuelType] = Math.round(numPrice);
+  }
+
+  // Only add self-service if not attendedOnly and not already set
+  if (!attendedOnly) {
+    for (const [cneKey, fuelType] of selfServiceKeys) {
+      if (result[fuelType]) continue;
+      const entry = precios[cneKey];
+      if (!entry) continue;
+      const numPrice = parseFloat(String(typeof entry === "object" ? entry.precio : entry));
+      if (numPrice > 0) result[fuelType] = Math.round(numPrice);
+    }
   }
 
   return result;
