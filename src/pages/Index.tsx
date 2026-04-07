@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
@@ -10,6 +10,8 @@ import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -18,9 +20,31 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
-  const { data: stations, isLoading: stationsLoading } = useGasStations();
+  const { data: stations, isLoading: stationsLoading, refetch: refetchStations } = useGasStations();
+
+  const handleSyncStations = async () => {
+    if (!userLocation) {
+      toast.error("Activa tu ubicación para buscar estaciones cercanas");
+      return;
+    }
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("sync-stations", {
+        body: { lat: userLocation.lat, lng: userLocation.lng },
+      });
+      if (error) throw error;
+      toast.success(`Se encontraron ${data?.found ?? 0} estaciones`);
+      refetchStations();
+    } catch (err: any) {
+      toast.error("Error al sincronizar estaciones");
+      console.error(err);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -159,12 +183,22 @@ const Index = () => {
         {/* Stations List Tab */}
         {activeTab === "stations" && (
           <div className="space-y-3">
-            <div>
-              <h2 className="font-heading font-bold text-foreground text-xl">Todas las Estaciones</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {stationsWithDistance.length} estaciones encontradas
-                {userLocation ? " · Ordenadas por distancia" : ""}
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-heading font-bold text-foreground text-xl">Todas las Estaciones</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {stationsWithDistance.length} estaciones encontradas
+                  {userLocation ? " · Ordenadas por distancia" : ""}
+                </p>
+              </div>
+              <button
+                onClick={handleSyncStations}
+                disabled={syncing}
+                className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                title="Buscar estaciones cercanas en Google Maps"
+              >
+                <Download className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+              </button>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

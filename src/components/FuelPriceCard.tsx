@@ -6,22 +6,22 @@ interface FuelPriceCardProps {
 }
 
 const fuelColors: Record<string, string> = {
-  "Bencina 93": "from-fuel-cyan/20 to-fuel-blue/10 border-fuel-cyan/30",
-  "Bencina 95": "from-fuel-purple/20 to-fuel-pink/10 border-fuel-purple/30",
-  "Bencina 97": "from-fuel-pink/20 to-fuel-amber/10 border-fuel-pink/30",
-  "Diésel": "from-fuel-green/20 to-fuel-cyan/10 border-fuel-green/30",
+  gasoline93: "from-fuel-cyan/20 to-fuel-blue/10 border-fuel-cyan/30",
+  gasoline95: "from-fuel-purple/20 to-fuel-pink/10 border-fuel-purple/30",
+  gasoline97: "from-fuel-pink/20 to-fuel-amber/10 border-fuel-pink/30",
+  diesel: "from-fuel-green/20 to-fuel-cyan/10 border-fuel-green/30",
 };
 
 const fuelEmoji: Record<string, string> = {
-  "Bencina 93": "⛽",
-  "Bencina 95": "🔵",
-  "Bencina 97": "🟣",
-  "Diésel": "🟢",
+  gasoline93: "⛽",
+  gasoline95: "🔵",
+  gasoline97: "🟣",
+  diesel: "🟢",
 };
 
 const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
-  const isUp = fuel.change > 0;
-  const isDown = fuel.change < 0;
+  const trendUp = fuel.trend === "up";
+  const trendDown = fuel.trend === "down";
   const colorClass = fuelColors[fuel.type] ?? "from-muted to-muted border-border";
 
   return (
@@ -29,7 +29,7 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
       <div className="flex items-center gap-3">
         <span className="text-2xl">{fuelEmoji[fuel.type] ?? "⛽"}</span>
         <div>
-          <p className="text-xs font-semibold text-foreground tracking-wide">{fuel.type}</p>
+          <p className="text-xs font-semibold text-foreground tracking-wide">{fuel.name}</p>
           <p className="text-2xl font-heading font-bold text-foreground mt-0.5">
             ${fuel.price.toLocaleString("es-CL")}
           </p>
@@ -38,15 +38,15 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
       </div>
       <div
         className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${
-          isDown
+          trendDown
             ? "bg-fuel-green/20 text-fuel-green"
-            : isUp
+            : trendUp
             ? "bg-fuel-red/20 text-fuel-red"
             : "bg-muted text-muted-foreground"
         }`}
       >
-        {isDown ? <TrendingDown className="w-3.5 h-3.5" /> : isUp ? <TrendingUp className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
-        {Math.abs(fuel.change)}%
+        {trendDown ? <TrendingDown className="w-3.5 h-3.5" /> : trendUp ? <TrendingUp className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
+        {fuel.trend === "up" ? "Subió" : fuel.trend === "down" ? "Bajó" : "Estable"}
       </div>
     </div>
   );
