@@ -114,7 +114,6 @@ Deno.serve(async (req) => {
     }
 
     const upsertRows = [...stationMap.values()];
-    }
 
     // Batch upsert in chunks
     let inserted = 0;
