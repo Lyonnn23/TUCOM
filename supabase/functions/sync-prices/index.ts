@@ -108,12 +108,17 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Log a few samples to understand price keys
-    const precioKeys = new Set<string>();
-    for (const s of estaciones.slice(0, 200)) {
-      if (s.precios) Object.keys(s.precios).forEach(k => precioKeys.add(k));
+    // Log detailed precios from a few stations to verify key mapping
+    for (const s of estaciones.slice(0, 5)) {
+      if (s.precios) {
+        const p: Record<string, string> = {};
+        for (const [k, v] of Object.entries(s.precios)) {
+          const entry = v as any;
+          p[k] = typeof entry === "object" ? `${entry.precio} (${JSON.stringify(entry).substring(0, 100)})` : String(entry);
+        }
+        console.log(`Station ${s.razon_social}: precios =`, JSON.stringify(p));
+      }
     }
-    console.log("All precio keys found:", [...precioKeys]);
 
     // Aggregate national averages
     const buckets: Record<string, number[]> = {
