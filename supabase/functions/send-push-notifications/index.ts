@@ -13,7 +13,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Convert URL-safe base64 to Uint8Array
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -25,13 +24,9 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
-// Import the raw ECDSA private key for signing
 async function importVapidKeys() {
   const privateKeyBytes = urlBase64ToUint8Array(VAPID_PRIVATE_KEY);
-  
-  // Build JWK from raw 32-byte private key
   const publicKeyBytes = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-  // P-256 public key is 65 bytes: 0x04 + 32 bytes X + 32 bytes Y
   const x = btoa(String.fromCharCode(...publicKeyBytes.slice(1, 33)))
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
   const y = btoa(String.fromCharCode(...publicKeyBytes.slice(33, 65)))
@@ -40,18 +35,11 @@ async function importVapidKeys() {
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 
   const jwk = { kty: "EC", crv: "P-256", x, y, d };
-
-  const key = await crypto.subtle.importKey(
-    "jwk",
-    jwk,
-    { name: "ECDSA", namedCurve: "P-256" },
-    false,
-    ["sign"]
+  return await crypto.subtle.importKey(
+    "jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]
   );
-  return key;
 }
 
-// Create a JWT for VAPID
 async function createVapidJwt(audience: string, privateKey: CryptoKey): Promise<string> {
   const header = { typ: "JWT", alg: "ES256" };
   const now = Math.floor(Date.now() / 1000);
@@ -72,12 +60,10 @@ async function createVapidJwt(audience: string, privateKey: CryptoKey): Promise<
     encoder.encode(unsignedToken)
   );
 
-  // Convert DER signature to raw r||s format expected by WebPush
   const sigArray = new Uint8Array(signature);
   let r: Uint8Array, s: Uint8Array;
-  
+
   if (sigArray[0] === 0x30) {
-    // DER encoded
     const rLen = sigArray[3];
     const rStart = 4;
     const rBytes = sigArray.slice(rStart, rStart + rLen);
@@ -85,23 +71,13 @@ async function createVapidJwt(audience: string, privateKey: CryptoKey): Promise<
     const sLen = sigArray[sLenIndex];
     const sStart = sLenIndex + 1;
     const sBytes = sigArray.slice(sStart, sStart + sLen);
-    
+
     r = rBytes.length > 32 ? rBytes.slice(rBytes.length - 32) : rBytes;
     s = sBytes.length > 32 ? sBytes.slice(sBytes.length - 32) : sBytes;
-    
-    // Pad if needed
-    if (r.length < 32) {
-      const padded = new Uint8Array(32);
-      padded.set(r, 32 - r.length);
-      r = padded;
-    }
-    if (s.length < 32) {
-      const padded = new Uint8Array(32);
-      padded.set(s, 32 - s.length);
-      s = padded;
-    }
+
+    if (r.length < 32) { const p = new Uint8Array(32); p.set(r, 32 - r.length); r = p; }
+    if (s.length < 32) { const p = new Uint8Array(32); p.set(s, 32 - s.length); s = p; }
   } else {
-    // Already raw 64 bytes
     r = sigArray.slice(0, 32);
     s = sigArray.slice(32, 64);
   }
@@ -138,11 +114,7 @@ async function sendWebPush(
     });
 
     if (response.status === 410 || response.status === 404) {
-      // Subscription expired, remove it
-      await supabase
-        .from("push_subscriptions")
-        .delete()
-        .eq("endpoint", subscription.endpoint);
+      await supabase.from("push_subscriptions").delete().eq("endpoint", subscription.endpoint);
       console.log("Removed expired subscription");
       return false;
     }
@@ -151,7 +123,6 @@ async function sendWebPush(
       console.error(`Push failed: ${response.status} ${await response.text()}`);
       return false;
     }
-
     return true;
   } catch (err) {
     console.error("Push error:", err);
@@ -165,7 +136,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { title, body, data } = await req.json();
+    const { title, body, data, changed_fuel_types } = await req.json();
 
     if (!title || !body) {
       return new Response(
@@ -174,15 +145,30 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: subscriptions, error } = await supabase
-      .from("push_subscriptions")
-      .select("endpoint, p256dh, auth");
+    // Fetch subscriptions, optionally filtering by fuel type preferences
+    let query = supabase.from("push_subscriptions").select("endpoint, p256dh, auth, fuel_types");
+    const { data: subscriptions, error } = await query;
 
     if (error) throw error;
-
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(
         JSON.stringify({ success: true, sent: 0, message: "No subscribers" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Filter subscribers who care about the changed fuel types
+    const changedTypes: string[] = changed_fuel_types || [];
+    const relevantSubs = changedTypes.length > 0
+      ? subscriptions.filter((sub: any) => {
+          const prefs: string[] = sub.fuel_types || [];
+          return prefs.some((f: string) => changedTypes.includes(f));
+        })
+      : subscriptions;
+
+    if (relevantSubs.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, sent: 0, message: "No subscribers interested in these fuel types" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -191,13 +177,13 @@ Deno.serve(async (req) => {
     const payload = JSON.stringify({ title, body, data: data || {} });
 
     let sent = 0;
-    for (const sub of subscriptions) {
+    for (const sub of relevantSubs) {
       const ok = await sendWebPush(sub, payload, privateKey);
       if (ok) sent++;
     }
 
     return new Response(
-      JSON.stringify({ success: true, sent, total: subscriptions.length }),
+      JSON.stringify({ success: true, sent, total: relevantSubs.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
