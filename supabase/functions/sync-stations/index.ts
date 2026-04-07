@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.101.0";
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.101.0/cors";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -8,18 +7,22 @@ const CNE_API_PASSWORD = Deno.env.get("CNE_API_PASSWORD")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
 async function loginCNE(): Promise<string> {
   const res = await fetch("https://api.cne.cl/api/login", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ email: CNE_API_EMAIL, password: CNE_API_PASSWORD }),
   });
-
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`CNE login failed (${res.status}): ${text}`);
   }
-
   const data = await res.json();
   if (!data.token) throw new Error("CNE login response missing token");
   return data.token;
@@ -29,18 +32,17 @@ async function fetchEstaciones(token: string): Promise<any[]> {
   const res = await fetch("https://api.cne.cl/api/v4/estaciones", {
     headers: { Authorization: `Bearer ${token}` },
   });
-
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`CNE estaciones failed (${res.status}): ${text}`);
   }
-
   const data = await res.json();
   return Array.isArray(data) ? data : (data.data || []);
 }
 
-function detectBrand(name: string, distribuidor?: string): string {
-  const text = `${name} ${distribuidor || ""}`.toLowerCase();
+function detectBrand(distribuidor: any, razonSocial: string): string {
+  const marca = distribuidor?.marca || "";
+  const text = `${marca} ${razonSocial}`.toLowerCase();
   if (text.includes("copec")) return "Copec";
   if (text.includes("shell")) return "Shell";
   if (text.includes("aramco")) return "Aramco";
@@ -49,7 +51,8 @@ function detectBrand(name: string, distribuidor?: string): string {
   if (text.includes("enex")) return "Enex";
   if (text.includes("esmax")) return "Esmax";
   if (text.includes("uno-x") || text.includes("unox")) return "Uno-X";
-  return distribuidor || "Otro";
+  if (text.includes("abastible")) return "Abastible";
+  return marca || "Otro";
 }
 
 Deno.serve(async (req) => {
@@ -62,7 +65,7 @@ Deno.serve(async (req) => {
     const token = await loginCNE();
     console.log("CNE login successful");
 
-    console.log("Fetching all estaciones from CNE (nationwide)...");
+    console.log("Fetching all estaciones from CNE...");
     const estaciones = await fetchEstaciones(token);
     console.log(`Fetched ${estaciones.length} estaciones from CNE`);
 
@@ -73,99 +76,71 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Log sample station to understand structure
+    // Log sample to debug
     if (estaciones.length > 0) {
-      console.log("Sample station keys:", Object.keys(estaciones[0]));
-      console.log("Sample station:", JSON.stringify(estaciones[0]).substring(0, 800));
+      console.log("Sample ubicacion:", JSON.stringify(estaciones[0].ubicacion));
+      console.log("Sample distribuidor:", JSON.stringify(estaciones[0].distribuidor));
     }
 
-    let inserted = 0;
-    let updated = 0;
+    // Batch process stations - deduplicate by codigo
+    const stationMap = new Map<string, any>();
     let skipped = 0;
 
     for (const station of estaciones) {
-      // Extract station data - try common CNE field names
-      const name = station.nombre_ee || station.razon_social || station.nombre || "Estación";
-      const address = station.direccion_ee || station.direccion || "";
-      const lat = parseFloat(station.latitud || station.lat || "0");
-      const lng = parseFloat(station.longitud || station.lng || station.lon || "0");
-      const distribuidor = station.nombre_distribuidor || station.distribuidor || "";
-      const brand = detectBrand(name, distribuidor);
+      const codigo = station.codigo;
+      if (!codigo) { skipped++; continue; }
 
-      // Skip if no valid coordinates
-      if (!lat || !lng || lat === 0 || lng === 0) {
-        skipped++;
-        continue;
-      }
+      const razonSocial = station.razon_social || "Estación";
+      const ubicacion = station.ubicacion || {};
+      const lat = parseFloat(ubicacion.latitud || ubicacion.lat || "0");
+      const lng = parseFloat(ubicacion.longitud || ubicacion.lng || ubicacion.lon || "0");
+      const address = ubicacion.direccion || ubicacion.calle || "";
+      const brand = detectBrand(station.distribuidor, razonSocial);
 
-      // Use CNE station ID as a stable identifier
-      const cneId = station.id?.toString() || station.id_ee?.toString() || null;
-      const placeId = cneId ? `cne_${cneId}` : null;
+      if (!lat || !lng || lat === 0 || lng === 0) { skipped++; continue; }
 
-      if (placeId) {
-        // Check if already exists by place_id
-        const { data: existing } = await supabase
-          .from("gas_stations")
-          .select("id")
-          .eq("place_id", placeId)
-          .maybeSingle();
+      const placeId = `cne_${codigo}`;
+      if (stationMap.has(placeId)) { skipped++; continue; }
 
-        if (existing) {
-          // Update existing station
-          await supabase
-            .from("gas_stations")
-            .update({ name, brand, address, lat, lng, is_open: true })
-            .eq("id", existing.id);
-          updated++;
-        } else {
-          // Insert new station
-          const { error } = await supabase.from("gas_stations").insert({
-            name,
-            brand,
-            address,
-            lat,
-            lng,
-            place_id: placeId,
-            is_open: true,
-          });
-          if (!error) inserted++;
-          else console.error("Insert error:", error.message);
-        }
+      stationMap.set(placeId, {
+        place_id: placeId,
+        name: razonSocial,
+        brand,
+        address,
+        lat,
+        lng,
+        is_open: station.en_mantenimiento === 0,
+      });
+    }
+
+    const upsertRows = [...stationMap.values()];
+
+    // Batch upsert in chunks
+    let inserted = 0;
+    let updated = 0;
+    const batchSize = 100;
+
+    for (let i = 0; i < upsertRows.length; i += batchSize) {
+      const batch = upsertRows.slice(i, i + batchSize);
+      const { data, error } = await supabase
+        .from("gas_stations")
+        .upsert(batch, { onConflict: "place_id", ignoreDuplicates: false })
+        .select("id");
+
+      if (error) {
+        console.error(`Batch ${i} error:`, error.message);
       } else {
-        // No ID, try to match by proximity
-        const { data: nearby } = await supabase
-          .from("gas_stations")
-          .select("id")
-          .gte("lat", lat - 0.0005)
-          .lte("lat", lat + 0.0005)
-          .gte("lng", lng - 0.0005)
-          .lte("lng", lng + 0.0005)
-          .maybeSingle();
-
-        if (!nearby) {
-          const { error } = await supabase.from("gas_stations").insert({
-            name,
-            brand,
-            address,
-            lat,
-            lng,
-            is_open: true,
-          });
-          if (!error) inserted++;
-        } else {
-          updated++;
-        }
+        inserted += data?.length || 0;
       }
     }
 
-    console.log(`Sync complete: ${inserted} inserted, ${updated} updated, ${skipped} skipped`);
+    console.log(`Sync complete: ${upsertRows.length} processed, ${skipped} skipped`);
 
     return new Response(
       JSON.stringify({
         success: true,
         totalFromCNE: estaciones.length,
-        inserted,
-        updated,
+        processed: upsertRows.length,
         skipped,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

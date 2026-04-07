@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS gas_stations_place_id_unique;
