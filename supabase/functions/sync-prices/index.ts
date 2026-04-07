@@ -95,11 +95,13 @@ Deno.serve(async (req) => {
         .select("fuel_type, price, name");
 
       const drops: string[] = [];
+      const changedFuelTypes: string[] = [];
       for (const p of newPrices ?? []) {
         const oldPrice = oldPriceMap[p.fuel_type];
         if (oldPrice && p.price < oldPrice) {
           const diff = oldPrice - p.price;
           drops.push(`${p.name || p.fuel_type}: -$${diff}/L`);
+          changedFuelTypes.push(p.fuel_type);
         }
       }
 
@@ -115,6 +117,7 @@ Deno.serve(async (req) => {
               title: "📉 ¡Bajó la bencina!",
               body: drops.join(" · "),
               data: { url: "/" },
+              changed_fuel_types: changedFuelTypes,
             }),
           });
           console.log("Push notifications sent for price drops:", drops);
