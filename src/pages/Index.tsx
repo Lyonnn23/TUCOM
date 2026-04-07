@@ -21,6 +21,8 @@ const Index = () => {
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
+  const [radiusKm, setRadiusKm] = useState<number | null>(null);
+  const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
   const [syncing, setSyncing] = useState(false);
