@@ -183,12 +183,22 @@ const Index = () => {
         {/* Stations List Tab */}
         {activeTab === "stations" && (
           <div className="space-y-3">
-            <div>
-              <h2 className="font-heading font-bold text-foreground text-xl">Todas las Estaciones</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {stationsWithDistance.length} estaciones encontradas
-                {userLocation ? " · Ordenadas por distancia" : ""}
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-heading font-bold text-foreground text-xl">Todas las Estaciones</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {stationsWithDistance.length} estaciones encontradas
+                  {userLocation ? " · Ordenadas por distancia" : ""}
+                </p>
+              </div>
+              <button
+                onClick={handleSyncStations}
+                disabled={syncing}
+                className="p-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                title="Buscar estaciones cercanas en Google Maps"
+              >
+                <Download className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+              </button>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
