@@ -262,6 +262,9 @@ const Index = () => {
             )}
           </div>
         )}
+
+        {/* Benefits Tab */}
+        {activeTab === "benefits" && <BenefitsTab />}
       </main>
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
