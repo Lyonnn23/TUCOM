@@ -216,6 +216,33 @@ const Index = () => {
                 className="pl-9 bg-card border-border rounded-2xl text-sm"
               />
             </div>
+            {availableBrands.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+                <button
+                  onClick={() => setSelectedBrand("all")}
+                  className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                    selectedBrand === "all"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  Todas
+                </button>
+                {availableBrands.map((brand) => (
+                  <button
+                    key={brand}
+                    onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+                    className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                      selectedBrand === brand
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {brand}
+                  </button>
+                ))}
+              </div>
+            )}
             {stationsLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
