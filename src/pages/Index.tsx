@@ -255,7 +255,7 @@ const Index = () => {
             ) : (
               <div className="space-y-3">
                 {stationsWithDistance.map((station) => (
-                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} />
+                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} />
                 ))}
               </div>
             )}
