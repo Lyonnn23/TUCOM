@@ -320,6 +320,31 @@ const Index = () => {
                 ))}
               </div>
             )}
+            {/* Radius filter */}
+            <div className="flex items-center gap-2">
+              <Radar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+              <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                {[
+                  { value: null, label: "Sin límite" },
+                  { value: 1, label: "1 km" },
+                  { value: 5, label: "5 km" },
+                  { value: 10, label: "10 km" },
+                  { value: 25, label: "25 km" },
+                ].map((opt) => (
+                  <button
+                    key={String(opt.value)}
+                    onClick={() => setRadiusKm(opt.value)}
+                    className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+                      radiusKm === opt.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {/* Sort by fuel price */}
             <div className="flex items-center gap-2">
               <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
