@@ -74,6 +74,7 @@ const Index = () => {
           ? calculateDistance(userLocation.lat, userLocation.lng, s.lat, s.lng)
           : undefined,
       }))
+      .filter((s) => radiusKm === null || (s.distance !== undefined && s.distance <= radiusKm))
       .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => {
@@ -85,9 +86,15 @@ const Index = () => {
         }
         return (a.distance ?? 999) - (b.distance ?? 999);
       });
-  }, [stations, userLocation, searchQuery, selectedBrand, sortByFuel]);
+  }, [stations, userLocation, searchQuery, selectedBrand, sortByFuel, radiusKm]);
 
-  const handleNavigate = (station: GasStation) => {
+  const mapStations = useMemo(() => {
+    return stationsWithDistance.filter((s) => {
+      if (mapFuelFilter === "all") return true;
+      const fuelKey = mapFuelFilter as keyof typeof s.prices;
+      return (s.prices[fuelKey] ?? 0) > 0;
+    });
+  }, [stationsWithDistance, mapFuelFilter]);
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
     window.open(wazeUrl, "_blank");
   };
