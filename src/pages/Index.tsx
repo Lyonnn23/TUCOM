@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3 } from "lucide-react";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
@@ -183,6 +183,23 @@ const Index = () => {
                 ))}
               </div>
             )}
+
+            {/* Report Button */}
+            <button
+              onClick={() => navigate("/reporte")}
+              className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-2xl p-4 flex items-center justify-between shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-heading font-bold text-sm">Reporte de Combustible</p>
+                  <p className="text-[10px] text-white/80">Precios por zona, promedios y comparativas</p>
+                </div>
+              </div>
+              <div className="text-white/60">→</div>
+            </button>
 
             <div className="bg-gradient-to-r from-fuel-amber/15 to-fuel-pink/10 rounded-2xl p-4 border border-fuel-amber/20">
               <h3 className="font-heading font-semibold text-foreground text-sm mb-1.5">
