@@ -1,4 +1,4 @@
-import { Bell, BellOff, Loader2 } from "lucide-react";
+import { Bell, BellOff, Loader2, MapPin } from "lucide-react";
 import { usePushNotifications, FUEL_OPTIONS } from "@/hooks/usePushNotifications";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ const PushNotificationToggle = () => {
     setSelectedFuels,
     subscribe,
     unsubscribe,
+    requestNearbyCheapestAlert,
   } = usePushNotifications();
   const [showPrefs, setShowPrefs] = useState(false);
 
