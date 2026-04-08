@@ -60,6 +60,7 @@ const FUEL_NAMES: Record<string, string> = {
   "gasoline95": "Gasolina 95",
   "gasoline97": "Gasolina 97",
   "diesel": "Diésel",
+  "electric": "Eléctrico",
 };
 
 Deno.serve(async (req) => {
