@@ -62,9 +62,14 @@ const Index = () => {
     }
   }, []);
 
+  const FEATURED_BRANDS = ["Copec", "Shell", "Aramco"];
+
   const availableBrands = useMemo(() => {
     const brands = new Set((stations ?? []).map((s) => s.brand));
-    return Array.from(brands).sort();
+    const all = Array.from(brands);
+    const featured = FEATURED_BRANDS.filter((b) => all.includes(b));
+    const rest = all.filter((b) => !FEATURED_BRANDS.includes(b)).sort();
+    return [...featured, ...rest];
   }, [stations]);
 
   const stationsWithDistance = useMemo(() => {
