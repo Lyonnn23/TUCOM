@@ -201,6 +201,23 @@ const Index = () => {
               <div className="text-white/60">→</div>
             </button>
 
+            {/* History Button */}
+            <button
+              onClick={() => navigate("/historial")}
+              className="w-full bg-card border border-border text-foreground rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="font-heading font-bold text-sm">Historial de Precios</p>
+                  <p className="text-[10px] text-muted-foreground">Evolución semanal con gráficos</p>
+                </div>
+              </div>
+              <div className="text-muted-foreground">→</div>
+            </button>
+
             <div className="bg-gradient-to-r from-fuel-amber/15 to-fuel-pink/10 rounded-2xl p-4 border border-fuel-amber/20">
               <h3 className="font-heading font-semibold text-foreground text-sm mb-1.5">
                 💡 Consejo del día
