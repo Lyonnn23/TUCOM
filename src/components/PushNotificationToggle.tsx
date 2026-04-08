@@ -1,4 +1,4 @@
-import { Bell, BellOff, Loader2 } from "lucide-react";
+import { Bell, BellOff, Loader2, MapPin } from "lucide-react";
 import { usePushNotifications, FUEL_OPTIONS } from "@/hooks/usePushNotifications";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ const PushNotificationToggle = () => {
     setSelectedFuels,
     subscribe,
     unsubscribe,
+    requestNearbyCheapestAlert,
   } = usePushNotifications();
   const [showPrefs, setShowPrefs] = useState(false);
 
@@ -44,6 +45,16 @@ const PushNotificationToggle = () => {
           )}
           {isSubscribed ? "Alertas ON" : "Activar alertas"}
         </button>
+
+        {isSubscribed && (
+          <button
+            onClick={requestNearbyCheapestAlert}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-fuel-green/15 text-[hsl(var(--fuel-green))] hover:bg-fuel-green/25 transition-colors"
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            Precios cercanos
+          </button>
+        )}
 
         {(isSubscribed || !isSubscribed) && (
           <button

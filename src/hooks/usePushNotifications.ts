@@ -22,6 +22,16 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+function getCurrentPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 300000,
+    });
+  });
+}
+
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -45,7 +55,6 @@ export function usePushNotifications() {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         setIsSubscribed(true);
-        // Load saved fuel preferences
         const subJson = subscription.toJSON();
         const { data } = await supabase
           .from("push_subscriptions")
@@ -78,6 +87,17 @@ export function usePushNotifications() {
         return;
       }
 
+      // Get user location for nearby alerts
+      let lat: number | null = null;
+      let lng: number | null = null;
+      try {
+        const pos = await getCurrentPosition();
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+      } catch {
+        console.warn("Location not available, nearby alerts won't work");
+      }
+
       const registration = await navigator.serviceWorker.ready;
 
       const subscription = await registration.pushManager.subscribe({
@@ -93,6 +113,7 @@ export function usePushNotifications() {
           p256dh: subJson.keys!.p256dh!,
           auth: subJson.keys!.auth!,
           fuel_types: selectedFuels,
+          ...(lat !== null && lng !== null ? { lat, lng } : {}),
         },
         { onConflict: "endpoint" }
       );
@@ -108,6 +129,40 @@ export function usePushNotifications() {
       setIsLoading(false);
     }
   }, [isSupported, selectedFuels]);
+
+  const requestNearbyCheapestAlert = useCallback(async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) {
+        toast.error("Primero activa las notificaciones");
+        return;
+      }
+
+      const subJson = subscription.toJSON();
+
+      // Update location before requesting
+      try {
+        const pos = await getCurrentPosition();
+        await supabase
+          .from("push_subscriptions")
+          .update({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+          .eq("endpoint", subJson.endpoint!);
+      } catch {
+        // Use existing saved location
+      }
+
+      const { error } = await supabase.functions.invoke("nearby-cheapest-alert", {
+        body: { endpoint: subJson.endpoint },
+      });
+
+      if (error) throw error;
+      toast.success("📍 Alerta enviada con los precios más bajos cerca de ti");
+    } catch (err) {
+      console.error("Nearby alert error:", err);
+      toast.error("No se pudo enviar la alerta de precios cercanos");
+    }
+  }, []);
 
   const updateFuelPreferences = useCallback(async (fuels: string[]) => {
     setSelectedFuels(fuels);
@@ -153,5 +208,6 @@ export function usePushNotifications() {
     setSelectedFuels: updateFuelPreferences,
     subscribe,
     unsubscribe,
+    requestNearbyCheapestAlert,
   };
 }
