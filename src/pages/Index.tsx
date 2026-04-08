@@ -410,6 +410,7 @@ const Index = () => {
                   { key: "gasoline95", label: "95" },
                   { key: "gasoline97", label: "97" },
                   { key: "diesel", label: "Diésel" },
+                  { key: "electric", label: "⚡ EV" },
                 ].map((opt) => (
                   <button
                     key={opt.key}
