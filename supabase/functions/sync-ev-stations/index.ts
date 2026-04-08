@@ -45,9 +45,10 @@ function detectEVBrand(operator: string | null, title: string): string {
 }
 
 async function fetchOpenChargeMap(): Promise<any[]> {
-  // Open Charge Map API - free, no key needed for basic usage
-  // Chile country code = CL, country ID = 43
-  const url = "https://api.openchargemap.io/v3/poi/?output=json&countrycode=CL&maxresults=5000&compact=true&verbose=false";
+  const apiKey = Deno.env.get("OCM_API_KEY");
+  if (!apiKey) throw new Error("OCM_API_KEY secret not configured");
+
+  const url = `https://api.openchargemap.io/v3/poi/?output=json&countrycode=CL&maxresults=5000&compact=true&verbose=false&key=${apiKey}`;
   
   const res = await fetch(url, {
     headers: { "User-Agent": "TUcom-App/1.0" },
