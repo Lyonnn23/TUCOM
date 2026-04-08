@@ -55,7 +55,6 @@ const PushNotificationToggle = () => {
             Precios cercanos
           </button>
         )}
-        </button>
 
         {(isSubscribed || !isSubscribed) && (
           <button
