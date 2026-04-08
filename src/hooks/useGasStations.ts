@@ -40,18 +40,42 @@ function sanitizePrice(type: string, value: number | null | undefined) {
   return price;
 }
 
+async function fetchAllRows(table: "gas_stations" | "station_prices", select = "*"): Promise<any[]> {
+  const PAGE = 1000;
+  const all: any[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(select)
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
+}
+
 export function useGasStations() {
   return useQuery({
     queryKey: ["gas-stations"],
     queryFn: async (): Promise<GasStation[]> => {
-      const { data: stations, error: stErr } = await supabase.from("gas_stations").select("*");
-      if (stErr) throw stErr;
+      const [stations, prices] = await Promise.all([
+        fetchAllRows("gas_stations"),
+        fetchAllRows("station_prices"),
+      ]);
 
-      const { data: prices, error: prErr } = await supabase.from("station_prices").select("*");
-      if (prErr) throw prErr;
+      const priceMap = new Map<string, any[]>();
+      for (const p of prices) {
+        const arr = priceMap.get(p.station_id) || [];
+        arr.push(p);
+        priceMap.set(p.station_id, arr);
+      }
 
-      return (stations ?? []).map((s: any) => {
-        const sp = (prices ?? []).filter((p: any) => p.station_id === s.id);
+      return stations.map((s: any) => {
+        const sp = priceMap.get(s.id) || [];
         const getPrice = (type: string) => sanitizePrice(type, sp.find((p: any) => p.fuel_type === type)?.price);
 
         return {
