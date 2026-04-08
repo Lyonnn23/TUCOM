@@ -107,19 +107,14 @@ export function usePushNotifications() {
 
       const subJson = subscription.toJSON();
 
-      const upsertData: Record<string, unknown> = {
-        endpoint: subJson.endpoint!,
-        p256dh: subJson.keys!.p256dh!,
-        auth: subJson.keys!.auth!,
-        fuel_types: selectedFuels,
-      };
-      if (lat !== null && lng !== null) {
-        upsertData.lat = lat;
-        upsertData.lng = lng;
-      }
-
       const { error } = await supabase.from("push_subscriptions").upsert(
-        upsertData,
+        {
+          endpoint: subJson.endpoint!,
+          p256dh: subJson.keys!.p256dh!,
+          auth: subJson.keys!.auth!,
+          fuel_types: selectedFuels,
+          ...(lat !== null && lng !== null ? { lat, lng } : {}),
+        },
         { onConflict: "endpoint" }
       );
 
