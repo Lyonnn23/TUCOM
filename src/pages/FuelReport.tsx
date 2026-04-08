@@ -9,6 +9,7 @@ const FUEL_COLORS: Record<string, string> = {
   gasoline95: "hsl(38, 95%, 55%)",
   gasoline97: "hsl(262, 70%, 58%)",
   diesel: "hsl(215, 80%, 55%)",
+  electric: "hsl(142, 70%, 45%)",
 };
 
 function formatPrice(price: number) {
