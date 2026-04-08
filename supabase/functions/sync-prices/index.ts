@@ -227,6 +227,28 @@ Deno.serve(async (req) => {
       console.log(`${fuelType}: ${buckets[fuelType as keyof typeof buckets].length} stations, avg $${avg}`);
     }
 
+    // Snapshot daily history
+    const today = new Date().toISOString().slice(0, 10);
+    for (const fuelType of ["gasoline93", "gasoline95", "gasoline97", "diesel"]) {
+      const bucket = buckets[fuelType as keyof typeof buckets];
+      if (bucket.length === 0) continue;
+      const avg = averages[fuelType];
+      if (avg === null) continue;
+      const sorted = [...bucket].sort((a, b) => a - b);
+      await supabase.from("fuel_price_history").upsert(
+        {
+          fuel_type: fuelType,
+          avg_price: avg,
+          min_price: sorted[0],
+          max_price: sorted[sorted.length - 1],
+          station_count: bucket.length,
+          snapshot_date: today,
+        },
+        { onConflict: "fuel_type,snapshot_date" }
+      );
+    }
+    console.log("Price history snapshot saved for", today);
+
     const { data: newPrices } = await supabase.from("fuel_prices").select("fuel_type, price, name");
     const drops: string[] = [];
     const changedFuelTypes: string[] = [];
