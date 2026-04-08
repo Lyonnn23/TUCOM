@@ -56,23 +56,33 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
       }`}
     >
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            {featured && (
-              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
-                <Star className="w-3 h-3" />
-                {station.brand}
-              </span>
-            )}
-            <h3 className={`font-heading font-semibold text-sm ${featured ? style.accent : "text-foreground"}`}>
-              {station.name}
-            </h3>
-            <span
-              className={`w-2 h-2 rounded-full ${
-                station.isOpen ? "bg-fuel-green animate-pulse-green" : "bg-fuel-red"
-              }`}
+        <div className="flex items-start gap-3 flex-1">
+          {featured && (
+            <img
+              src={style.logo}
+              alt={`${station.brand} logo`}
+              loading="lazy"
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-lg object-contain bg-white p-1 shadow-sm shrink-0"
             />
-          </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              {featured && (
+                <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
+                  {station.brand}
+                </span>
+              )}
+              <h3 className={`font-heading font-semibold text-sm truncate ${featured ? style.accent : "text-foreground"}`}>
+                {station.name}
+              </h3>
+              <span
+                className={`w-2 h-2 rounded-full shrink-0 ${
+                  station.isOpen ? "bg-fuel-green animate-pulse-green" : "bg-fuel-red"
+                }`}
+              />
+            </div>
           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
             <MapPin className="w-3 h-3" />
             {station.address}
