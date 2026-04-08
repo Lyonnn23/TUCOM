@@ -4,7 +4,7 @@ import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, Ar
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
-import StationCard from "@/components/StationCard";
+import StationCard, { BRAND_LOGOS } from "@/components/StationCard";
 import StationMap from "@/components/StationMap";
 import BenefitsTab from "@/components/BenefitsTab";
 import BottomNav, { type TabType } from "@/components/BottomNav";
