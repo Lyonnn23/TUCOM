@@ -15,6 +15,7 @@ const FUEL_ORDER: Record<string, number> = {
   gasoline95: 2,
   gasoline97: 3,
   diesel: 4,
+  electric: 5,
 };
 
 export function useFuelPrices() {

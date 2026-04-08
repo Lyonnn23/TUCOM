@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, Zap } from "lucide-react";
 import type { FuelPrice } from "@/hooks/useFuelPrices";
 
 interface FuelPriceCardProps {
@@ -10,24 +10,33 @@ const fuelColors: Record<string, string> = {
   gasoline95: "from-fuel-purple/20 to-fuel-pink/10 border-fuel-purple/30",
   gasoline97: "from-fuel-pink/20 to-fuel-amber/10 border-fuel-pink/30",
   diesel: "from-fuel-green/20 to-fuel-cyan/10 border-fuel-green/30",
+  electric: "from-[hsl(142,70%,45%)]/20 to-[hsl(160,60%,40%)]/10 border-[hsl(142,70%,45%)]/30",
 };
 
-const fuelEmoji: Record<string, string> = {
+const fuelEmoji: Record<string, string | null> = {
   gasoline93: "⛽",
   gasoline95: "⛽",
   gasoline97: "⛽",
   diesel: "🛢️",
+  electric: null, // Use icon instead
 };
 
 const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
   const trendUp = fuel.trend === "up";
   const trendDown = fuel.trend === "down";
   const colorClass = fuelColors[fuel.type] ?? "from-muted to-muted border-border";
+  const isElectric = fuel.type === "electric";
 
   return (
     <div className={`bg-gradient-to-r ${colorClass} rounded-2xl p-4 border flex items-center justify-between`}>
       <div className="flex items-center gap-3">
-        <span className="text-2xl">{fuelEmoji[fuel.type] ?? "⛽"}</span>
+        {isElectric ? (
+          <div className="w-9 h-9 rounded-xl bg-[hsl(142,70%,45%)]/20 flex items-center justify-center">
+            <Zap className="w-5 h-5 text-[hsl(142,70%,45%)]" />
+          </div>
+        ) : (
+          <span className="text-2xl">{fuelEmoji[fuel.type] ?? "⛽"}</span>
+        )}
         <div>
           <p className="text-xs font-semibold text-foreground tracking-wide">{fuel.name}</p>
           <p className="text-2xl font-heading font-bold text-foreground mt-0.5">

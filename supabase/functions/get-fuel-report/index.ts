@@ -60,6 +60,7 @@ const FUEL_NAMES: Record<string, string> = {
   "gasoline95": "Gasolina 95",
   "gasoline97": "Gasolina 97",
   "diesel": "Diésel",
+  "electric": "Eléctrico",
 };
 
 Deno.serve(async (req) => {
@@ -81,7 +82,7 @@ Deno.serve(async (req) => {
     const { data: pricesData, error: pricesError } = await supabase
       .from("station_prices")
       .select("station_id, fuel_type, price")
-      .gte("price", 500)
+      .gte("price", 50)
       .lte("price", 3000);
 
     if (pricesError) throw pricesError;
@@ -142,7 +143,7 @@ Deno.serve(async (req) => {
     // Build response
     const zones: ZoneData[] = ZONES.map((z) => {
       const agg = zoneAgg[z.zone] || {};
-      const fuelOrder = ["gasoline93", "gasoline95", "gasoline97", "diesel"];
+      const fuelOrder = ["gasoline93", "gasoline95", "gasoline97", "diesel", "electric"];
       const fuels = fuelOrder
         .filter((ft) => agg[ft] && agg[ft].count > 0)
         .map((ft) => ({
@@ -175,7 +176,7 @@ Deno.serve(async (req) => {
       nationalAgg[ft].max = Math.max(nationalAgg[ft].max, p.price);
     }
 
-    const fuelOrder = ["gasoline93", "gasoline95", "gasoline97", "diesel"];
+    const fuelOrder = ["gasoline93", "gasoline95", "gasoline97", "diesel", "electric"];
     const national = fuelOrder
       .filter((ft) => nationalAgg[ft] && nationalAgg[ft].count > 0)
       .map((ft) => ({

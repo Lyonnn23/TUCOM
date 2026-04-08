@@ -98,6 +98,7 @@ const Index = () => {
   const mapStations = useMemo(() => {
     return stationsWithDistance.filter((s) => {
       if (mapFuelFilter === "all") return true;
+      if (mapFuelFilter === "electric") return s.hasEvCharging && (s.prices.electric ?? 0) > 0;
       const fuelKey = mapFuelFilter as keyof typeof s.prices;
       return (s.prices[fuelKey] ?? 0) > 0;
     });
@@ -289,13 +290,16 @@ const Index = () => {
                   { key: "gasoline95", label: "95" },
                   { key: "gasoline97", label: "97" },
                   { key: "diesel", label: "Diésel" },
+                  { key: "electric", label: "⚡ EV" },
                 ].map((opt) => (
                   <button
                     key={opt.key}
                     onClick={() => setMapFuelFilter(opt.key)}
                     className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
                       mapFuelFilter === opt.key
-                        ? "bg-secondary text-secondary-foreground"
+                        ? opt.key === "electric"
+                          ? "bg-[hsl(142,70%,45%)] text-white"
+                          : "bg-secondary text-secondary-foreground"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     }`}
                   >
@@ -407,6 +411,7 @@ const Index = () => {
                   { key: "gasoline95", label: "95" },
                   { key: "gasoline97", label: "97" },
                   { key: "diesel", label: "Diésel" },
+                  { key: "electric", label: "⚡ EV" },
                 ].map((opt) => (
                   <button
                     key={opt.key}

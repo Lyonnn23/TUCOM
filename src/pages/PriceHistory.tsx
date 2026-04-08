@@ -19,6 +19,7 @@ const FUEL_CONFIG: { key: string; name: string; color: string }[] = [
   { key: "gasoline95", name: "Bencina 95", color: "hsl(38, 95%, 55%)" },
   { key: "gasoline97", name: "Bencina 97", color: "hsl(262, 70%, 58%)" },
   { key: "diesel", name: "Diésel", color: "hsl(215, 80%, 55%)" },
+  { key: "electric", name: "Eléctrico", color: "hsl(142, 70%, 45%)" },
 ];
 
 const PERIOD_OPTIONS = [
