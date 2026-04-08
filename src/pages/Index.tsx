@@ -190,6 +190,13 @@ const Index = () => {
               </div>
             )}
 
+            {/* Nearby Ranking */}
+            <NearbyRanking
+              stations={stationsWithDistance}
+              userLocation={userLocation}
+              onNavigate={handleNavigate}
+            />
+
             {/* Report Button */}
             <button
               onClick={() => navigate("/reporte")}
