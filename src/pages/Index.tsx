@@ -349,19 +349,42 @@ const Index = () => {
                 >
                   Todas
                 </button>
-                {availableBrands.map((brand) => (
-                  <button
-                    key={brand}
-                    onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
-                    className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                      selectedBrand === brand
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {brand}
-                  </button>
-                ))}
+                {availableBrands.map((brand) => {
+                  const isFeatured = brand in BRAND_LOGOS;
+                  const isSelected = selectedBrand === brand;
+                  const brandColorMap: Record<string, string> = {
+                    Copec: "bg-[hsl(var(--brand-copec))] text-white",
+                    Shell: "bg-[hsl(var(--brand-shell))] text-white",
+                    Aramco: "bg-[hsl(var(--brand-aramco))] text-white",
+                  };
+                  return (
+                    <button
+                      key={brand}
+                      onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+                      className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
+                        isSelected
+                          ? isFeatured
+                            ? brandColorMap[brand]
+                            : "bg-primary text-primary-foreground"
+                          : isFeatured
+                            ? `border-2 border-[hsl(var(--brand-${brand.toLowerCase()}))] text-foreground bg-card`
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {isFeatured && (
+                        <img
+                          src={BRAND_LOGOS[brand]}
+                          alt={brand}
+                          className="w-4 h-4 rounded-full object-contain"
+                          loading="lazy"
+                          width={16}
+                          height={16}
+                        />
+                      )}
+                      {brand}
+                    </button>
+                  );
+                })}
               </div>
             )}
             {/* Radius filter */}
