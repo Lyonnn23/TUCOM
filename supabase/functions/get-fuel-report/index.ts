@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
     // Build response
     const zones: ZoneData[] = ZONES.map((z) => {
       const agg = zoneAgg[z.zone] || {};
-      const fuelOrder = ["gasoline93", "gasoline95", "gasoline97", "diesel"];
+      const fuelOrder = ["gasoline93", "gasoline95", "gasoline97", "diesel", "electric"];
       const fuels = fuelOrder
         .filter((ft) => agg[ft] && agg[ft].count > 0)
         .map((ft) => ({
