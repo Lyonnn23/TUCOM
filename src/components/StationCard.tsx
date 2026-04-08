@@ -1,4 +1,4 @@
-import { MapPin, Navigation, Star } from "lucide-react";
+import { MapPin, Navigation, Star, Zap } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 
@@ -35,6 +35,18 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
 
+  const fuelItems = [
+    { label: "93", price: station.prices.gasoline93 },
+    { label: "95", price: station.prices.gasoline95 },
+    { label: "97", price: station.prices.gasoline97 },
+    { label: "Diésel", price: station.prices.diesel },
+  ];
+
+  // Add electric if station has EV charging
+  if (station.hasEvCharging && station.prices.electric > 0) {
+    fuelItems.push({ label: "⚡ kWh", price: station.prices.electric });
+  }
+
   return (
     <div
       className={`rounded-xl p-4 shadow-sm border transition-all ${
@@ -50,6 +62,12 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
                 <Star className="w-3 h-3" />
                 {station.brand}
+              </span>
+            )}
+            {station.hasEvCharging && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white">
+                <Zap className="w-3 h-3" />
+                EV
               </span>
             )}
             <h3 className={`font-heading font-semibold text-sm ${featured ? style.accent : "text-foreground"}`}>
@@ -71,6 +89,13 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
               {station.distance} km
             </p>
           )}
+          {station.hasEvCharging && station.evPowerKw && (
+            <p className="text-[10px] text-[hsl(142,70%,45%)] font-medium mt-1">
+              <Zap className="w-3 h-3 inline mr-0.5" />
+              {station.evPowerKw} kW · {station.evConnectorTypes.slice(0, 2).join(", ")}
+              {station.evOperator ? ` · ${station.evOperator}` : ""}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
           <ReportPriceDialog station={station} />
@@ -89,13 +114,8 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 mt-3">
-        {[
-          { label: "93", price: station.prices.gasoline93 },
-          { label: "95", price: station.prices.gasoline95 },
-          { label: "97", price: station.prices.gasoline97 },
-          { label: "Diésel", price: station.prices.diesel },
-        ].map((item) => (
+      <div className={`grid gap-2 mt-3 ${fuelItems.length > 4 ? "grid-cols-5" : "grid-cols-4"}`}>
+        {fuelItems.map((item) => (
           <div
             key={item.label}
             className={`text-center rounded-lg py-1.5 px-1 ${
