@@ -79,6 +79,11 @@ const Index = () => {
       .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => {
+        const featuredBrands = ["Copec", "Shell", "Aramco"];
+        const aFeat = featuredBrands.includes(a.brand) ? 0 : 1;
+        const bFeat = featuredBrands.includes(b.brand) ? 0 : 1;
+        if (aFeat !== bFeat) return aFeat - bFeat;
+
         if (sortByFuel !== "distance") {
           const fuelKey = sortByFuel as keyof typeof a.prices;
           const priceA = a.prices[fuelKey] || 99999;
