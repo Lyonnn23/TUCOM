@@ -40,9 +40,9 @@ function sanitizePrice(type: string, value: number | null | undefined) {
   return price;
 }
 
-async function fetchAllRows<T>(table: string, select = "*"): Promise<T[]> {
+async function fetchAllRows(table: "gas_stations" | "station_prices", select = "*"): Promise<any[]> {
   const PAGE = 1000;
-  const all: T[] = [];
+  const all: any[] = [];
   let from = 0;
   while (true) {
     const { data, error } = await supabase
@@ -51,7 +51,7 @@ async function fetchAllRows<T>(table: string, select = "*"): Promise<T[]> {
       .range(from, from + PAGE - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
-    all.push(...(data as T[]));
+    all.push(...data);
     if (data.length < PAGE) break;
     from += PAGE;
   }
