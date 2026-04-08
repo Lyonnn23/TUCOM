@@ -136,6 +136,10 @@ export type Database = {
           address: string
           brand: string
           created_at: string
+          ev_connector_types: string[] | null
+          ev_operator: string | null
+          ev_power_kw: number | null
+          has_ev_charging: boolean
           id: string
           is_open: boolean
           lat: number
@@ -148,6 +152,10 @@ export type Database = {
           address: string
           brand: string
           created_at?: string
+          ev_connector_types?: string[] | null
+          ev_operator?: string | null
+          ev_power_kw?: number | null
+          has_ev_charging?: boolean
           id?: string
           is_open?: boolean
           lat: number
@@ -160,6 +168,10 @@ export type Database = {
           address?: string
           brand?: string
           created_at?: string
+          ev_connector_types?: string[] | null
+          ev_operator?: string | null
+          ev_power_kw?: number | null
+          has_ev_charging?: boolean
           id?: string
           is_open?: boolean
           lat?: number
