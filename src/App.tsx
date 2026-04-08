@@ -10,16 +10,13 @@ import Auth from "./pages/Auth.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import FuelReport from "./pages/FuelReport.tsx";
 import PriceHistory from "./pages/PriceHistory.tsx";
-import Auth from "./pages/Auth.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import FuelReport from "./pages/FuelReport.tsx";
-import PriceHistory from "./pages/PriceHistory.tsx";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <OfflineIndicator />
       <Toaster />
       <Sonner />
       <BrowserRouter>
