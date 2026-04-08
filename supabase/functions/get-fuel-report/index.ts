@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     const { data: pricesData, error: pricesError } = await supabase
       .from("station_prices")
       .select("station_id, fuel_type, price")
-      .gte("price", 500)
+      .gte("price", 50)
       .lte("price", 3000);
 
     if (pricesError) throw pricesError;
