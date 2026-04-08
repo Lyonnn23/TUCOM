@@ -63,8 +63,8 @@ export function useGasStations() {
     queryKey: ["gas-stations"],
     queryFn: async (): Promise<GasStation[]> => {
       const [stations, prices] = await Promise.all([
-        fetchAllRows<any>("gas_stations"),
-        fetchAllRows<any>("station_prices"),
+        fetchAllRows("gas_stations"),
+        fetchAllRows("station_prices"),
       ]);
 
       const priceMap = new Map<string, any[]>();
