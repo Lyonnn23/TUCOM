@@ -62,6 +62,39 @@ export type Database = {
         }
         Relationships: []
       }
+      fuel_price_history: {
+        Row: {
+          avg_price: number
+          created_at: string
+          fuel_type: string
+          id: string
+          max_price: number
+          min_price: number
+          snapshot_date: string
+          station_count: number
+        }
+        Insert: {
+          avg_price: number
+          created_at?: string
+          fuel_type: string
+          id?: string
+          max_price: number
+          min_price: number
+          snapshot_date?: string
+          station_count?: number
+        }
+        Update: {
+          avg_price?: number
+          created_at?: string
+          fuel_type?: string
+          id?: string
+          max_price?: number
+          min_price?: number
+          snapshot_date?: string
+          station_count?: number
+        }
+        Relationships: []
+      }
       fuel_prices: {
         Row: {
           change_percent: number
