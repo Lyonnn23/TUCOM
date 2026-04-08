@@ -177,6 +177,8 @@ export type Database = {
           endpoint: string
           fuel_types: string[]
           id: string
+          lat: number | null
+          lng: number | null
           p256dh: string
           user_id: string | null
         }
@@ -186,6 +188,8 @@ export type Database = {
           endpoint: string
           fuel_types?: string[]
           id?: string
+          lat?: number | null
+          lng?: number | null
           p256dh: string
           user_id?: string | null
         }
@@ -195,6 +199,8 @@ export type Database = {
           endpoint?: string
           fuel_types?: string[]
           id?: string
+          lat?: number | null
+          lng?: number | null
           p256dh?: string
           user_id?: string | null
         }
