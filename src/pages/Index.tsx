@@ -62,9 +62,14 @@ const Index = () => {
     }
   }, []);
 
+  const FEATURED_BRANDS = ["Copec", "Shell", "Aramco"];
+
   const availableBrands = useMemo(() => {
     const brands = new Set((stations ?? []).map((s) => s.brand));
-    return Array.from(brands).sort();
+    const all = Array.from(brands);
+    const featured = FEATURED_BRANDS.filter((b) => all.includes(b));
+    const rest = all.filter((b) => !FEATURED_BRANDS.includes(b)).sort();
+    return [...featured, ...rest];
   }, [stations]);
 
   const stationsWithDistance = useMemo(() => {
@@ -361,19 +366,32 @@ const Index = () => {
                 >
                   Todas
                 </button>
-                {availableBrands.map((brand) => (
-                  <button
-                    key={brand}
-                    onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
-                    className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                      selectedBrand === brand
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {brand}
-                  </button>
-                ))}
+                {availableBrands.map((brand) => {
+                  const isFeatured = FEATURED_BRANDS.includes(brand);
+                  const brandColors: Record<string, { active: string; inactive: string }> = {
+                    Copec: { active: "bg-[hsl(213,80%,45%)] text-white", inactive: "bg-[hsl(213,80%,45%)]/15 text-[hsl(213,80%,45%)] border border-[hsl(213,80%,45%)]/30" },
+                    Shell: { active: "bg-[hsl(0,75%,50%)] text-white", inactive: "bg-[hsl(0,75%,50%)]/15 text-[hsl(0,75%,50%)] border border-[hsl(0,75%,50%)]/30" },
+                    Aramco: { active: "bg-[hsl(145,65%,38%)] text-white", inactive: "bg-[hsl(145,65%,38%)]/15 text-[hsl(145,65%,38%)] border border-[hsl(145,65%,38%)]/30" },
+                  };
+                  const colors = brandColors[brand];
+                  const isSelected = selectedBrand === brand;
+
+                  return (
+                    <button
+                      key={brand}
+                      onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+                      className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                        isSelected
+                          ? colors?.active ?? "bg-primary text-primary-foreground"
+                          : isFeatured
+                            ? colors?.inactive ?? "bg-muted text-muted-foreground"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {isFeatured ? `⭐ ${brand}` : brand}
+                    </button>
+                  );
+                })}
               </div>
             )}
             {/* Radius filter */}
