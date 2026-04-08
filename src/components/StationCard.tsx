@@ -93,8 +93,9 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
               {station.distance} km
             </p>
           )}
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           <ReportPriceDialog station={station} />
           <button
             onClick={() => onNavigateGoogle?.(station)}
