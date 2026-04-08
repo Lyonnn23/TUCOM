@@ -98,6 +98,7 @@ const Index = () => {
   const mapStations = useMemo(() => {
     return stationsWithDistance.filter((s) => {
       if (mapFuelFilter === "all") return true;
+      if (mapFuelFilter === "electric") return s.hasEvCharging && (s.prices.electric ?? 0) > 0;
       const fuelKey = mapFuelFilter as keyof typeof s.prices;
       return (s.prices[fuelKey] ?? 0) > 0;
     });
