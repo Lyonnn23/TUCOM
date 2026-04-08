@@ -1,6 +1,9 @@
-import { MapPin, Navigation, Star } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
+import logoCopec from "@/assets/logo-copec.png";
+import logoShell from "@/assets/logo-shell.png";
+import logoAramco from "@/assets/logo-aramco.png";
 
 interface StationCardProps {
   station: GasStation;
@@ -8,25 +11,34 @@ interface StationCardProps {
   onNavigateGoogle?: (station: GasStation) => void;
 }
 
-const BRAND_STYLES: Record<string, { border: string; bg: string; accent: string; badge: string }> = {
+const BRAND_STYLES: Record<string, { border: string; bg: string; accent: string; badge: string; logo: string }> = {
   Copec: {
     border: "border-[hsl(var(--brand-copec))]",
     bg: "bg-[hsl(var(--brand-copec)/0.06)]",
     accent: "text-[hsl(var(--brand-copec))]",
     badge: "bg-[hsl(var(--brand-copec))] text-white",
+    logo: logoCopec,
   },
   Shell: {
     border: "border-[hsl(var(--brand-shell))]",
     bg: "bg-[hsl(var(--brand-shell)/0.06)]",
     accent: "text-[hsl(var(--brand-shell))]",
     badge: "bg-[hsl(var(--brand-shell))] text-white",
+    logo: logoShell,
   },
   Aramco: {
     border: "border-[hsl(var(--brand-aramco))]",
     bg: "bg-[hsl(var(--brand-aramco)/0.06)]",
     accent: "text-[hsl(var(--brand-aramco))]",
     badge: "bg-[hsl(var(--brand-aramco))] text-white",
+    logo: logoAramco,
   },
+};
+
+export const BRAND_LOGOS: Record<string, string> = {
+  Copec: logoCopec,
+  Shell: logoShell,
+  Aramco: logoAramco,
 };
 
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
