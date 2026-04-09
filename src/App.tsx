@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound.tsx";
 import FuelReport from "./pages/FuelReport.tsx";
 import PriceHistory from "./pages/PriceHistory.tsx";
 import Install from "./pages/Install.tsx";
+import Legal from "./pages/Legal.tsx";
 
 const queryClient = new QueryClient();
 
