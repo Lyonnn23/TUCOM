@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield } from "lucide-react";
 import NearbyRanking from "@/components/NearbyRanking";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { Input } from "@/components/ui/input";
@@ -134,6 +134,13 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/legal")}
+              className="flex items-center gap-1 text-xs text-white/80 bg-white/10 rounded-full px-2 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors"
+              title="Legal"
+            >
+              <Shield className="w-3 h-3" />
+            </button>
             {userLocation && (
               <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
                 <MapPin className="w-3 h-3" />

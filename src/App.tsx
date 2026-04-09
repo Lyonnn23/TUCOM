@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound.tsx";
 import FuelReport from "./pages/FuelReport.tsx";
 import PriceHistory from "./pages/PriceHistory.tsx";
 import Install from "./pages/Install.tsx";
+import Legal from "./pages/Legal.tsx";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/reporte" element={<FuelReport />} />
             <Route path="/historial" element={<PriceHistory />} />
             <Route path="/install" element={<Install />} />
+            <Route path="/legal" element={<Legal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
