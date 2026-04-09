@@ -55,9 +55,7 @@ const Install = () => {
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Hero */}
         <div className="text-center space-y-3">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 mx-auto flex items-center justify-center shadow-lg">
-            <Smartphone className="w-10 h-10 text-primary-foreground" />
-          </div>
+          <img src="/icons/icon-192x192.png" alt="TÜcom" className="w-20 h-20 rounded-2xl mx-auto shadow-lg" />
           <h2 className="text-2xl font-bold text-foreground">Lleva TÜcom en tu bolsillo</h2>
           <p className="text-muted-foreground text-sm">
             Instala la app en tu teléfono para acceder rápido a los precios de bencina, incluso sin conexión.
