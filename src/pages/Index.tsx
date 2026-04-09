@@ -134,6 +134,13 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/legal")}
+              className="flex items-center gap-1 text-xs text-white/80 bg-white/10 rounded-full px-2 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors"
+              title="Legal"
+            >
+              <Shield className="w-3 h-3" />
+            </button>
             {userLocation && (
               <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
                 <MapPin className="w-3 h-3" />
