@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const Legal = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get("tab") || "terms";
+  const defaultTab = searchParams.get("tab") || "about";
 
   return (
     <div className="min-h-screen bg-background pb-20">
