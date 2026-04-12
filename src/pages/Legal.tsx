@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const Legal = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get("tab") || "terms";
+  const defaultTab = searchParams.get("tab") || "about";
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -18,10 +18,39 @@ const Legal = () => {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         <Tabs defaultValue={defaultTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="terms">Términos de Uso</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="about">Acerca de</TabsTrigger>
+            <TabsTrigger value="terms">Términos</TabsTrigger>
             <TabsTrigger value="privacy">Privacidad</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="about" className="mt-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
+            <h2 className="text-base font-semibold text-foreground">Acerca de TÜcom</h2>
+            <p className="text-foreground font-medium">Tu compañero inteligente para ahorrar en combustible 🇨🇱</p>
+            
+            <p>TÜcom es la app chilena que te ayuda a encontrar los mejores precios de bencina y diésel cerca de ti. Compara precios en tiempo real, descubre estaciones cercanas en el mapa y aprovecha descuentos exclusivos con tus tarjetas y medios de pago.</p>
+
+            <h3 className="font-semibold text-foreground">✨ Características principales</h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Precios actualizados:</strong> Consulta los precios promedio de bencina 93, 95, 97 y diésel a nivel nacional</li>
+              <li><strong>Mapa interactivo:</strong> Encuentra las estaciones de servicio más cercanas a tu ubicación con navegación directa</li>
+              <li><strong>Reporta precios:</strong> Contribuye con la comunidad reportando los precios que encuentras en la calle</li>
+              <li><strong>Beneficios y descuentos:</strong> Descubre qué días y con qué tarjetas puedes ahorrar más en cada cadena</li>
+              <li><strong>Historial de precios:</strong> Visualiza la tendencia de precios para tomar mejores decisiones</li>
+              <li><strong>Alertas inteligentes:</strong> Recibe notificaciones cuando baje el precio del combustible cerca de ti</li>
+              <li><strong>Ranking de estaciones:</strong> Ve cuáles son las estaciones más baratas en tu zona</li>
+            </ul>
+
+            <h3 className="font-semibold text-foreground">🚗 ¿Para quién es TÜcom?</h3>
+            <p>Para todos los conductores en Chile que quieren gastar menos en bencina. Ya sea que manejes todos los días al trabajo o solo los fines de semana, TÜcom te muestra dónde cargar más barato.</p>
+
+            <h3 className="font-semibold text-foreground">💡 Datos confiables</h3>
+            <p>Los precios se actualizan con información oficial y reportes de la comunidad de usuarios. Mientras más personas usen TÜcom, más precisos serán los precios.</p>
+
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground">Versión 1.0.0 · Hecho con 💜 en Chile</p>
+            </div>
+          </TabsContent>
 
           <TabsContent value="terms" className="mt-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
             <h2 className="text-base font-semibold text-foreground">Términos y Condiciones de Uso</h2>
