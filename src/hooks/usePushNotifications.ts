@@ -81,6 +81,13 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
+      // Require authentication
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Inicia sesión para activar las notificaciones de precios");
+        return;
+      }
+
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         toast.error("Necesitas permitir las notificaciones para recibir alertas de precios");
@@ -109,6 +116,7 @@ export function usePushNotifications() {
 
       const { error } = await supabase.from("push_subscriptions").upsert(
         {
+          user_id: user.id,
           endpoint: subJson.endpoint!,
           p256dh: subJson.keys!.p256dh!,
           auth: subJson.keys!.auth!,
