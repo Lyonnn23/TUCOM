@@ -33,17 +33,11 @@ const Index = () => {
   const { data: stations, isLoading: stationsLoading, refetch: refetchStations } = useGasStations();
 
   const handleSyncStations = async () => {
-    if (!userLocation) {
-      toast.error("Activa tu ubicación para buscar estaciones cercanas");
-      return;
-    }
     setSyncing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("sync-stations", {
-        body: { lat: userLocation.lat, lng: userLocation.lng },
-      });
+      const { data, error } = await supabase.functions.invoke("sync-stations");
       if (error) throw error;
-      toast.success(`Se encontraron ${data?.found ?? 0} estaciones`);
+      toast.success(`Sincronizadas ${data?.processed ?? 0} estaciones`);
       refetchStations();
     } catch (err: any) {
       toast.error("Error al sincronizar estaciones");
