@@ -55,14 +55,15 @@ export function usePushNotifications() {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         setIsSubscribed(true);
-        const subJson = subscription.toJSON();
-        const { data } = await supabase
-          .from("push_subscriptions")
-          .select("fuel_types")
-          .eq("endpoint", subJson.endpoint!)
-          .single();
-        if (data?.fuel_types) {
-          setSelectedFuels(data.fuel_types);
+        // SELECT está restringido por RLS; preferencias se guardan localmente
+        try {
+          const stored = localStorage.getItem("tucom_push_fuels");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) setSelectedFuels(parsed);
+          }
+        } catch {
+          // ignore
         }
       } else {
         setIsSubscribed(false);
