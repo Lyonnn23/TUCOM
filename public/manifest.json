@@ -13,7 +13,6 @@
   "lang": "es-CL",
   "dir": "ltr",
   "categories": ["navigation", "travel", "utilities", "maps"],
-  "iarc_rating_id": "",
   "prefer_related_applications": false,
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]
@@ -71,30 +70,68 @@
       "short_name": "Cercanas",
       "description": "Ver las estaciones de servicio más cercanas a tu ubicación",
       "url": "/?tab=estaciones",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     },
     {
       "name": "Beneficios",
       "short_name": "Beneficios",
       "description": "Descuentos y beneficios por medio de pago",
       "url": "/?tab=beneficios",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     },
     {
       "name": "Reporte de precios",
       "short_name": "Reporte",
       "description": "Estadísticas de precios por zona",
       "url": "/reporte",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     },
     {
       "name": "Historial",
       "short_name": "Historial",
       "description": "Historial de precios de combustible",
       "url": "/historial",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     }
   ],
-  "related_applications": [],
-  "protocol_handlers": []
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/csv": [".csv"]
+      }
+    }
+  ],
+  "widgets": [
+    {
+      "name": "Precios de bencina",
+      "short_name": "Precios",
+      "description": "Resumen de los precios actuales de bencina en Chile",
+      "tag": "tucom-prices",
+      "ms_ac_template": "/widgets/prices-template.json",
+      "data": "/widgets/prices-data.json",
+      "type": "application/json",
+      "screenshots": [
+        {
+          "src": "/screenshots/screenshot-mobile-1.png",
+          "sizes": "1080x1920",
+          "label": "Widget de precios de bencina"
+        }
+      ],
+      "icons": [
+        { "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }
+      ],
+      "auth": false,
+      "update": 21600
+    }
+  ]
 }

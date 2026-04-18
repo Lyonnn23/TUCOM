@@ -1,0 +1,17 @@
+{
+  "type": "AdaptiveCard",
+  "version": "1.5",
+  "body": [
+    { "type": "TextBlock", "text": "TÜcom — Precios de bencina", "weight": "Bolder", "size": "Medium" },
+    { "type": "TextBlock", "text": "${updatedAt}", "isSubtle": true, "spacing": "None" },
+    { "type": "FactSet", "facts": [
+      { "title": "93", "value": "${price93}" },
+      { "title": "95", "value": "${price95}" },
+      { "title": "97", "value": "${price97}" },
+      { "title": "Diésel", "value": "${priceDiesel}" }
+    ]}
+  ],
+  "actions": [
+    { "type": "Action.OpenUrl", "title": "Abrir TÜcom", "url": "https://start-your-app-dream.lovable.app/" }
+  ]
+}
