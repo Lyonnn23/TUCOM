@@ -55,14 +55,15 @@ export function usePushNotifications() {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         setIsSubscribed(true);
-        const subJson = subscription.toJSON();
-        const { data } = await supabase
-          .from("push_subscriptions")
-          .select("fuel_types")
-          .eq("endpoint", subJson.endpoint!)
-          .single();
-        if (data?.fuel_types) {
-          setSelectedFuels(data.fuel_types);
+        // SELECT está restringido por RLS; preferencias se guardan localmente
+        try {
+          const stored = localStorage.getItem("tucom_push_fuels");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) setSelectedFuels(parsed);
+          }
+        } catch {
+          // ignore
         }
       } else {
         setIsSubscribed(false);
@@ -81,12 +82,8 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
-      // Require authentication
+      // Anonymous subscriptions allowed; capture user if logged in
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Inicia sesión para activar las notificaciones de precios");
-        return;
-      }
 
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
@@ -116,7 +113,7 @@ export function usePushNotifications() {
 
       const { error } = await supabase.from("push_subscriptions").upsert(
         {
-          user_id: user.id,
+          user_id: user?.id ?? null,
           endpoint: subJson.endpoint!,
           p256dh: subJson.keys!.p256dh!,
           auth: subJson.keys!.auth!,
@@ -174,6 +171,11 @@ export function usePushNotifications() {
 
   const updateFuelPreferences = useCallback(async (fuels: string[]) => {
     setSelectedFuels(fuels);
+    try {
+      localStorage.setItem("tucom_push_fuels", JSON.stringify(fuels));
+    } catch {
+      // ignore
+    }
     if (!isSubscribed) return;
 
     try {
