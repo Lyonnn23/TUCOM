@@ -81,12 +81,8 @@ export function usePushNotifications() {
     setIsLoading(true);
 
     try {
-      // Require authentication
+      // Anonymous subscriptions allowed; capture user if logged in
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Inicia sesión para activar las notificaciones de precios");
-        return;
-      }
 
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
