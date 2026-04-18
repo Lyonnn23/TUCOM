@@ -171,6 +171,11 @@ export function usePushNotifications() {
 
   const updateFuelPreferences = useCallback(async (fuels: string[]) => {
     setSelectedFuels(fuels);
+    try {
+      localStorage.setItem("tucom_push_fuels", JSON.stringify(fuels));
+    } catch {
+      // ignore
+    }
     if (!isSubscribed) return;
 
     try {
