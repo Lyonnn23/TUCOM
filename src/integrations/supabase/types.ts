@@ -192,7 +192,7 @@ export type Database = {
           lat: number | null
           lng: number | null
           p256dh: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           auth: string
@@ -203,7 +203,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           p256dh: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           auth?: string
@@ -214,7 +214,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           p256dh?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
