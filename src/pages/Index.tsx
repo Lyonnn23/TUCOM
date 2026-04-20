@@ -178,7 +178,9 @@ const Index = () => {
               <div>
                 <h2 className="font-heading font-bold text-foreground text-xl">Precios Actuales</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Promedio nacional · Actualizado hoy
+                  {isLocalAvg
+                    ? `Promedio en 30 km · ${sampleSize} estaciones`
+                    : "Promedio nacional · Actualizado hoy"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -198,7 +200,7 @@ const Index = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {(fuelPrices ?? []).map((fuel) => (
+                {(displayedPrices ?? []).map((fuel) => (
                   <FuelPriceCard key={fuel.type} fuel={fuel} />
                 ))}
               </div>
