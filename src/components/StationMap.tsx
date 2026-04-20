@@ -71,19 +71,20 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           </AdvancedMarker>
         )}
 
-        {stations.map((station) => (
-          <AdvancedMarker
-            key={station.id}
-            position={{ lat: station.lat, lng: station.lng }}
-            onClick={() => setSelected(station)}
-          >
-            <Pin
-              background={station.isOpen ? "#22c55e" : "#ef4444"}
-              borderColor={station.isOpen ? "#16a34a" : "#dc2626"}
-              glyphColor="#fff"
-            />
-          </AdvancedMarker>
-        ))}
+        {stations.map((station) => {
+          const isNearby = nearbyIds.has(station.id);
+          const bg = isNearby ? "#06b6d4" : station.isOpen ? "#22c55e" : "#ef4444";
+          const border = isNearby ? "#0891b2" : station.isOpen ? "#16a34a" : "#dc2626";
+          return (
+            <AdvancedMarker
+              key={station.id}
+              position={{ lat: station.lat, lng: station.lng }}
+              onClick={() => setSelected(station)}
+            >
+              <Pin background={bg} borderColor={border} glyphColor="#fff" />
+            </AdvancedMarker>
+          );
+        })}
 
         {selected && (
           <InfoWindow
