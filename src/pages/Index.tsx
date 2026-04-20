@@ -11,6 +11,7 @@ import BenefitsTab from "@/components/BenefitsTab";
 import BottomNav, { type TabType } from "@/components/BottomNav";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
+import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +32,12 @@ const Index = () => {
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
   const { data: stations, isLoading: stationsLoading, refetch: refetchStations } = useGasStations();
+  const { prices: displayedPrices, isLocal: isLocalAvg, sampleSize } = useLocalFuelPrices({
+    stations,
+    userLocation,
+    nationalPrices: fuelPrices,
+    radiusKm: 30,
+  });
 
   const handleSyncStations = async () => {
     setSyncing(true);
@@ -171,7 +178,9 @@ const Index = () => {
               <div>
                 <h2 className="font-heading font-bold text-foreground text-xl">Precios Actuales</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Promedio nacional · Actualizado hoy
+                  {isLocalAvg
+                    ? `Promedio en 30 km · ${sampleSize} estaciones`
+                    : "Promedio nacional · Actualizado hoy"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -191,7 +200,7 @@ const Index = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {(fuelPrices ?? []).map((fuel) => (
+                {(displayedPrices ?? []).map((fuel) => (
                   <FuelPriceCard key={fuel.type} fuel={fuel} />
                 ))}
               </div>
