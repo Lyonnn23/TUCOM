@@ -11,6 +11,7 @@ import BenefitsTab from "@/components/BenefitsTab";
 import BottomNav, { type TabType } from "@/components/BottomNav";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
+import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
