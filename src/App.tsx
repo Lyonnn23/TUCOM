@@ -12,6 +12,7 @@ import FuelReport from "./pages/FuelReport.tsx";
 import PriceHistory from "./pages/PriceHistory.tsx";
 import Install from "./pages/Install.tsx";
 import Legal from "./pages/Legal.tsx";
+import Privacy from "./pages/Privacy.tsx";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,8 @@ const App = () => (
             <Route path="/historial" element={<PriceHistory />} />
             <Route path="/install" element={<Install />} />
             <Route path="/legal" element={<Legal />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/privacidad" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -16,6 +16,17 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   const center = userLocation || { lat: -33.45, lng: -70.65 };
 
+  // IDs of the 5 closest stations to the user (within 30 km) — highlighted in cyan
+  const nearbyIds = (() => {
+    if (!userLocation) return new Set<string>();
+    const withDist = stations
+      .map((s) => ({ id: s.id, d: (s as any).distance ?? Infinity }))
+      .filter((s) => s.d <= 30)
+      .sort((a, b) => a.d - b.d)
+      .slice(0, 5);
+    return new Set(withDist.map((s) => s.id));
+  })();
+
   useEffect(() => {
     supabase.functions
       .invoke("get-maps-key")
@@ -60,19 +71,20 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           </AdvancedMarker>
         )}
 
-        {stations.map((station) => (
-          <AdvancedMarker
-            key={station.id}
-            position={{ lat: station.lat, lng: station.lng }}
-            onClick={() => setSelected(station)}
-          >
-            <Pin
-              background={station.isOpen ? "#22c55e" : "#ef4444"}
-              borderColor={station.isOpen ? "#16a34a" : "#dc2626"}
-              glyphColor="#fff"
-            />
-          </AdvancedMarker>
-        ))}
+        {stations.map((station) => {
+          const isNearby = nearbyIds.has(station.id);
+          const bg = isNearby ? "#06b6d4" : station.isOpen ? "#22c55e" : "#ef4444";
+          const border = isNearby ? "#0891b2" : station.isOpen ? "#16a34a" : "#dc2626";
+          return (
+            <AdvancedMarker
+              key={station.id}
+              position={{ lat: station.lat, lng: station.lng }}
+              onClick={() => setSelected(station)}
+            >
+              <Pin background={bg} borderColor={border} glyphColor="#fff" />
+            </AdvancedMarker>
+          );
+        })}
 
         {selected && (
           <InfoWindow
