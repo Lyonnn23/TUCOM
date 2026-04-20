@@ -323,7 +323,14 @@ const Index = () => {
                 ))}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">{mapStations.length} estaciones en el mapa</p>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <p className="text-xs text-muted-foreground">{mapStations.length} estaciones en el mapa</p>
+              <div className="flex items-center gap-2.5 text-[10px] text-muted-foreground">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#06b6d4] inline-block" /> Cercanas</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] inline-block" /> Abiertas</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] inline-block" /> Cerradas</span>
+              </div>
+            </div>
             <div className="h-[calc(100vh-300px)] rounded-2xl overflow-hidden border border-border shadow-md">
               <StationMap
                 stations={mapStations}
