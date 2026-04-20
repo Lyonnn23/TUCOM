@@ -32,6 +32,12 @@ const Index = () => {
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
   const { data: stations, isLoading: stationsLoading, refetch: refetchStations } = useGasStations();
+  const { prices: displayedPrices, isLocal: isLocalAvg, sampleSize } = useLocalFuelPrices({
+    stations,
+    userLocation,
+    nationalPrices: fuelPrices,
+    radiusKm: 30,
+  });
 
   const handleSyncStations = async () => {
     setSyncing(true);
