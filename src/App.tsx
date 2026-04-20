@@ -31,6 +31,8 @@ const App = () => (
             <Route path="/historial" element={<PriceHistory />} />
             <Route path="/install" element={<Install />} />
             <Route path="/legal" element={<Legal />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/privacidad" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
