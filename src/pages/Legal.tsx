@@ -91,6 +91,19 @@ const Legal = () => {
             <h2 className="text-base font-semibold text-foreground">Política de Privacidad</h2>
             <p><strong>Última actualización:</strong> 9 de abril de 2026</p>
 
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-3">
+              <p className="text-foreground text-xs">
+                📄 Para la versión completa y detallada que cumple con los requisitos de Google Play,{" "}
+                <button
+                  onClick={() => navigate("/privacy")}
+                  className="text-primary font-semibold underline"
+                >
+                  ver política completa
+                </button>
+                .
+              </p>
+            </div>
+
             <h3 className="font-semibold text-foreground">1. Datos que Recopilamos</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>Cuenta:</strong> Correo electrónico al registrarse</li>

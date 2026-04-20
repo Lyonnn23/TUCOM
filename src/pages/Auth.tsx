@@ -184,6 +184,27 @@ const Auth = () => {
               {isLogin ? "Regístrate" : "Inicia Sesión"}
             </button>
           </p>
+
+          {/* Legal footer (required by Google Play) */}
+          <div className="pt-4 border-t border-border">
+            <p className="text-center text-[11px] text-muted-foreground leading-relaxed">
+              Al continuar aceptas nuestros{" "}
+              <button
+                onClick={() => navigate("/legal?tab=terms")}
+                className="text-primary font-medium hover:underline"
+              >
+                Términos
+              </button>{" "}
+              y la{" "}
+              <button
+                onClick={() => navigate("/privacy")}
+                className="text-primary font-medium hover:underline"
+              >
+                Política de Privacidad
+              </button>
+              .
+            </p>
+          </div>
         </div>
       </main>
     </div>
