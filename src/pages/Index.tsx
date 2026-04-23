@@ -55,14 +55,37 @@ const Index = () => {
     }
   };
 
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setLocationError(true)
-      );
+  const requestLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Tu dispositivo no soporta geolocalización");
+      setLocationError(true);
+      return;
     }
+    setLocationLoading(true);
+    setLocationError(false);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationLoading(false);
+        toast.success("Ubicación activada");
+      },
+      (err) => {
+        setLocationError(true);
+        setLocationLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Permiso de ubicación denegado. Actívalo en los ajustes del navegador.");
+        } else {
+          toast.error("No se pudo obtener tu ubicación");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  useEffect(() => {
+    requestLocation();
   }, []);
+
 
   const FEATURED_BRANDS = ["Copec", "Shell", "Aramco"];
 
