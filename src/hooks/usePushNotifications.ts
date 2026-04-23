@@ -146,13 +146,18 @@ export function usePushNotifications() {
 
       const subJson = subscription.toJSON();
 
-      // Update location before requesting
+      // Update location via secure edge function (proves ownership with auth secret)
       try {
         const pos = await getCurrentPosition();
-        await supabase
-          .from("push_subscriptions")
-          .update({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-          .eq("endpoint", subJson.endpoint!);
+        await supabase.functions.invoke("manage-push-subscription", {
+          body: {
+            action: "update",
+            endpoint: subJson.endpoint,
+            auth: subJson.keys?.auth,
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          },
+        });
       } catch {
         // Use existing saved location
       }
@@ -183,10 +188,16 @@ export function usePushNotifications() {
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         const subJson = subscription.toJSON();
-        await supabase
-          .from("push_subscriptions")
-          .update({ fuel_types: fuels })
-          .eq("endpoint", subJson.endpoint!);
+        // Use secure edge function so anonymous subscriptions are protected
+        // by their own auth secret (server validates ownership).
+        await supabase.functions.invoke("manage-push-subscription", {
+          body: {
+            action: "update",
+            endpoint: subJson.endpoint,
+            auth: subJson.keys?.auth,
+            fuel_types: fuels,
+          },
+        });
       }
     } catch (err) {
       console.error("Failed to update fuel preferences:", err);
@@ -199,6 +210,19 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
+        const subJson = subscription.toJSON();
+        // Remove server-side row first (validates ownership via auth secret)
+        try {
+          await supabase.functions.invoke("manage-push-subscription", {
+            body: {
+              action: "delete",
+              endpoint: subJson.endpoint,
+              auth: subJson.keys?.auth,
+            },
+          });
+        } catch (err) {
+          console.error("Failed to remove server subscription:", err);
+        }
         await subscription.unsubscribe();
       }
       setIsSubscribed(false);
