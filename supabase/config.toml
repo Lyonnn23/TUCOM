@@ -2,3 +2,9 @@ project_id = "laldmbpaleeykbsgtchk"
 
 [functions.get-maps-key]
 verify_jwt = false
+
+[functions.manage-push-subscription]
+verify_jwt = false
+
+[functions.nearby-cheapest-alert]
+verify_jwt = false
