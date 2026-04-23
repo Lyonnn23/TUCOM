@@ -28,6 +28,7 @@ const Index = () => {
   const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
@@ -54,14 +55,37 @@ const Index = () => {
     }
   };
 
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setLocationError(true)
-      );
+  const requestLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Tu dispositivo no soporta geolocalización");
+      setLocationError(true);
+      return;
     }
+    setLocationLoading(true);
+    setLocationError(false);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationLoading(false);
+        toast.success("Ubicación activada");
+      },
+      (err) => {
+        setLocationError(true);
+        setLocationLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Permiso de ubicación denegado. Actívalo en los ajustes del navegador.");
+        } else {
+          toast.error("No se pudo obtener tu ubicación");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  useEffect(() => {
+    requestLocation();
   }, []);
+
 
   const FEATURED_BRANDS = ["Copec", "Shell", "Aramco"];
 
@@ -142,12 +166,23 @@ const Index = () => {
             >
               <Shield className="w-3 h-3" />
             </button>
-            {userLocation && (
-              <div className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1 backdrop-blur-sm">
-                <MapPin className="w-3 h-3" />
-                <span className="font-medium">GPS</span>
-              </div>
-            )}
+            <button
+              onClick={requestLocation}
+              disabled={locationLoading}
+              className={`flex items-center gap-1 text-xs rounded-full px-2.5 py-1.5 backdrop-blur-sm transition-all disabled:opacity-60 ${
+                userLocation
+                  ? "bg-[hsl(142,70%,45%)] text-white shadow-md ring-1 ring-white/30"
+                  : locationError
+                    ? "bg-[hsl(0,75%,55%)]/80 text-white hover:bg-[hsl(0,75%,55%)]"
+                    : "bg-white/15 text-white/90 hover:bg-white/25"
+              }`}
+              title={userLocation ? "GPS activo · tocar para actualizar" : locationError ? "Reintentar activar GPS" : "Activar GPS"}
+            >
+              <MapPin className={`w-3 h-3 ${locationLoading ? "animate-pulse" : ""}`} />
+              <span className="font-medium">
+                {locationLoading ? "..." : userLocation ? "GPS" : locationError ? "Reintentar" : "GPS"}
+              </span>
+            </button>
             {user ? (
               <button
                 onClick={signOut}
