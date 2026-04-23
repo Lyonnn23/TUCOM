@@ -26,9 +26,10 @@ const Index = () => {
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationError, setLocationError] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
+  const [locationErrorType, setLocationErrorType] = useState<"denied" | "unavailable" | "timeout" | "unsupported" | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [lastLocationUpdate, setLastLocationUpdate] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
@@ -55,35 +56,61 @@ const Index = () => {
     }
   };
 
-  const requestLocation = () => {
+  const requestLocation = (silent = false) => {
     if (!("geolocation" in navigator)) {
-      toast.error("Tu dispositivo no soporta geolocalización");
-      setLocationError(true);
+      if (!silent) toast.error("Tu dispositivo no soporta geolocalización");
+      setLocationErrorType("unsupported");
       return;
     }
-    setLocationLoading(true);
-    setLocationError(false);
+    if (!silent) {
+      setLocationLoading(true);
+      setLocationErrorType(null);
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+        setLocationErrorType(null);
         setLocationLoading(false);
-        toast.success("Ubicación activada");
+        setLastLocationUpdate(Date.now());
+        if (!silent) toast.success("Ubicación activada");
       },
       (err) => {
-        setLocationError(true);
         setLocationLoading(false);
         if (err.code === err.PERMISSION_DENIED) {
-          toast.error("Permiso de ubicación denegado. Actívalo en los ajustes del navegador.");
+          setLocationErrorType("denied");
+          if (!silent) toast.error("Permiso de ubicación denegado. Actívalo en los ajustes del navegador.");
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setLocationErrorType("unavailable");
+          if (!silent) toast.error("Servicio de ubicación no disponible");
+        } else if (err.code === err.TIMEOUT) {
+          setLocationErrorType("timeout");
+          if (!silent) toast.error("Tiempo de espera agotado. Reintenta en un lugar con mejor señal GPS.");
         } else {
-          toast.error("No se pudo obtener tu ubicación");
+          setLocationErrorType("unavailable");
+          if (!silent) toast.error("No se pudo obtener tu ubicación");
         }
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   };
 
+  // Initial request + silent auto-refresh every 2 min while the app is open
   useEffect(() => {
     requestLocation();
+    const interval = setInterval(() => {
+      // Skip silent refresh when the user denied permission or the device doesn't support it
+      setLocationErrorType((current) => {
+        if (current !== "denied" && current !== "unsupported") {
+          requestLocation(true);
+        }
+        return current;
+      });
+    }, 120_000); // every 2 minutes
+    return () => clearInterval(interval);
   }, []);
 
 
@@ -167,20 +194,32 @@ const Index = () => {
               <Shield className="w-3 h-3" />
             </button>
             <button
-              onClick={requestLocation}
+              onClick={() => requestLocation(false)}
               disabled={locationLoading}
               className={`flex items-center gap-1 text-xs rounded-full px-2.5 py-1.5 backdrop-blur-sm transition-all disabled:opacity-60 ${
                 userLocation
                   ? "bg-[hsl(142,70%,45%)] text-white shadow-md ring-1 ring-white/30"
-                  : locationError
+                  : locationErrorType
                     ? "bg-[hsl(0,75%,55%)]/80 text-white hover:bg-[hsl(0,75%,55%)]"
                     : "bg-white/15 text-white/90 hover:bg-white/25"
               }`}
-              title={userLocation ? "GPS activo · tocar para actualizar" : locationError ? "Reintentar activar GPS" : "Activar GPS"}
+              title={
+                userLocation
+                  ? "GPS activo · tocar para actualizar"
+                  : locationErrorType === "denied"
+                    ? "Permiso denegado · revisa los ajustes del navegador"
+                    : locationErrorType === "timeout"
+                      ? "Tiempo agotado · reintentar"
+                      : locationErrorType === "unavailable"
+                        ? "Servicio no disponible · reintentar"
+                        : locationErrorType === "unsupported"
+                          ? "Tu dispositivo no soporta GPS"
+                          : "Activar GPS"
+              }
             >
               <MapPin className={`w-3 h-3 ${locationLoading ? "animate-pulse" : ""}`} />
               <span className="font-medium">
-                {locationLoading ? "..." : userLocation ? "GPS" : locationError ? "Reintentar" : "GPS"}
+                {locationLoading ? "..." : userLocation ? "GPS" : locationErrorType ? "Reintentar" : "GPS"}
               </span>
             </button>
             {user ? (
@@ -291,11 +330,38 @@ const Index = () => {
               </p>
             </div>
 
-            {locationError && (
-              <div className="bg-fuel-cyan/10 border border-fuel-cyan/25 rounded-2xl p-3">
-                <p className="text-xs text-foreground">
-                  📍 Activa tu ubicación para ver las estaciones más cercanas y navegar con Waze.
+            {locationErrorType && (
+              <div
+                className={`rounded-2xl p-3 border ${
+                  locationErrorType === "denied"
+                    ? "bg-[hsl(0,75%,55%)]/10 border-[hsl(0,75%,55%)]/30"
+                    : "bg-fuel-cyan/10 border-fuel-cyan/25"
+                }`}
+              >
+                <p className="text-xs text-foreground mb-2 leading-relaxed">
+                  {locationErrorType === "denied" && (
+                    <>🚫 <strong>Permiso de ubicación denegado.</strong> Para usar el GPS, ve a los ajustes del navegador o del sistema y permite la ubicación para esta app.</>
+                  )}
+                  {locationErrorType === "timeout" && (
+                    <>⏱️ <strong>Tiempo de espera agotado.</strong> Tu GPS está tardando demasiado. Acércate a una ventana o sal al exterior para mejorar la señal.</>
+                  )}
+                  {locationErrorType === "unavailable" && (
+                    <>📡 <strong>Servicio de ubicación no disponible.</strong> Verifica que el GPS de tu dispositivo esté encendido.</>
+                  )}
+                  {locationErrorType === "unsupported" && (
+                    <>❌ <strong>Tu dispositivo no soporta geolocalización.</strong> No podremos mostrarte estaciones cercanas.</>
+                  )}
                 </p>
+                {locationErrorType !== "unsupported" && (
+                  <button
+                    onClick={() => requestLocation(false)}
+                    disabled={locationLoading}
+                    className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60 inline-flex items-center gap-1.5"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${locationLoading ? "animate-spin" : ""}`} />
+                    {locationLoading ? "Reintentando..." : "Reintentar"}
+                  </button>
+                )}
               </div>
             )}
           </div>
