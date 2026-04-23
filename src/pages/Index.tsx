@@ -28,6 +28,7 @@ const Index = () => {
   const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
