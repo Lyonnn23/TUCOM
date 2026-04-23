@@ -56,35 +56,61 @@ const Index = () => {
     }
   };
 
-  const requestLocation = () => {
+  const requestLocation = (silent = false) => {
     if (!("geolocation" in navigator)) {
-      toast.error("Tu dispositivo no soporta geolocalización");
-      setLocationError(true);
+      if (!silent) toast.error("Tu dispositivo no soporta geolocalización");
+      setLocationErrorType("unsupported");
       return;
     }
-    setLocationLoading(true);
-    setLocationError(false);
+    if (!silent) {
+      setLocationLoading(true);
+      setLocationErrorType(null);
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+        });
+        setLocationErrorType(null);
         setLocationLoading(false);
-        toast.success("Ubicación activada");
+        setLastLocationUpdate(Date.now());
+        if (!silent) toast.success("Ubicación activada");
       },
       (err) => {
-        setLocationError(true);
         setLocationLoading(false);
         if (err.code === err.PERMISSION_DENIED) {
-          toast.error("Permiso de ubicación denegado. Actívalo en los ajustes del navegador.");
+          setLocationErrorType("denied");
+          if (!silent) toast.error("Permiso de ubicación denegado. Actívalo en los ajustes del navegador.");
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setLocationErrorType("unavailable");
+          if (!silent) toast.error("Servicio de ubicación no disponible");
+        } else if (err.code === err.TIMEOUT) {
+          setLocationErrorType("timeout");
+          if (!silent) toast.error("Tiempo de espera agotado. Reintenta en un lugar con mejor señal GPS.");
         } else {
-          toast.error("No se pudo obtener tu ubicación");
+          setLocationErrorType("unavailable");
+          if (!silent) toast.error("No se pudo obtener tu ubicación");
         }
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
   };
 
+  // Initial request + silent auto-refresh every 2 min while the app is open
   useEffect(() => {
     requestLocation();
+    const interval = setInterval(() => {
+      // Skip silent refresh when the user denied permission or the device doesn't support it
+      setLocationErrorType((current) => {
+        if (current !== "denied" && current !== "unsupported") {
+          requestLocation(true);
+        }
+        return current;
+      });
+    }, 120_000); // every 2 minutes
+    return () => clearInterval(interval);
   }, []);
 
 
