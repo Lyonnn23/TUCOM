@@ -191,10 +191,21 @@ const Privacy = () => {
           </p>
         </section>
 
+        <section className="bg-destructive/5 border border-destructive/30 rounded-2xl p-4 space-y-2">
+          <h2 className="font-heading font-bold text-base">11. Eliminación de cuenta y datos</h2>
+          <p className="text-muted-foreground">
+            Puedes eliminar tu cuenta y todos los datos personales asociados en cualquier momento desde:{" "}
+            <a href="/eliminar-cuenta" className="text-primary font-semibold underline">
+              tucombustible.lovable.app/eliminar-cuenta
+            </a>
+            . Procesamos la solicitud en un plazo máximo de 30 días.
+          </p>
+        </section>
+
         <section className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-4 space-y-2">
           <div className="flex items-center gap-2">
             <Mail className="w-4 h-4 text-primary" />
-            <h2 className="font-heading font-bold text-base">11. Contacto</h2>
+            <h2 className="font-heading font-bold text-base">12. Contacto</h2>
           </div>
           <p className="text-muted-foreground">
             Para cualquier duda sobre privacidad o ejercer tus derechos, escríbenos a:{" "}
