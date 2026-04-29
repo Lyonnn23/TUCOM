@@ -505,10 +505,20 @@ const Index = () => {
                 })}
               </div>
             )}
-            {/* Radius filter */}
+            {/* Radius filter + sort by distance */}
             <div className="flex items-center gap-2">
               <Radar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                <button
+                  onClick={() => setSortByFuel("distance")}
+                  className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+                    sortByFuel === "distance"
+                      ? "bg-secondary text-secondary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  Más cercanas
+                </button>
                 {[
                   { value: null, label: "Sin límite" },
                   { value: 1, label: "1 km" },
@@ -530,13 +540,12 @@ const Index = () => {
                 ))}
               </div>
             </div>
-            {/* Sort by fuel price */}
+            {/* Sort by fuel price (octanaje) */}
             <div className="flex items-center gap-2">
               <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <span className="text-[11px] font-medium text-muted-foreground shrink-0">Octanaje:</span>
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                 {[
-                  { key: "distance", label: "Más cercanas" },
                   { key: "gasoline93", label: "93" },
                   { key: "gasoline95", label: "95" },
                   { key: "gasoline97", label: "97" },
