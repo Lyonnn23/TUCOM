@@ -548,7 +548,7 @@ const Index = () => {
             {/* Sort by fuel price */}
             <div className="flex items-center gap-2">
               <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <span className="text-[11px] font-medium text-muted-foreground shrink-0">Combustible:</span>
+              <span className="text-[11px] font-medium text-muted-foreground shrink-0">Octanaje:</span>
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                 {[
                   { key: "distance", label: "Más cercanas" },
