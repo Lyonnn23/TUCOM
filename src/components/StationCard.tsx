@@ -85,7 +85,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
           </p>
           {station.distance !== undefined && (
             <p className="text-xs text-fuel-blue font-medium mt-1">
-              <Navigation className="w-3 h-3 inline mr-1" />
+              <Fuel className="w-3 h-3 inline mr-1" />
               {station.distance} km
             </p>
           )}
