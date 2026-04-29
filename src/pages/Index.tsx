@@ -62,6 +62,15 @@ const Index = () => {
       setLocationErrorType("unsupported");
       return;
     }
+
+    // Detect preview iframe (geolocation is blocked by permission policy in Lovable preview)
+    const inIframe = (() => {
+      try { return window.self !== window.top; } catch { return true; }
+    })();
+    if (inIframe && !silent) {
+      toast.info("Vista previa: el GPS solo funciona al abrir la app fuera del editor o instalada");
+    }
+
     if (!silent) {
       setLocationLoading(true);
       setLocationErrorType(null);
@@ -76,9 +85,10 @@ const Index = () => {
         setLocationErrorType(null);
         setLocationLoading(false);
         setLastLocationUpdate(Date.now());
-        if (!silent) toast.success("Ubicación activada");
+        if (!silent) toast.success(`Ubicación activada · precisión ${Math.round(pos.coords.accuracy)} m`);
       },
       (err) => {
+        console.warn("[GPS] error", err.code, err.message);
         setLocationLoading(false);
         if (err.code === err.PERMISSION_DENIED) {
           setLocationErrorType("denied");
@@ -94,7 +104,7 @@ const Index = () => {
           if (!silent) toast.error("No se pudo obtener tu ubicación");
         }
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   };
 
@@ -451,7 +461,15 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {stationsWithDistance.length} estaciones
                   {radiusKm ? ` en ${radiusKm} km` : ""}
-                  {userLocation ? " · Por distancia" : ""}
+                  {sortByFuel === "distance"
+                    ? userLocation ? " · Por cercanía" : ""
+                    : ` · Por octanaje ${
+                        sortByFuel === "gasoline93" ? "93" :
+                        sortByFuel === "gasoline95" ? "95" :
+                        sortByFuel === "gasoline97" ? "97" :
+                        sortByFuel === "diesel" ? "Diésel" :
+                        sortByFuel === "electric" ? "EV" : ""
+                      }`}
                 </p>
               </div>
               <button
@@ -540,7 +558,7 @@ const Index = () => {
             {/* Sort by fuel price */}
             <div className="flex items-center gap-2">
               <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <span className="text-[11px] font-medium text-muted-foreground shrink-0">Combustible:</span>
+              <span className="text-[11px] font-medium text-muted-foreground shrink-0">Octanaje:</span>
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                 {[
                   { key: "distance", label: "Más cercanas" },
