@@ -451,7 +451,15 @@ const Index = () => {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {stationsWithDistance.length} estaciones
                   {radiusKm ? ` en ${radiusKm} km` : ""}
-                  {userLocation ? " · Por distancia" : ""}
+                  {sortByFuel === "distance"
+                    ? userLocation ? " · Por cercanía" : ""
+                    : ` · Por octanaje ${
+                        sortByFuel === "gasoline93" ? "93" :
+                        sortByFuel === "gasoline95" ? "95" :
+                        sortByFuel === "gasoline97" ? "97" :
+                        sortByFuel === "diesel" ? "Diésel" :
+                        sortByFuel === "electric" ? "EV" : ""
+                      }`}
                 </p>
               </div>
               <button
