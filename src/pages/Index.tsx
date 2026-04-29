@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield } from "lucide-react";
 import NearbyRanking from "@/components/NearbyRanking";
+import LocationPermissionGuide from "@/components/LocationPermissionGuide";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
@@ -341,38 +342,12 @@ const Index = () => {
             </div>
 
             {locationErrorType && (
-              <div
-                className={`rounded-2xl p-3 border ${
-                  locationErrorType === "denied"
-                    ? "bg-[hsl(0,75%,55%)]/10 border-[hsl(0,75%,55%)]/30"
-                    : "bg-fuel-cyan/10 border-fuel-cyan/25"
-                }`}
-              >
-                <p className="text-xs text-foreground mb-2 leading-relaxed">
-                  {locationErrorType === "denied" && (
-                    <>🚫 <strong>Permiso de ubicación denegado.</strong> Para usar el GPS, ve a los ajustes del navegador o del sistema y permite la ubicación para esta app.</>
-                  )}
-                  {locationErrorType === "timeout" && (
-                    <>⏱️ <strong>Tiempo de espera agotado.</strong> Tu GPS está tardando demasiado. Acércate a una ventana o sal al exterior para mejorar la señal.</>
-                  )}
-                  {locationErrorType === "unavailable" && (
-                    <>📡 <strong>Servicio de ubicación no disponible.</strong> Verifica que el GPS de tu dispositivo esté encendido.</>
-                  )}
-                  {locationErrorType === "unsupported" && (
-                    <>❌ <strong>Tu dispositivo no soporta geolocalización.</strong> No podremos mostrarte estaciones cercanas.</>
-                  )}
-                </p>
-                {locationErrorType !== "unsupported" && (
-                  <button
-                    onClick={() => requestLocation(false)}
-                    disabled={locationLoading}
-                    className="text-xs font-medium px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60 inline-flex items-center gap-1.5"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${locationLoading ? "animate-spin" : ""}`} />
-                    {locationLoading ? "Reintentando..." : "Reintentar"}
-                  </button>
-                )}
-              </div>
+              <LocationPermissionGuide
+                errorType={locationErrorType}
+                onRetry={() => requestLocation(false)}
+                loading={locationLoading}
+                onDismiss={() => setLocationErrorType(null)}
+              />
             )}
           </div>
         )}
