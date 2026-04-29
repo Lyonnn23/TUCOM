@@ -1,4 +1,4 @@
-import { MapPin, Navigation, Star, Zap } from "lucide-react";
+import { MapPin, Navigation, Star, Zap, Fuel } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 
