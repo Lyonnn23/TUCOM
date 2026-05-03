@@ -34,7 +34,7 @@ const BenefitsTab = () => {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-heading font-bold text-foreground text-xl">Beneficios y Descuentos</h2>
+        <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight">Beneficios y Descuentos</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
           Descuentos disponibles para <span className="font-semibold text-primary">{DAY_NAMES_FULL[selectedDay]}</span>
         </p>
