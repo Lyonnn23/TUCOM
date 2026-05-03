@@ -39,7 +39,7 @@ const Index = () => {
     stations,
     userLocation,
     nationalPrices: fuelPrices,
-    radiusKm: 30,
+    radiusKm: 15,
   });
 
   const handleSyncStations = async () => {
@@ -261,10 +261,10 @@ const Index = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-heading font-bold text-foreground text-xl">Precios Actuales</h2>
+                <h2 className="font-heading font-bold text-foreground text-xl">Precio promedio actual</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {isLocalAvg
-                    ? `Promedio en 30 km · ${sampleSize} estaciones`
+                    ? `Promedio en 15 km · ${sampleSize} estaciones`
                     : "Promedio nacional · Actualizado hoy"}
                 </p>
               </div>
