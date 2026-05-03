@@ -16,12 +16,12 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   const center = userLocation || { lat: -33.45, lng: -70.65 };
 
-  // IDs of the 5 closest stations to the user (within 30 km) — highlighted in cyan
+  // IDs of the 5 closest stations to the user (within 15 km) — highlighted in cyan
   const nearbyIds = (() => {
     if (!userLocation) return new Set<string>();
     const withDist = stations
       .map((s) => ({ id: s.id, d: (s as any).distance ?? Infinity }))
-      .filter((s) => s.d <= 30)
+      .filter((s) => s.d <= 15)
       .sort((a, b) => a.d - b.d)
       .slice(0, 5);
     return new Set(withDist.map((s) => s.id));

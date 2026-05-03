@@ -56,7 +56,7 @@ const Privacy = () => {
             </p>
             <ul className="list-disc pl-5 text-muted-foreground mt-1 space-y-1">
               <li>Mostrar las estaciones de servicio más cercanas a ti.</li>
-              <li>Calcular el precio promedio de combustible en un radio de 30 km.</li>
+              <li>Calcular el precio promedio de combustible en un radio de 15 km.</li>
               <li>Permitirte navegar a una estación con Google Maps o Waze.</li>
               <li>Enviar alertas de bajadas de precio cercanas (si las activas).</li>
             </ul>

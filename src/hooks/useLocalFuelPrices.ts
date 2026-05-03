@@ -19,7 +19,7 @@ const FUEL_KEYS: Array<keyof GasStation["prices"]> = [
 ];
 
 /**
- * Calcula el precio promedio local en un radio (default 30 km) usando los
+ * Calcula el precio promedio local en un radio (default 15 km) usando los
  * datos sincronizados desde la CNE en gas_stations / station_prices.
  *
  * - Si hay ubicación + estaciones cercanas con precio válido para el tipo de
@@ -32,7 +32,7 @@ export function useLocalFuelPrices({
   stations,
   userLocation,
   nationalPrices,
-  radiusKm = 30,
+  radiusKm = 15,
 }: Options): { prices: FuelPrice[]; isLocal: boolean; sampleSize: number } {
   return useMemo(() => {
     if (!nationalPrices || nationalPrices.length === 0) {
