@@ -39,7 +39,7 @@ const Index = () => {
     stations,
     userLocation,
     nationalPrices: fuelPrices,
-    radiusKm: 30,
+    radiusKm: 15,
   });
 
   const handleSyncStations = async () => {
