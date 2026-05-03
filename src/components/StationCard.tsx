@@ -55,49 +55,49 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
           : "bg-card border-border"
       }`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
             {featured && (
-              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${style.badge}`}>
                 <Star className="w-3 h-3" />
                 {station.brand}
               </span>
             )}
             {station.hasEvCharging && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white shrink-0">
                 <Zap className="w-3 h-3" />
                 EV
               </span>
             )}
-            <h3 className={`font-heading font-semibold text-sm ${featured ? style.accent : "text-foreground"}`}>
+            <h3 className={`font-heading font-semibold text-sm truncate min-w-0 flex-1 ${featured ? style.accent : "text-foreground"}`} title={station.name}>
               {station.name}
             </h3>
             <span
-              className={`w-2 h-2 rounded-full ${
+              className={`w-2 h-2 rounded-full shrink-0 ${
                 station.isOpen ? "bg-fuel-green animate-pulse-green" : "bg-fuel-red"
               }`}
             />
           </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-            <MapPin className="w-3 h-3" />
-            {station.address}
+          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 min-w-0" title={station.address}>
+            <MapPin className="w-3 h-3 shrink-0" />
+            <span className="truncate">{station.address}</span>
           </p>
           {station.distance !== undefined && (
-            <p className="text-xs text-fuel-blue font-medium mt-1">
+            <p className="text-xs text-fuel-blue font-medium mt-1 truncate">
               <Fuel className="w-3 h-3 inline mr-1" />
               {station.distance} km
             </p>
           )}
           {station.hasEvCharging && station.evPowerKw && (
-            <p className="text-[10px] text-[hsl(142,70%,45%)] font-medium mt-1">
+            <p className="text-[10px] text-[hsl(142,70%,45%)] font-medium mt-1 truncate">
               <Zap className="w-3 h-3 inline mr-0.5" />
               {station.evPowerKw} kW · {station.evConnectorTypes.slice(0, 2).join(", ")}
               {station.evOperator ? ` · ${station.evOperator}` : ""}
             </p>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           <ReportPriceDialog station={station} />
           <button
             onClick={() => onNavigateGoogle?.(station)}

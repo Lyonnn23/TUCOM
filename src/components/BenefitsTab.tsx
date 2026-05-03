@@ -104,28 +104,28 @@ const BenefitsTab = () => {
               <div key={benefit.id} className={`bg-card rounded-2xl p-4 shadow-sm border ${hasEV ? "border-[hsl(142,70%,45%)]/30" : "border-border"}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0 truncate max-w-[120px]">
                         {benefit.brand}
                       </span>
                       {hasEV && (
-                        <span className="text-xs font-bold bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)] px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                        <span className="text-xs font-bold bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)] px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0">
                           <Zap className="w-3 h-3" />
                           EV
                         </span>
                       )}
                       {benefit.discount_fixed && (
-                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
                           -${benefit.discount_fixed}/L
                         </span>
                       )}
                       {benefit.discount_percent && (
-                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
                           -{benefit.discount_percent}%
                         </span>
                       )}
                     </div>
-                    <p className="font-heading font-semibold text-foreground text-sm">
+                    <p className="font-heading font-semibold text-foreground text-sm leading-snug line-clamp-2">
                       {benefit.discount_description}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1.5">
