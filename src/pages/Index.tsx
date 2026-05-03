@@ -430,10 +430,10 @@ const Index = () => {
         {/* Stations List Tab */}
         {activeTab === "stations" && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-heading font-bold text-foreground text-xl">Todas las Estaciones</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight truncate">Todas las Estaciones</h2>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">
                   {stationsWithDistance.length} estaciones
                   {radiusKm ? ` en ${radiusKm} km` : ""}
                   {sortByFuel === "distance"
