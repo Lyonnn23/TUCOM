@@ -14,6 +14,7 @@ import Install from "./pages/Install.tsx";
 import Legal from "./pages/Legal.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import DeleteAccount from "./pages/DeleteAccount.tsx";
+import ResponsiveCheck from "./pages/ResponsiveCheck.tsx";
 
 const queryClient = new QueryClient();
 
