@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/privacidad" element={<Privacy />} />
             <Route path="/eliminar-cuenta" element={<DeleteAccount />} />
             <Route path="/delete-account" element={<DeleteAccount />} />
+            <Route path="/responsive-check" element={<ResponsiveCheck />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
