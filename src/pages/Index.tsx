@@ -355,7 +355,7 @@ const Index = () => {
         {/* Map Tab */}
         {activeTab === "map" && (
           <div className="space-y-3">
-            <h2 className="font-heading font-bold text-foreground text-xl">Estaciones Cercanas</h2>
+            <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight">Estaciones Cercanas</h2>
             {/* Radius selector */}
             <div className="flex items-center gap-2">
               <Radar className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
