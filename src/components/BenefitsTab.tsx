@@ -14,6 +14,31 @@ const FUEL_LABELS: Record<string, string> = {
   electric: "⚡ EV",
 };
 
+// Match StationCard brand styling for visual consistency
+const BRAND_STYLES: Record<string, { border: string; bg: string; accent: string; badge: string; chip: string }> = {
+  Copec: {
+    border: "border-[hsl(var(--brand-copec))]",
+    bg: "bg-[hsl(var(--brand-copec)/0.06)]",
+    accent: "text-[hsl(var(--brand-copec))]",
+    badge: "bg-[hsl(var(--brand-copec))] text-white",
+    chip: "bg-[hsl(var(--brand-copec)/0.12)] text-[hsl(var(--brand-copec))]",
+  },
+  Shell: {
+    border: "border-[hsl(var(--brand-shell))]",
+    bg: "bg-[hsl(var(--brand-shell)/0.06)]",
+    accent: "text-[hsl(var(--brand-shell))]",
+    badge: "bg-[hsl(var(--brand-shell))] text-white",
+    chip: "bg-[hsl(var(--brand-shell)/0.12)] text-[hsl(var(--brand-shell))]",
+  },
+  Aramco: {
+    border: "border-[hsl(var(--brand-aramco))]",
+    bg: "bg-[hsl(var(--brand-aramco)/0.06)]",
+    accent: "text-[hsl(var(--brand-aramco))]",
+    badge: "bg-[hsl(var(--brand-aramco))] text-white",
+    chip: "bg-[hsl(var(--brand-aramco)/0.12)] text-[hsl(var(--brand-aramco))]",
+  },
+};
+
 const BenefitsTab = () => {
   const { data: benefits, isLoading } = useFuelBenefits();
   const today = new Date().getDay();
@@ -27,7 +52,7 @@ const BenefitsTab = () => {
 
   const filtered = useMemo(() => {
     return (benefits ?? [])
-      .filter((b) => b.day_of_week.includes(selectedDay))
+      .filter((b) => (b.day_of_week ?? []).map(Number).includes(Number(selectedDay)))
       .filter((b) => selectedBrand === "all" || b.brand === selectedBrand);
   }, [benefits, selectedDay, selectedBrand]);
 
@@ -71,19 +96,25 @@ const BenefitsTab = () => {
         >
           Todas
         </button>
-        {brands.map((brand) => (
-          <button
-            key={brand}
-            onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
-            className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-              selectedBrand === brand
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {brand}
-          </button>
-        ))}
+        {brands.map((brand) => {
+          const style = BRAND_STYLES[brand];
+          const isSelected = selectedBrand === brand;
+          let cls = "";
+          if (style) {
+            cls = isSelected ? style.badge : `${style.chip} hover:opacity-80`;
+          } else {
+            cls = isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80";
+          }
+          return (
+            <button
+              key={brand}
+              onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+              className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${cls}`}
+            >
+              {brand}
+            </button>
+          );
+        })}
       </div>
 
       {/* Results */}
@@ -100,12 +131,21 @@ const BenefitsTab = () => {
         <div className="space-y-3">
           {filtered.map((benefit) => {
             const hasEV = benefit.fuel_types.includes("electric");
+            const brandStyle = BRAND_STYLES[benefit.brand];
+            const featured = !!brandStyle;
+            const cardClass = featured
+              ? `${brandStyle.bg} ${brandStyle.border} border-2 shadow-md`
+              : hasEV
+                ? "bg-card border border-[hsl(142,70%,45%)]/30"
+                : "bg-card border border-border";
             return (
-              <div key={benefit.id} className={`bg-card rounded-2xl p-4 shadow-sm border ${hasEV ? "border-[hsl(142,70%,45%)]/30" : "border-border"}`}>
+              <div key={benefit.id} className={`rounded-2xl p-4 shadow-sm ${cardClass}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                      <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full shrink-0 truncate max-w-[120px]">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 truncate max-w-[140px] ${
+                        featured ? brandStyle.badge : "bg-primary/10 text-primary"
+                      }`}>
                         {benefit.brand}
                       </span>
                       {hasEV && (
@@ -115,17 +155,23 @@ const BenefitsTab = () => {
                         </span>
                       )}
                       {benefit.discount_fixed && (
-                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                          featured ? brandStyle.chip : "text-primary bg-primary/10"
+                        }`}>
                           -${benefit.discount_fixed}/L
                         </span>
                       )}
                       {benefit.discount_percent && (
-                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                          featured ? brandStyle.chip : "text-primary bg-primary/10"
+                        }`}>
                           -{benefit.discount_percent}%
                         </span>
                       )}
                     </div>
-                    <p className="font-heading font-semibold text-foreground text-sm leading-snug line-clamp-2">
+                    <p className={`font-heading font-semibold text-sm leading-snug line-clamp-2 ${
+                      featured ? brandStyle.accent : "text-foreground"
+                    }`}>
                       {benefit.discount_description}
                     </p>
                     <div className="flex items-center gap-1.5 mt-1.5">
@@ -141,21 +187,24 @@ const BenefitsTab = () => {
                 </div>
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
                   <Calendar className="w-3 h-3 text-muted-foreground" />
-                  <div className="flex gap-1">
-                    {benefit.day_of_week.map((d) => (
-                      <span
-                        key={d}
-                        className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                          d === today
-                            ? "bg-primary/15 text-primary font-bold"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {DAY_NAMES[d]}
-                      </span>
-                    ))}
+                  <div className="flex gap-1 flex-wrap">
+                    {benefit.day_of_week.map((d) => {
+                      const dn = Number(d);
+                      return (
+                        <span
+                          key={dn}
+                          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                            dn === today
+                              ? "bg-primary/15 text-primary font-bold"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {DAY_NAMES[dn]}
+                        </span>
+                      );
+                    })}
                   </div>
-                  <div className="ml-auto flex gap-1">
+                  <div className="ml-auto flex gap-1 flex-wrap justify-end">
                     {benefit.fuel_types.map((ft) => (
                       <span
                         key={ft}
