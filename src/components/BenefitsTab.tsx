@@ -91,20 +91,14 @@ const BenefitsTab = () => {
 
   const filtered = useMemo(() => {
     return (benefits ?? [])
-      .filter((b) => {
-        const days = (b.day_of_week ?? []).map(Number);
-        if (!days.includes(Number(selectedDay))) return false;
-        if (onlyThisDay && days.length === 7) return false;
-        return true;
-      })
+      .filter((b) => (b.day_of_week ?? []).map(Number).includes(Number(selectedDay)))
       .filter((b) => selectedBrand === "all" || b.brand === selectedBrand)
       .sort((a, b) => {
-        // Sort by discount value (highest first), then specific-day before all-week
         const dv = getDiscountValue(b) - getDiscountValue(a);
         if (dv !== 0) return dv;
         return (a.day_of_week ?? []).length - (b.day_of_week ?? []).length;
       });
-  }, [benefits, selectedDay, selectedBrand, onlyThisDay]);
+  }, [benefits, selectedDay, selectedBrand]);
 
   const isViewingToday = selectedDay === today;
 
