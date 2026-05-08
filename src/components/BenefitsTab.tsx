@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Tag, CreditCard, Calendar, Zap } from "lucide-react";
 import { useFuelBenefits } from "@/hooks/useFuelBenefits";
 import { Skeleton } from "@/components/ui/skeleton";
