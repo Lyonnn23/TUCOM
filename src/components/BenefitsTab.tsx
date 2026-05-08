@@ -150,15 +150,8 @@ const BenefitsTab = () => {
           Sincronizar automáticamente con el día actual
           <span className="font-semibold text-foreground">({DAY_NAMES_FULL[today]})</span>
         </label>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={onlyThisDay}
-            onChange={(e) => setOnlyThisDay(e.target.checked)}
-            className="w-4 h-4 rounded accent-primary"
-          />
-          Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
-        </label>
+      </div>
+
       </div>
 
       {/* Brand filter */}
