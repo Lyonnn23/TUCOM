@@ -217,13 +217,20 @@ const BenefitsTab = () => {
             const hasEV = benefit.fuel_types.includes("electric");
             const brandStyle = BRAND_STYLES[benefit.brand];
             const featured = !!brandStyle;
+            const activeToday = (benefit.day_of_week ?? []).map(Number).includes(today);
             const cardClass = featured
               ? `${brandStyle.bg} ${brandStyle.border} border-2 shadow-md`
               : hasEV
                 ? "bg-card border border-[hsl(142,70%,45%)]/30"
                 : "bg-card border border-border";
+            const todayRing = activeToday ? "ring-2 ring-primary/40 ring-offset-1 ring-offset-background" : "";
             return (
-              <div key={benefit.id} className={`rounded-2xl p-4 shadow-sm ${cardClass}`}>
+              <div key={benefit.id} className={`relative rounded-2xl p-4 shadow-sm ${cardClass} ${todayRing}`}>
+                {activeToday && (
+                  <span className="absolute -top-2 right-3 text-[10px] font-bold uppercase tracking-wide bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow">
+                    Vigente hoy
+                  </span>
+                )}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
