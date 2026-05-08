@@ -39,12 +39,51 @@ const BRAND_STYLES: Record<string, { border: string; bg: string; accent: string;
   },
 };
 
+// Estimate discount magnitude for sorting (higher = better)
+const getDiscountValue = (b: { discount_fixed: number | null; discount_percent: number | null }) => {
+  if (b.discount_fixed) return b.discount_fixed;
+  if (b.discount_percent) return b.discount_percent * 10; // rough equivalence: 1% ≈ $10/L
+  return 0;
+};
+
 const BenefitsTab = () => {
   const { data: benefits, isLoading } = useFuelBenefits();
-  const today = new Date().getDay();
+  const [today, setToday] = useState<number>(new Date().getDay());
   const [selectedDay, setSelectedDay] = useState<number>(today);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [onlyThisDay, setOnlyThisDay] = useState<boolean>(false);
+  const [autoSync, setAutoSync] = useState<boolean>(true);
+  const userChangedDay = useRef<boolean>(false);
+
+  // Auto-sync: keep selectedDay aligned with current day, refresh on focus / interval
+  useEffect(() => {
+    const refreshToday = () => {
+      const d = new Date().getDay();
+      setToday(d);
+      if (autoSync && !userChangedDay.current) setSelectedDay(d);
+    };
+    refreshToday();
+    const interval = setInterval(refreshToday, 60_000);
+    window.addEventListener("focus", refreshToday);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", refreshToday);
+    };
+  }, [autoSync]);
+
+  const handleSelectDay = (i: number) => {
+    userChangedDay.current = true;
+    setAutoSync(false);
+    setSelectedDay(i);
+  };
+
+  const handleToggleAutoSync = (checked: boolean) => {
+    setAutoSync(checked);
+    if (checked) {
+      userChangedDay.current = false;
+      setSelectedDay(new Date().getDay());
+    }
+  };
 
   const brands = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.brand));
@@ -61,12 +100,14 @@ const BenefitsTab = () => {
       })
       .filter((b) => selectedBrand === "all" || b.brand === selectedBrand)
       .sort((a, b) => {
-        // Specific-day discounts first, then all-week
-        const aLen = (a.day_of_week ?? []).length;
-        const bLen = (b.day_of_week ?? []).length;
-        return aLen - bLen;
+        // Sort by discount value (highest first), then specific-day before all-week
+        const dv = getDiscountValue(b) - getDiscountValue(a);
+        if (dv !== 0) return dv;
+        return (a.day_of_week ?? []).length - (b.day_of_week ?? []).length;
       });
   }, [benefits, selectedDay, selectedBrand, onlyThisDay]);
+
+  const isViewingToday = selectedDay === today;
 
   return (
     <div className="space-y-4">
