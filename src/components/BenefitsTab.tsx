@@ -51,7 +51,6 @@ const BenefitsTab = () => {
   const [today, setToday] = useState<number>(new Date().getDay());
   const [selectedDay, setSelectedDay] = useState<number>(today);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
-  const [onlyThisDay, setOnlyThisDay] = useState<boolean>(false);
   const [autoSync, setAutoSync] = useState<boolean>(true);
   const userChangedDay = useRef<boolean>(false);
 
@@ -92,20 +91,14 @@ const BenefitsTab = () => {
 
   const filtered = useMemo(() => {
     return (benefits ?? [])
-      .filter((b) => {
-        const days = (b.day_of_week ?? []).map(Number);
-        if (!days.includes(Number(selectedDay))) return false;
-        if (onlyThisDay && days.length === 7) return false;
-        return true;
-      })
+      .filter((b) => (b.day_of_week ?? []).map(Number).includes(Number(selectedDay)))
       .filter((b) => selectedBrand === "all" || b.brand === selectedBrand)
       .sort((a, b) => {
-        // Sort by discount value (highest first), then specific-day before all-week
         const dv = getDiscountValue(b) - getDiscountValue(a);
         if (dv !== 0) return dv;
         return (a.day_of_week ?? []).length - (b.day_of_week ?? []).length;
       });
-  }, [benefits, selectedDay, selectedBrand, onlyThisDay]);
+  }, [benefits, selectedDay, selectedBrand]);
 
   const isViewingToday = selectedDay === today;
 
@@ -157,16 +150,8 @@ const BenefitsTab = () => {
           Sincronizar automáticamente con el día actual
           <span className="font-semibold text-foreground">({DAY_NAMES_FULL[today]})</span>
         </label>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={onlyThisDay}
-            onChange={(e) => setOnlyThisDay(e.target.checked)}
-            className="w-4 h-4 rounded accent-primary"
-          />
-          Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
-        </label>
       </div>
+
 
       {/* Brand filter */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
