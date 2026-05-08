@@ -112,9 +112,17 @@ const BenefitsTab = () => {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight">Beneficios y Descuentos</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight">Beneficios y Descuentos</h2>
+          {isViewingToday && (
+            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-primary/15 text-primary px-2 py-0.5 rounded-full">
+              Hoy
+            </span>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground mt-0.5">
           Descuentos disponibles para <span className="font-semibold text-primary">{DAY_NAMES_FULL[selectedDay]}</span>
+          <span className="text-muted-foreground/70"> · ordenados de mayor a menor descuento</span>
         </p>
       </div>
 
@@ -123,7 +131,7 @@ const BenefitsTab = () => {
         {DAY_NAMES.map((name, i) => (
           <button
             key={i}
-            onClick={() => setSelectedDay(i)}
+            onClick={() => handleSelectDay(i)}
             className={`flex-1 text-[11px] font-semibold py-2 rounded-xl transition-colors ${
               selectedDay === i
                 ? "bg-primary text-primary-foreground shadow-sm"
@@ -137,16 +145,28 @@ const BenefitsTab = () => {
         ))}
       </div>
 
-      {/* Only-this-day toggle */}
-      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={onlyThisDay}
-          onChange={(e) => setOnlyThisDay(e.target.checked)}
-          className="w-4 h-4 rounded accent-primary"
-        />
-        Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
-      </label>
+      {/* Toggles */}
+      <div className="flex flex-col gap-2">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={autoSync}
+            onChange={(e) => handleToggleAutoSync(e.target.checked)}
+            className="w-4 h-4 rounded accent-primary"
+          />
+          Sincronizar automáticamente con el día actual
+          <span className="font-semibold text-foreground">({DAY_NAMES_FULL[today]})</span>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={onlyThisDay}
+            onChange={(e) => setOnlyThisDay(e.target.checked)}
+            className="w-4 h-4 rounded accent-primary"
+          />
+          Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
+        </label>
+      </div>
 
       {/* Brand filter */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
