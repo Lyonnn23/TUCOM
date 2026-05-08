@@ -44,6 +44,7 @@ const BenefitsTab = () => {
   const today = new Date().getDay();
   const [selectedDay, setSelectedDay] = useState<number>(today);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
+  const [onlyThisDay, setOnlyThisDay] = useState<boolean>(false);
 
   const brands = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.brand));
@@ -52,9 +53,20 @@ const BenefitsTab = () => {
 
   const filtered = useMemo(() => {
     return (benefits ?? [])
-      .filter((b) => (b.day_of_week ?? []).map(Number).includes(Number(selectedDay)))
-      .filter((b) => selectedBrand === "all" || b.brand === selectedBrand);
-  }, [benefits, selectedDay, selectedBrand]);
+      .filter((b) => {
+        const days = (b.day_of_week ?? []).map(Number);
+        if (!days.includes(Number(selectedDay))) return false;
+        if (onlyThisDay && days.length === 7) return false;
+        return true;
+      })
+      .filter((b) => selectedBrand === "all" || b.brand === selectedBrand)
+      .sort((a, b) => {
+        // Specific-day discounts first, then all-week
+        const aLen = (a.day_of_week ?? []).length;
+        const bLen = (b.day_of_week ?? []).length;
+        return aLen - bLen;
+      });
+  }, [benefits, selectedDay, selectedBrand, onlyThisDay]);
 
   return (
     <div className="space-y-4">
@@ -83,6 +95,17 @@ const BenefitsTab = () => {
           </button>
         ))}
       </div>
+
+      {/* Only-this-day toggle */}
+      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={onlyThisDay}
+          onChange={(e) => setOnlyThisDay(e.target.checked)}
+          className="w-4 h-4 rounded accent-primary"
+        />
+        Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
+      </label>
 
       {/* Brand filter */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
