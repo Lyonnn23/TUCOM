@@ -51,7 +51,6 @@ const BenefitsTab = () => {
   const [today, setToday] = useState<number>(new Date().getDay());
   const [selectedDay, setSelectedDay] = useState<number>(today);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
-  const [onlyThisDay, setOnlyThisDay] = useState<boolean>(false);
   const [autoSync, setAutoSync] = useState<boolean>(true);
   const userChangedDay = useRef<boolean>(false);
 
