@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Tag, CreditCard, Calendar, Zap } from "lucide-react";
 import { useFuelBenefits } from "@/hooks/useFuelBenefits";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,12 +39,51 @@ const BRAND_STYLES: Record<string, { border: string; bg: string; accent: string;
   },
 };
 
+// Estimate discount magnitude for sorting (higher = better)
+const getDiscountValue = (b: { discount_fixed: number | null; discount_percent: number | null }) => {
+  if (b.discount_fixed) return b.discount_fixed;
+  if (b.discount_percent) return b.discount_percent * 10; // rough equivalence: 1% ≈ $10/L
+  return 0;
+};
+
 const BenefitsTab = () => {
   const { data: benefits, isLoading } = useFuelBenefits();
-  const today = new Date().getDay();
+  const [today, setToday] = useState<number>(new Date().getDay());
   const [selectedDay, setSelectedDay] = useState<number>(today);
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [onlyThisDay, setOnlyThisDay] = useState<boolean>(false);
+  const [autoSync, setAutoSync] = useState<boolean>(true);
+  const userChangedDay = useRef<boolean>(false);
+
+  // Auto-sync: keep selectedDay aligned with current day, refresh on focus / interval
+  useEffect(() => {
+    const refreshToday = () => {
+      const d = new Date().getDay();
+      setToday(d);
+      if (autoSync && !userChangedDay.current) setSelectedDay(d);
+    };
+    refreshToday();
+    const interval = setInterval(refreshToday, 60_000);
+    window.addEventListener("focus", refreshToday);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", refreshToday);
+    };
+  }, [autoSync]);
+
+  const handleSelectDay = (i: number) => {
+    userChangedDay.current = true;
+    setAutoSync(false);
+    setSelectedDay(i);
+  };
+
+  const handleToggleAutoSync = (checked: boolean) => {
+    setAutoSync(checked);
+    if (checked) {
+      userChangedDay.current = false;
+      setSelectedDay(new Date().getDay());
+    }
+  };
 
   const brands = useMemo(() => {
     const set = new Set((benefits ?? []).map((b) => b.brand));
@@ -61,19 +100,29 @@ const BenefitsTab = () => {
       })
       .filter((b) => selectedBrand === "all" || b.brand === selectedBrand)
       .sort((a, b) => {
-        // Specific-day discounts first, then all-week
-        const aLen = (a.day_of_week ?? []).length;
-        const bLen = (b.day_of_week ?? []).length;
-        return aLen - bLen;
+        // Sort by discount value (highest first), then specific-day before all-week
+        const dv = getDiscountValue(b) - getDiscountValue(a);
+        if (dv !== 0) return dv;
+        return (a.day_of_week ?? []).length - (b.day_of_week ?? []).length;
       });
   }, [benefits, selectedDay, selectedBrand, onlyThisDay]);
+
+  const isViewingToday = selectedDay === today;
 
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight">Beneficios y Descuentos</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight">Beneficios y Descuentos</h2>
+          {isViewingToday && (
+            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide bg-primary/15 text-primary px-2 py-0.5 rounded-full">
+              Hoy
+            </span>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground mt-0.5">
           Descuentos disponibles para <span className="font-semibold text-primary">{DAY_NAMES_FULL[selectedDay]}</span>
+          <span className="text-muted-foreground/70"> · ordenados de mayor a menor descuento</span>
         </p>
       </div>
 
@@ -82,7 +131,7 @@ const BenefitsTab = () => {
         {DAY_NAMES.map((name, i) => (
           <button
             key={i}
-            onClick={() => setSelectedDay(i)}
+            onClick={() => handleSelectDay(i)}
             className={`flex-1 text-[11px] font-semibold py-2 rounded-xl transition-colors ${
               selectedDay === i
                 ? "bg-primary text-primary-foreground shadow-sm"
@@ -96,16 +145,28 @@ const BenefitsTab = () => {
         ))}
       </div>
 
-      {/* Only-this-day toggle */}
-      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={onlyThisDay}
-          onChange={(e) => setOnlyThisDay(e.target.checked)}
-          className="w-4 h-4 rounded accent-primary"
-        />
-        Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
-      </label>
+      {/* Toggles */}
+      <div className="flex flex-col gap-2">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={autoSync}
+            onChange={(e) => handleToggleAutoSync(e.target.checked)}
+            className="w-4 h-4 rounded accent-primary"
+          />
+          Sincronizar automáticamente con el día actual
+          <span className="font-semibold text-foreground">({DAY_NAMES_FULL[today]})</span>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={onlyThisDay}
+            onChange={(e) => setOnlyThisDay(e.target.checked)}
+            className="w-4 h-4 rounded accent-primary"
+          />
+          Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
+        </label>
+      </div>
 
       {/* Brand filter */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
@@ -156,13 +217,20 @@ const BenefitsTab = () => {
             const hasEV = benefit.fuel_types.includes("electric");
             const brandStyle = BRAND_STYLES[benefit.brand];
             const featured = !!brandStyle;
+            const activeToday = (benefit.day_of_week ?? []).map(Number).includes(today);
             const cardClass = featured
               ? `${brandStyle.bg} ${brandStyle.border} border-2 shadow-md`
               : hasEV
                 ? "bg-card border border-[hsl(142,70%,45%)]/30"
                 : "bg-card border border-border";
+            const todayRing = activeToday ? "ring-2 ring-primary/40 ring-offset-1 ring-offset-background" : "";
             return (
-              <div key={benefit.id} className={`rounded-2xl p-4 shadow-sm ${cardClass}`}>
+              <div key={benefit.id} className={`relative rounded-2xl p-4 shadow-sm ${cardClass} ${todayRing}`}>
+                {activeToday && (
+                  <span className="absolute -top-2 right-3 text-[10px] font-bold uppercase tracking-wide bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow">
+                    Vigente hoy
+                  </span>
+                )}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
