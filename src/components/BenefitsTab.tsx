@@ -152,7 +152,6 @@ const BenefitsTab = () => {
         </label>
       </div>
 
-      </div>
 
       {/* Brand filter */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
