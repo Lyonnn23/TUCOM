@@ -96,6 +96,17 @@ const BenefitsTab = () => {
         ))}
       </div>
 
+      {/* Only-this-day toggle */}
+      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={onlyThisDay}
+          onChange={(e) => setOnlyThisDay(e.target.checked)}
+          className="w-4 h-4 rounded accent-primary"
+        />
+        Solo descuentos exclusivos de <span className="font-semibold text-foreground">{DAY_NAMES_FULL[selectedDay]}</span>
+      </label>
+
       {/* Brand filter */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         <button
