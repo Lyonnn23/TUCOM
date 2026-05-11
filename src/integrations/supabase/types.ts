@@ -223,25 +223,40 @@ export type Database = {
           created_at: string
           fuel_type: string
           id: string
+          note: string | null
+          photo_path: string | null
           price: number
           station_id: string
+          status: string
           user_id: string
+          verification_notes: string | null
+          verified_at: string | null
         }
         Insert: {
           created_at?: string
           fuel_type: string
           id?: string
+          note?: string | null
+          photo_path?: string | null
           price: number
           station_id: string
+          status?: string
           user_id: string
+          verification_notes?: string | null
+          verified_at?: string | null
         }
         Update: {
           created_at?: string
           fuel_type?: string
           id?: string
+          note?: string | null
+          photo_path?: string | null
           price?: number
           station_id?: string
+          status?: string
           user_id?: string
+          verification_notes?: string | null
+          verified_at?: string | null
         }
         Relationships: [
           {
