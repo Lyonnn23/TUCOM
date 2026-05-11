@@ -135,6 +135,9 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
             <p className={`text-xs font-bold ${featured ? style.accent : "text-foreground"}`}>
               ${item.price}
             </p>
+            {item.estimated && (
+              <p className="text-[8px] text-muted-foreground leading-none mt-0.5">Est.</p>
+            )}
           </div>
         ))}
       </div>
