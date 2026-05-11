@@ -122,6 +122,8 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                       {idx + 1}
                     </div>
 
+                    <BrandLogo brand={station.brand} size={24} />
+
                     <div className="flex-1 min-w-0">
                       <p className={`text-xs font-semibold truncate ${brandAccent || "text-foreground"}`}>
                         {station.name}
