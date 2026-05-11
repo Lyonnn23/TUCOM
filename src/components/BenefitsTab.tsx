@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Tag, CreditCard, Calendar, Zap } from "lucide-react";
 import { useFuelBenefits } from "@/hooks/useFuelBenefits";
 import { Skeleton } from "@/components/ui/skeleton";
+import BrandLogo from "./BrandLogo";
 
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const DAY_NAMES_FULL = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -234,6 +235,7 @@ const BenefitsTab = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <BrandLogo brand={benefit.brand} size={26} />
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 truncate max-w-[140px] ${
                         featured ? brandStyle.badge : "bg-primary/10 text-primary"
                       }`}>

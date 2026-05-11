@@ -1,6 +1,7 @@
 import { MapPin, Navigation, Star, Zap, Fuel } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
+import BrandLogo from "./BrandLogo";
 
 interface StationCardProps {
   station: GasStation;
@@ -58,6 +59,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
+            <BrandLogo brand={station.brand} size={24} />
             {featured && (
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${style.badge}`}>
                 <Star className="w-3 h-3" />
