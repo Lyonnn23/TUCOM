@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Trophy, MapPin, Navigation, Fuel, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { Trophy, MapPin, Navigation, Fuel, ChevronDown, ChevronUp, Zap, Clock } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
+import { formatRelativeTime } from "@/hooks/useGasStations";
 import BrandLogo from "./BrandLogo";
 
 const FUEL_TYPES = [
