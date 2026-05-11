@@ -99,6 +99,12 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
               {station.evOperator ? ` · ${station.evOperator}` : ""}
             </p>
           )}
+          {station.lastUpdated && (
+            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5" />
+              Actualizado {formatRelativeTime(station.lastUpdated)}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <ReportPriceDialog station={station} />
