@@ -1,5 +1,6 @@
-import { MapPin, Navigation, Star, Zap, Fuel } from "lucide-react";
+import { MapPin, Navigation, Star, Zap, Fuel, Clock } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
+import { formatRelativeTime } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
 
@@ -36,7 +37,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
 
-  const fuelItems = [
+  const fuelItems: { label: string; price: number; estimated?: boolean }[] = [
     { label: "93", price: station.prices.gasoline93 },
     { label: "95", price: station.prices.gasoline95 },
     { label: "97", price: station.prices.gasoline97 },
@@ -45,7 +46,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
 
   // Add electric if station has EV charging
   if (station.hasEvCharging && station.prices.electric > 0) {
-    fuelItems.push({ label: "⚡ kWh", price: station.prices.electric });
+    fuelItems.push({ label: "⚡ kWh", price: station.prices.electric, estimated: station.electricEstimated });
   }
 
   return (
@@ -98,6 +99,12 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
               {station.evOperator ? ` · ${station.evOperator}` : ""}
             </p>
           )}
+          {station.lastUpdated && (
+            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5" />
+              Actualizado {formatRelativeTime(station.lastUpdated)}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <ReportPriceDialog station={station} />
@@ -128,6 +135,9 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
             <p className={`text-xs font-bold ${featured ? style.accent : "text-foreground"}`}>
               ${item.price}
             </p>
+            {item.estimated && (
+              <p className="text-[8px] text-muted-foreground leading-none mt-0.5">Est.</p>
+            )}
           </div>
         ))}
       </div>

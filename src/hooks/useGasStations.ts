@@ -21,6 +21,8 @@ export interface GasStation {
   evConnectorTypes: string[];
   evPowerKw: number | null;
   evOperator: string | null;
+  lastUpdated: Date | null;
+  electricEstimated: boolean;
 }
 
 const PRICE_RANGES: Record<string, { min: number; max: number }> = {
@@ -30,6 +32,11 @@ const PRICE_RANGES: Record<string, { min: number; max: number }> = {
   diesel: { min: 800, max: 3000 },
   electric: { min: 50, max: 1000 },
 };
+
+// Stations whose latest price is older than this are considered stale
+// and their prices are hidden across the app (Top 5, list, map averages).
+const MAX_PRICE_AGE_DAYS = 14;
+const MAX_PRICE_AGE_MS = MAX_PRICE_AGE_DAYS * 24 * 60 * 60 * 1000;
 
 function sanitizePrice(type: string, value: number | null | undefined) {
   const price = Number(value ?? 0);
@@ -74,9 +81,28 @@ export function useGasStations() {
         priceMap.set(p.station_id, arr);
       }
 
+      const now = Date.now();
+
       return stations.map((s: any) => {
         const sp = priceMap.get(s.id) || [];
-        const getPrice = (type: string) => sanitizePrice(type, sp.find((p: any) => p.fuel_type === type)?.price);
+
+        // Latest update across this station's price rows
+        let lastUpdatedMs = 0;
+        for (const row of sp) {
+          const t = row.created_at ? new Date(row.created_at).getTime() : 0;
+          if (t > lastUpdatedMs) lastUpdatedMs = t;
+        }
+        const isStale = lastUpdatedMs > 0 && now - lastUpdatedMs > MAX_PRICE_AGE_MS;
+
+        const getPrice = (type: string) => {
+          if (isStale) return 0;
+          return sanitizePrice(type, sp.find((p: any) => p.fuel_type === type)?.price);
+        };
+
+        const electric = getPrice("electric");
+        // EV prices in DB are currently a fixed placeholder (not per-station).
+        // Mark as estimated so the UI can disclose it.
+        const electricEstimated = electric > 0;
 
         return {
           id: s.id,
@@ -90,12 +116,14 @@ export function useGasStations() {
           evConnectorTypes: s.ev_connector_types ?? [],
           evPowerKw: s.ev_power_kw ?? null,
           evOperator: s.ev_operator ?? null,
+          lastUpdated: lastUpdatedMs > 0 ? new Date(lastUpdatedMs) : null,
+          electricEstimated,
           prices: {
             gasoline93: getPrice("gasoline93"),
             gasoline95: getPrice("gasoline95"),
             gasoline97: getPrice("gasoline97"),
             diesel: getPrice("diesel"),
-            electric: getPrice("electric"),
+            electric,
           },
         };
       });
@@ -115,4 +143,23 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
       Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round(R * c * 10) / 10;
+}
+
+/**
+ * Human-readable "hace X" string for the last-updated badge.
+ */
+export function formatRelativeTime(date: Date | null): string {
+  if (!date) return "sin datos";
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "recién";
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `hace ${hours} h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `hace ${days} d`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `hace ${weeks} sem`;
+  const months = Math.floor(days / 30);
+  return `hace ${months} mes${months > 1 ? "es" : ""}`;
 }

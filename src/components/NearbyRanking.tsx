@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Trophy, MapPin, Navigation, Fuel, ChevronDown, ChevronUp, Zap } from "lucide-react";
+import { Trophy, MapPin, Navigation, Fuel, ChevronDown, ChevronUp, Zap, Clock } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
+import { formatRelativeTime } from "@/hooks/useGasStations";
 import BrandLogo from "./BrandLogo";
 
 const FUEL_TYPES = [
@@ -128,7 +129,7 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                       <p className={`text-xs font-semibold truncate ${brandAccent || "text-foreground"}`}>
                         {station.name}
                       </p>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="text-[10px] text-muted-foreground truncate flex items-center gap-0.5">
                           <MapPin className="w-2.5 h-2.5 shrink-0" />
                           {station.brand}
@@ -137,6 +138,12 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                           <span className="text-[10px] text-fuel-blue font-medium flex items-center gap-0.5 shrink-0">
                             <Navigation className="w-2.5 h-2.5" />
                             {station.distance} km
+                          </span>
+                        )}
+                        {station.lastUpdated && (
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+                            <Clock className="w-2.5 h-2.5" />
+                            {formatRelativeTime(station.lastUpdated)}
                           </span>
                         )}
                       </div>
@@ -149,6 +156,9 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                       <p className="text-[9px] text-muted-foreground">
                         {isElectric ? "CLP/kWh" : "CLP/L"}
                       </p>
+                      {isElectric && station.electricEstimated && (
+                        <p className="text-[8px] text-muted-foreground/80 leading-none">Est.</p>
+                      )}
                     </div>
 
                     {onNavigate && (
