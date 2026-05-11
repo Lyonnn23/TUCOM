@@ -156,6 +156,9 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                       <p className="text-[9px] text-muted-foreground">
                         {isElectric ? "CLP/kWh" : "CLP/L"}
                       </p>
+                      {isElectric && station.electricEstimated && (
+                        <p className="text-[8px] text-muted-foreground/80 leading-none">Est.</p>
+                      )}
                     </div>
 
                     {onNavigate && (
