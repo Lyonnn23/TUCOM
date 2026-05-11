@@ -37,7 +37,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
 
-  const fuelItems = [
+  const fuelItems: { label: string; price: number; estimated?: boolean }[] = [
     { label: "93", price: station.prices.gasoline93 },
     { label: "95", price: station.prices.gasoline95 },
     { label: "97", price: station.prices.gasoline97 },
@@ -46,7 +46,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
 
   // Add electric if station has EV charging
   if (station.hasEvCharging && station.prices.electric > 0) {
-    fuelItems.push({ label: "⚡ kWh", price: station.prices.electric });
+    fuelItems.push({ label: "⚡ kWh", price: station.prices.electric, estimated: station.electricEstimated });
   }
 
   return (
