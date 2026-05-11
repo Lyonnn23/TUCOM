@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Trophy, MapPin, Navigation, Fuel, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
+import BrandLogo from "./BrandLogo";
 
 const FUEL_TYPES = [
   { key: "gasoline93" as const, label: "Bencina 93", short: "93" },
@@ -120,6 +121,8 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                     >
                       {idx + 1}
                     </div>
+
+                    <BrandLogo brand={station.brand} size={24} />
 
                     <div className="flex-1 min-w-0">
                       <p className={`text-xs font-semibold truncate ${brandAccent || "text-foreground"}`}>
