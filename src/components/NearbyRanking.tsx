@@ -129,7 +129,7 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                       <p className={`text-xs font-semibold truncate ${brandAccent || "text-foreground"}`}>
                         {station.name}
                       </p>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="text-[10px] text-muted-foreground truncate flex items-center gap-0.5">
                           <MapPin className="w-2.5 h-2.5 shrink-0" />
                           {station.brand}
@@ -138,6 +138,12 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                           <span className="text-[10px] text-fuel-blue font-medium flex items-center gap-0.5 shrink-0">
                             <Navigation className="w-2.5 h-2.5" />
                             {station.distance} km
+                          </span>
+                        )}
+                        {station.lastUpdated && (
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 shrink-0">
+                            <Clock className="w-2.5 h-2.5" />
+                            {formatRelativeTime(station.lastUpdated)}
                           </span>
                         )}
                       </div>
