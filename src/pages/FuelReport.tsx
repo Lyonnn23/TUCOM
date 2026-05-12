@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BarChart3, MapPin, TrendingUp, TrendingDown, Minus, Fuel } from "lucide-react";
 import { useFuelReport, type FuelReportItem, type ZoneReport } from "@/hooks/useFuelReport";
 import { Skeleton } from "@/components/ui/skeleton";
+import UnofficialBanner from "@/components/UnofficialBanner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 const FUEL_COLORS: Record<string, string> = {
