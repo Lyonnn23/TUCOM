@@ -98,6 +98,7 @@ const PriceHistory = () => {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-5 space-y-4">
+        <UnofficialBanner />
         {/* Period selector */}
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-muted-foreground" />
