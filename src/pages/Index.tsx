@@ -256,6 +256,7 @@ const Index = () => {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-5">
+        <UnofficialBanner className="mb-4" />
         {/* Prices Tab */}
         {activeTab === "prices" && (
           <div className="space-y-4">
