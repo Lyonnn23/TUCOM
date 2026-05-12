@@ -153,6 +153,7 @@ const FuelReport = () => {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-5 space-y-5">
+        <UnofficialBanner />
         {isLoading ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
