@@ -279,6 +279,36 @@ const Index = () => {
               </div>
             </div>
 
+            {/* Disclaimer oficial: requisito Google Play (afirmaciones engañosas) */}
+            <div className="bg-muted/60 border border-border rounded-2xl p-3 text-[11px] text-muted-foreground leading-relaxed">
+              <p>
+                <strong className="text-foreground">TÜcom es una app independiente</strong> creada por un desarrollador particular.
+                No está afiliada, asociada, autorizada ni respaldada por la Comisión Nacional de Energía (CNE),
+                ENAP, ni ningún organismo del Gobierno de Chile.
+              </p>
+              <p className="mt-1">
+                Los precios de combustibles se obtienen de la fuente pública oficial:{" "}
+                <a
+                  href="https://www.cne.cl/combustibles/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary font-semibold underline"
+                >
+                  cne.cl/combustibles
+                </a>
+                {" "}· API:{" "}
+                <a
+                  href="https://api.cne.cl/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary font-semibold underline"
+                >
+                  api.cne.cl
+                </a>
+                . Los datos son referenciales y pueden variar respecto al precio final en la estación.
+              </p>
+            </div>
+
             {pricesLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
