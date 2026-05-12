@@ -27,6 +27,37 @@ const Legal = () => {
           <TabsContent value="about" className="mt-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
             <h2 className="text-base font-semibold text-foreground">Acerca de TÜcom</h2>
             <p className="text-foreground font-medium">Tu compañero inteligente para ahorrar en combustible 🇨🇱</p>
+
+            <div className="bg-destructive/5 border border-destructive/30 rounded-xl p-3 space-y-2">
+              <p className="text-foreground font-semibold text-xs">⚠️ Aviso importante</p>
+              <p className="text-xs">
+                TÜcom es una <strong>aplicación independiente</strong> desarrollada por un particular.
+                <strong> No es una aplicación oficial</strong> y <strong>no está afiliada, asociada, autorizada
+                ni respaldada</strong> por la Comisión Nacional de Energía (CNE), ENAP, el Ministerio de Energía,
+                ni ningún organismo público o entidad del Gobierno de Chile.
+              </p>
+              <p className="text-xs">
+                Los precios y datos de estaciones se obtienen de fuentes públicas oficiales y se muestran solo
+                con fines informativos. Para información oficial, visita:
+              </p>
+              <ul className="list-disc pl-5 text-xs space-y-1">
+                <li>
+                  <a href="https://www.cne.cl/combustibles/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
+                    cne.cl/combustibles
+                  </a>{" "}— Comisión Nacional de Energía
+                </li>
+                <li>
+                  <a href="https://api.cne.cl/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
+                    api.cne.cl
+                  </a>{" "}— API oficial de datos de combustibles
+                </li>
+                <li>
+                  <a href="https://energia.gob.cl/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
+                    energia.gob.cl
+                  </a>{" "}— Ministerio de Energía de Chile
+                </li>
+              </ul>
+            </div>
             
             <p>TÜcom es la app chilena que te ayuda a encontrar los mejores precios de bencina y diésel cerca de ti. Compara precios en tiempo real, descubre estaciones cercanas en el mapa y aprovecha descuentos exclusivos con tus tarjetas y medios de pago.</p>
 
