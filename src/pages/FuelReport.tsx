@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BarChart3, MapPin, TrendingUp, TrendingDown, Minus, Fuel } from "lucide-react";
 import { useFuelReport, type FuelReportItem, type ZoneReport } from "@/hooks/useFuelReport";
 import { Skeleton } from "@/components/ui/skeleton";
+import UnofficialBanner from "@/components/UnofficialBanner";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 const FUEL_COLORS: Record<string, string> = {
@@ -152,6 +153,7 @@ const FuelReport = () => {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-5 space-y-5">
+        <UnofficialBanner />
         {isLoading ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">

@@ -9,6 +9,7 @@ import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
 import StationMap from "@/components/StationMap";
 import BenefitsTab from "@/components/BenefitsTab";
+import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
@@ -256,6 +257,7 @@ const Index = () => {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-5">
+        <UnofficialBanner className="mb-4" />
         {/* Prices Tab */}
         {activeTab === "prices" && (
           <div className="space-y-4">
