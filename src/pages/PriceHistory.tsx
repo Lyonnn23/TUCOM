@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, TrendingUp, Calendar } from "lucide-react";
 import { usePriceHistory, type PriceHistoryPoint } from "@/hooks/usePriceHistory";
 import { Skeleton } from "@/components/ui/skeleton";
+import UnofficialBanner from "@/components/UnofficialBanner";
 import {
   LineChart,
   Line,
