@@ -48,15 +48,15 @@ const UnofficialBanner = ({
         <Info className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           <strong className="text-foreground">App independiente — no oficial.</strong>{" "}
-          No afiliada a CNE, ENAP ni al Gobierno de Chile. Datos referenciales de fuentes
-          públicas:{" "}
+          No afiliada a CNE, ENAP ni al Gobierno de Chile. Datos referenciales obtenidos de
+          fuentes públicas:{" "}
           <a
-            href="https://www.cne.cl/combustibles/"
+            href="https://api.cne.cl/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary underline"
           >
-            cne.cl
+            api.cne.cl
           </a>
           .{" "}
           <Link to="/legal" className="text-primary underline">
