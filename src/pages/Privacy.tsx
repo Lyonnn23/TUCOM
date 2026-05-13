@@ -109,13 +109,13 @@ const Privacy = () => {
         </section>
 
         <section className="bg-card border border-border rounded-2xl p-4 space-y-2">
-          <h2 className="font-heading font-bold text-base">3. Datos públicos de combustible (CNE)</h2>
+          <h2 className="font-heading font-bold text-base">3. Datos públicos de combustible</h2>
           <p className="text-muted-foreground">
-            Los precios, marcas, direcciones y servicios de las estaciones provienen de la API oficial
-            de la <strong>Comisión Nacional de Energía (CNE) de Chile</strong>. Los datos de
-            electrolineras provienen de <strong>Open Charge Map</strong>. Estos datos son públicos y
-            se sincronizan periódicamente. TÜcom no se hace responsable de imprecisiones en la fuente
-            original.
+            Los precios, marcas, direcciones y servicios de las estaciones se obtienen desde fuentes
+            públicas de referencia, incluyendo el portal de datos de combustibles de la
+            <strong> Comisión Nacional de Energía (CNE) de Chile</strong>. Los datos de electrolineras
+            provienen de <strong>Open Charge Map</strong>. Estos datos se sincronizan periódicamente y
+            pueden contener variaciones respecto del precio final informado por cada estación.
           </p>
         </section>
 
