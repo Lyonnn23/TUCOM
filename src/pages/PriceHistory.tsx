@@ -269,7 +269,7 @@ const PriceHistory = () => {
 
         <div className="bg-muted/50 rounded-2xl p-3 border border-border">
           <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-            Los datos se actualizan automáticamente cada 6 horas con información oficial de la CNE.
+            Los datos se actualizan automáticamente cada 6 horas con información pública referencial.
           </p>
         </div>
       </main>

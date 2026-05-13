@@ -37,19 +37,19 @@ const Legal = () => {
                 ni ningún organismo público o entidad del Gobierno de Chile.
               </p>
               <p className="text-xs">
-                Los precios y datos de estaciones se obtienen de fuentes públicas oficiales y se muestran solo
-                con fines informativos. Para información oficial, visita:
+                Los precios y datos de estaciones se obtienen de fuentes públicas y se muestran solo
+                con fines informativos. Fuentes de referencia:
               </p>
               <ul className="list-disc pl-5 text-xs space-y-1">
                 <li>
-                  <a href="https://www.cne.cl/combustibles/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
-                    cne.cl/combustibles
-                  </a>{" "}— Comisión Nacional de Energía
+                  <a href="https://www.cne.cl/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
+                    cne.cl
+                  </a>{" "}— sitio institucional de la Comisión Nacional de Energía
                 </li>
                 <li>
                   <a href="https://api.cne.cl/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
                     api.cne.cl
-                  </a>{" "}— API oficial de datos de combustibles
+                  </a>{" "}— portal público de datos de combustibles
                 </li>
                 <li>
                   <a href="https://energia.gob.cl/" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold underline">
@@ -59,11 +59,11 @@ const Legal = () => {
               </ul>
             </div>
             
-            <p>TÜcom es la app chilena que te ayuda a encontrar los mejores precios de bencina y diésel cerca de ti. Compara precios en tiempo real, descubre estaciones cercanas en el mapa y aprovecha descuentos exclusivos con tus tarjetas y medios de pago.</p>
+            <p>TÜcom es la app chilena que te ayuda a encontrar precios referenciales de bencina y diésel cerca de ti. Compara precios actualizados periódicamente, descubre estaciones cercanas en el mapa y aprovecha descuentos con tus tarjetas y medios de pago.</p>
 
             <h3 className="font-semibold text-foreground">✨ Características principales</h3>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Precios actualizados:</strong> Consulta los precios promedio de bencina 93, 95, 97 y diésel a nivel nacional</li>
+              <li><strong>Precios referenciales:</strong> Consulta precios promedio de bencina 93, 95, 97 y diésel a nivel nacional</li>
               <li><strong>Mapa interactivo:</strong> Encuentra las estaciones de servicio más cercanas a tu ubicación con navegación directa</li>
               <li><strong>Reporta precios:</strong> Contribuye con la comunidad reportando los precios que encuentras en la calle</li>
               <li><strong>Beneficios y descuentos:</strong> Descubre qué días y con qué tarjetas puedes ahorrar más en cada cadena</li>
@@ -76,7 +76,7 @@ const Legal = () => {
             <p>Para todos los conductores en Chile que quieren gastar menos en bencina. Ya sea que manejes todos los días al trabajo o solo los fines de semana, TÜcom te muestra dónde cargar más barato.</p>
 
             <h3 className="font-semibold text-foreground">💡 Datos confiables</h3>
-            <p>Los precios se actualizan con información oficial y reportes de la comunidad de usuarios. Mientras más personas usen TÜcom, más precisos serán los precios.</p>
+            <p>Los precios se actualizan con datos públicos y reportes de la comunidad de usuarios. Mientras más personas usen TÜcom, más precisos serán los precios.</p>
 
             <div className="pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground">Versión 1.0.0 · Hecho con 💜 en Chile</p>

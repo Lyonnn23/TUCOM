@@ -2,7 +2,7 @@
   "id": "/?source=pwa",
   "name": "TÜcom — Precios de Bencina Chile",
   "short_name": "TÜcom",
-  "description": "Compara precios de bencina en tiempo real, encuentra las estaciones de servicio más baratas cerca de ti, descubre beneficios y descuentos por tarjeta y planifica tu próxima carga en Chile.",
+  "description": "App independiente para comparar precios referenciales de bencina, encontrar estaciones cercanas, revisar beneficios y planificar tu próxima carga en Chile.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
