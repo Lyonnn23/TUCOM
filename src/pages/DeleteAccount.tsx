@@ -149,6 +149,61 @@ const DeleteAccount = () => {
           </div>
         </section>
 
+        {/* Eliminación parcial */}
+        <section className="bg-card border border-border rounded-2xl p-5 space-y-4">
+          <div>
+            <h2 className="font-heading font-bold text-base mb-1">
+              Eliminar solo algunos datos (sin cerrar la cuenta)
+            </h2>
+            <p className="text-muted-foreground text-xs">
+              Puedes borrar datos específicos y mantener tu cuenta activa.
+            </p>
+          </div>
+
+          {!user ? (
+            <div className="bg-muted/40 border border-border rounded-xl p-3 text-xs">
+              Debes <Link to="/auth" className="text-primary font-semibold underline">iniciar sesión</Link>{" "}
+              para usar estas opciones.
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                disabled={partialLoading !== null}
+                onClick={() => handlePartialDelete("push")}
+              >
+                {partialLoading === "push" ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Bell className="w-4 h-4 mr-2" />
+                )}
+                Eliminar mis suscripciones a notificaciones
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                disabled={partialLoading !== null}
+                onClick={() => handlePartialDelete("reports")}
+              >
+                {partialLoading === "reports" ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-2" />
+                )}
+                Eliminar mis reportes de precios
+              </Button>
+              <p className="text-[11px] text-muted-foreground pt-1">
+                Para borrar fotos adjuntas u otros datos específicos, escríbenos a{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary underline">
+                  {SUPPORT_EMAIL}
+                </a>
+                .
+              </p>
+            </div>
+          )}
+        </section>
+
         {/* Opción 1: Auto-servicio */}
         <section className="bg-card border border-border rounded-2xl p-5 space-y-4">
           <div>
