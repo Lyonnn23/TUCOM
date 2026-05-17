@@ -23,6 +23,35 @@ const DeleteAccount = () => {
   const [confirmIrreversible, setConfirmIrreversible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [partialLoading, setPartialLoading] = useState<null | "push" | "reports">(null);
+
+  const handlePartialDelete = async (kind: "push" | "reports") => {
+    if (!user) return;
+    setPartialLoading(kind);
+    try {
+      if (kind === "push") {
+        await supabase.from("push_subscriptions").delete().eq("user_id", user.id);
+        toast({
+          title: "Suscripciones eliminadas",
+          description: "Ya no recibirás notificaciones push. Tu cuenta sigue activa.",
+        });
+      } else {
+        await supabase.from("reported_prices").delete().eq("user_id", user.id);
+        toast({
+          title: "Reportes eliminados",
+          description: "Borramos todos tus reportes de precios. Tu cuenta sigue activa.",
+        });
+      }
+    } catch {
+      toast({
+        title: "Error al procesar",
+        description: "Por favor escríbenos a " + SUPPORT_EMAIL,
+        variant: "destructive",
+      });
+    } finally {
+      setPartialLoading(null);
+    }
+  };
 
   const canSubmit = email.trim().length > 5 && confirmFull && confirmIrreversible && !submitting;
 
