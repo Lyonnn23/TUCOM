@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2, Mail, AlertTriangle, CheckCircle2, Loader2, Shield } from "lucide-react";
+import { ArrowLeft, Trash2, Mail, AlertTriangle, CheckCircle2, Loader2, Shield, Bell, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,35 @@ const DeleteAccount = () => {
   const [confirmIrreversible, setConfirmIrreversible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [partialLoading, setPartialLoading] = useState<null | "push" | "reports">(null);
+
+  const handlePartialDelete = async (kind: "push" | "reports") => {
+    if (!user) return;
+    setPartialLoading(kind);
+    try {
+      if (kind === "push") {
+        await supabase.from("push_subscriptions").delete().eq("user_id", user.id);
+        toast({
+          title: "Suscripciones eliminadas",
+          description: "Ya no recibirás notificaciones push. Tu cuenta sigue activa.",
+        });
+      } else {
+        await supabase.from("reported_prices").delete().eq("user_id", user.id);
+        toast({
+          title: "Reportes eliminados",
+          description: "Borramos todos tus reportes de precios. Tu cuenta sigue activa.",
+        });
+      }
+    } catch {
+      toast({
+        title: "Error al procesar",
+        description: "Por favor escríbenos a " + SUPPORT_EMAIL,
+        variant: "destructive",
+      });
+    } finally {
+      setPartialLoading(null);
+    }
+  };
 
   const canSubmit = email.trim().length > 5 && confirmFull && confirmIrreversible && !submitting;
 
@@ -118,6 +147,61 @@ const DeleteAccount = () => {
             estadísticas agregadas (promedios de precios por zona, historial de mercado) sin ningún
             vínculo con tu identidad. Esto se mantiene para el funcionamiento general del servicio.
           </div>
+        </section>
+
+        {/* Eliminación parcial */}
+        <section className="bg-card border border-border rounded-2xl p-5 space-y-4">
+          <div>
+            <h2 className="font-heading font-bold text-base mb-1">
+              Eliminar solo algunos datos (sin cerrar la cuenta)
+            </h2>
+            <p className="text-muted-foreground text-xs">
+              Puedes borrar datos específicos y mantener tu cuenta activa.
+            </p>
+          </div>
+
+          {!user ? (
+            <div className="bg-muted/40 border border-border rounded-xl p-3 text-xs">
+              Debes <Link to="/auth" className="text-primary font-semibold underline">iniciar sesión</Link>{" "}
+              para usar estas opciones.
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                disabled={partialLoading !== null}
+                onClick={() => handlePartialDelete("push")}
+              >
+                {partialLoading === "push" ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Bell className="w-4 h-4 mr-2" />
+                )}
+                Eliminar mis suscripciones a notificaciones
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                disabled={partialLoading !== null}
+                onClick={() => handlePartialDelete("reports")}
+              >
+                {partialLoading === "reports" ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-2" />
+                )}
+                Eliminar mis reportes de precios
+              </Button>
+              <p className="text-[11px] text-muted-foreground pt-1">
+                Para borrar fotos adjuntas u otros datos específicos, escríbenos a{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-primary underline">
+                  {SUPPORT_EMAIL}
+                </a>
+                .
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Opción 1: Auto-servicio */}
