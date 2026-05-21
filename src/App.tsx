@@ -81,6 +81,8 @@ const App = () => (
                 <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
                 <Route path="/alertas" element={<RequireAuth><Alerts /></RequireAuth>} />
                 <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+                <Route path="/compare" element={<RequireAuth><Compare /></RequireAuth>} />
+                <Route path="/comparar" element={<RequireAuth><Compare /></RequireAuth>} />
                 <Route path="/perfil" element={<RequireAuth><Profile /></RequireAuth>} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
