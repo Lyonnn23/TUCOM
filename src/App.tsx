@@ -15,6 +15,15 @@ import Legal from "./pages/Legal.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import DeleteAccount from "./pages/DeleteAccount.tsx";
 import ResponsiveCheck from "./pages/ResponsiveCheck.tsx";
+import Welcome from "./pages/Welcome.tsx";
+import { useAuth } from "@/hooks/useAuth";
+
+const RequireAuth = ({ children }: { children: JSX.Element }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Welcome />;
+  return children;
+};
 
 const queryClient = new QueryClient();
 
@@ -27,7 +36,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+            <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reporte" element={<FuelReport />} />
             <Route path="/historial" element={<PriceHistory />} />
