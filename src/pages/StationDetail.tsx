@@ -368,6 +368,22 @@ const StationDetail = () => {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+        {/* Map preview + distance */}
+        <section className="bg-card border border-border rounded-2xl shadow-soft p-4 space-y-3">
+          <StationStaticMap
+            lat={station.lat}
+            lng={station.lng}
+            name={station.name}
+            onClick={handleViewOnGoogleMaps}
+          />
+          <StationDistanceInfo
+            origin={userLocation}
+            dest={{ lat: station.lat, lng: station.lng }}
+          />
+        </section>
+
+        <StationPhotos placeId={station.placeId} name={station.name} />
+
         {/* Prices table */}
         <section className="bg-card border border-border rounded-2xl shadow-soft overflow-hidden">
           <div className="px-5 py-4 border-b border-border">
