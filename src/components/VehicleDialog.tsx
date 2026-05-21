@@ -12,6 +12,8 @@ import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
 import { EV_PRESETS } from "@/lib/evPresets";
 import { useUserVehicles, type UserVehicle } from "@/hooks/useUserVehicles";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useOrganization } from "@/hooks/useOrganization";
+import { Switch } from "@/components/ui/switch";
 import { PaywallModal } from "@/components/PaywallModal";
 import { toast } from "sonner";
 
