@@ -106,6 +106,8 @@ const App = () => (
                 <Route path="/ranking" element={<RequireAuth><Leaderboard /></RequireAuth>} />
                 <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
                 <Route path="/admin" element={<RequireAuth><RequireAdmin><Admin /></RequireAdmin></RequireAuth>} />
+                <Route path="/calculadora" element={<RequireAuth><Calculadora /></RequireAuth>} />
+                <Route path="/calculator" element={<Navigate to="/calculadora" replace />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />
