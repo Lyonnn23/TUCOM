@@ -1,15 +1,41 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, MapPin, Fuel, TrendingDown } from "lucide-react";
+import { Zap, MapPin, Bell, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { auth } from "@/integrations/cloud-auth";
+import { useFuelPrices } from "@/hooks/useFuelPrices";
+
+function useAnimatedNumber(target: number, duration = 1200) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!target) return;
+    let raf = 0;
+    const start = performance.now();
+    const from = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(from + (target - from) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return value;
+}
 
 const Welcome = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [signing, setSigning] = useState(false);
+  const { data: fuelPrices } = useFuelPrices();
+
+  const lowest = fuelPrices?.length
+    ? Math.min(...fuelPrices.filter((f) => f.type !== "electric").map((f) => f.price))
+    : 0;
+  const animatedLowest = useAnimatedNumber(lowest);
 
   useEffect(() => {
     if (!loading && user) navigate("/", { replace: true });
@@ -34,37 +60,66 @@ const Welcome = () => {
     }
   };
 
+  const continueAsGuest = () => {
+    try {
+      sessionStorage.setItem("tucom_guest_mode", "1");
+    } catch {}
+    navigate("/", { replace: true });
+  };
+
+  const features = [
+    { icon: TrendingDown, label: "Precios en tiempo real" },
+    { icon: MapPin, label: "Estaciones cercanas" },
+    { icon: Bell, label: "Alertas personalizadas" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary to-secondary flex flex-col items-center justify-center px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      <div className="w-full max-w-sm flex flex-col items-center text-center text-white">
+    <div className="relative min-h-screen overflow-hidden bg-animated-gradient flex flex-col items-center justify-center px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      {/* Decorative blobs */}
+      <div className="pointer-events-none absolute -top-32 -left-24 w-96 h-96 rounded-full bg-white/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-24 w-96 h-96 rounded-full bg-accent/20 blur-3xl" />
+
+      <div className="relative w-full max-w-sm flex flex-col items-center text-center text-white">
         {/* Logo */}
-        <div className="w-24 h-24 rounded-3xl bg-white/15 backdrop-blur-md flex items-center justify-center shadow-2xl ring-1 ring-white/20 mb-6">
-          <Zap className="w-12 h-12 text-white" strokeWidth={2.5} />
+        <div className="w-28 h-28 rounded-[2rem] bg-white/15 backdrop-blur-md flex items-center justify-center shadow-2xl ring-1 ring-white/25 mb-6 animate-scale-in">
+          <Zap className="w-14 h-14 text-white" strokeWidth={2.5} />
         </div>
-        <h1 className="font-heading font-extrabold text-5xl tracking-tight mb-2">TÜcom</h1>
-        <p className="text-white/85 text-base mb-10 leading-relaxed">
-          Encuentra los mejores precios de combustible en Chile
+        <h1 className="font-heading font-extrabold text-6xl tracking-tight mb-3">TÜcom</h1>
+        <p className="text-white/90 text-base mb-6 leading-relaxed max-w-xs">
+          Encuentra el combustible más barato cerca de ti
         </p>
 
+        {/* Animated live price counter */}
+        <div className="w-full mb-8 rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 px-5 py-4">
+          <p className="text-[11px] uppercase tracking-wider text-white/70 mb-1">
+            Precio más bajo hoy
+          </p>
+          <div className="flex items-baseline justify-center gap-1">
+            <span className="text-3xl font-extrabold tabular-nums animate-count-up">
+              ${animatedLowest.toLocaleString("es-CL")}
+            </span>
+            <span className="text-sm text-white/80">CLP/L</span>
+          </div>
+        </div>
+
         {/* Features */}
-        <div className="grid grid-cols-3 gap-3 w-full mb-10">
-          {[
-            { icon: MapPin, label: "Estaciones cerca" },
-            { icon: TrendingDown, label: "Precios bajos" },
-            { icon: Fuel, label: "93, 95, 97, Diesel" },
-          ].map(({ icon: Icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-1.5 bg-white/10 rounded-2xl p-3 backdrop-blur-sm">
+        <div className="grid grid-cols-3 gap-3 w-full mb-8">
+          {features.map(({ icon: Icon, label }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center gap-2 bg-white/10 rounded-2xl p-3 backdrop-blur-sm ring-1 ring-white/15"
+            >
               <Icon className="w-5 h-5 text-white" />
               <span className="text-[10px] font-medium leading-tight">{label}</span>
             </div>
           ))}
         </div>
 
-        {/* Google sign-in */}
+        {/* Google sign-in (Google brand guidelines) */}
         <Button
           onClick={handleGoogle}
           disabled={signing || loading}
-          className="w-full h-12 rounded-xl bg-white hover:bg-white/95 text-[#1f1f1f] font-medium text-sm gap-3 shadow-lg"
+          className="w-full h-12 rounded-xl bg-white hover:bg-white/95 text-[#1f1f1f] font-medium text-sm gap-3 shadow-lg hover-scale"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -77,12 +132,19 @@ const Welcome = () => {
 
         <button
           onClick={() => navigate("/auth")}
-          className="mt-4 text-xs text-white/80 hover:text-white underline-offset-2 hover:underline"
+          className="mt-3 text-xs text-white/80 hover:text-white underline-offset-2 hover:underline"
         >
           Usar email en su lugar
         </button>
 
-        <p className="mt-8 text-[11px] text-white/70 leading-relaxed">
+        <button
+          onClick={continueAsGuest}
+          className="mt-4 text-xs text-white/70 hover:text-white underline underline-offset-2"
+        >
+          Continuar sin cuenta · funciones limitadas
+        </button>
+
+        <p className="mt-6 text-[11px] text-white/70 leading-relaxed">
           Al continuar aceptas los{" "}
           <button onClick={() => navigate("/legal?tab=terms")} className="underline">Términos</button>{" "}
           y la{" "}
