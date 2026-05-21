@@ -134,138 +134,135 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{vehicle ? "Editar vehículo" : "Agregar vehículo"}</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4 pt-2">
-          {!vehicle && (
-            <div>
-              <Label className="text-xs">Usar preset</Label>
-              <Select value={presetIdx} onValueChange={applyPreset}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Elige un modelo popular" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="custom">Personalizado</SelectItem>
-                  <SelectItem value="__hdr_ice" disabled>— Combustión —</SelectItem>
-                  {VEHICLE_PRESETS.map((p, i) => (
-                    <SelectItem key={i} value={String(i)}>
-                      {p.brand} {p.model} · {p.consumption_kml} km/L
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="__hdr_ev" disabled>— Eléctricos —</SelectItem>
-                  {EV_PRESETS.map((p, i) => (
-                    <SelectItem key={`ev-${i}`} value={`ev-${i}`}>
-                      ⚡ {p.brand} {p.model} · {p.battery_kwh} kWh · {p.efficiency_kmkwh} km/kWh
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div>
-            <Label className="text-xs">Apodo (opcional)</Label>
-            <Input
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value.slice(0, 30))}
-              placeholder='p. ej. "Mi auto"'
-              className="mt-1"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs">Marca</Label>
-              <Input value={brand} onChange={(e) => setBrand(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label className="text-xs">Modelo</Label>
-              <Input value={model} onChange={(e) => setModel(e.target.value)} className="mt-1" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs">Año</Label>
-              <Input
-                type="number"
-                inputMode="numeric"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                placeholder="2020"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Combustible</Label>
-              <Select value={fuelType} onValueChange={(v) => setFuelType(v as any)}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {FUELS.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs">{fuelType === "electric" ? "Batería (kWh)" : "Estanque (L)"}</Label>
-              <Input
-                type="number"
-                inputMode="numeric"
-                value={tank}
-                onChange={(e) => setTank(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">{fuelType === "electric" ? "Eficiencia (km/kWh)" : "Rendimiento (km/L)"}</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                step="0.1"
-                value={cons}
-                onChange={(e) => setCons(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-xs">Color</Label>
-            <div className="flex flex-wrap gap-2 mt-1.5">
-              {VEHICLE_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  aria-label={`Color ${c}`}
-                  onClick={() => setColor(c)}
-                  className={`w-8 h-8 rounded-full border-2 transition-all ${color === c ? "ring-2 ring-offset-2 ring-primary scale-110" : ""}`}
-                  style={{ backgroundColor: c, borderColor: color === c ? c : "transparent" }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={create.isPending || update.isPending}>
-            {vehicle ? "Guardar cambios" : "Agregar vehículo"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-  return (
     <>
-      {dialog}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{vehicle ? "Editar vehículo" : "Agregar vehículo"}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            {!vehicle && (
+              <div>
+                <Label className="text-xs">Usar preset</Label>
+                <Select value={presetIdx} onValueChange={applyPreset}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Elige un modelo popular" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                    <SelectItem value="__hdr_ice" disabled>— Combustión —</SelectItem>
+                    {VEHICLE_PRESETS.map((p, i) => (
+                      <SelectItem key={i} value={String(i)}>
+                        {p.brand} {p.model} · {p.consumption_kml} km/L
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__hdr_ev" disabled>— Eléctricos —</SelectItem>
+                    {EV_PRESETS.map((p, i) => (
+                      <SelectItem key={`ev-${i}`} value={`ev-${i}`}>
+                        ⚡ {p.brand} {p.model} · {p.battery_kwh} kWh · {p.efficiency_kmkwh} km/kWh
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <Label className="text-xs">Apodo (opcional)</Label>
+              <Input
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value.slice(0, 30))}
+                placeholder='p. ej. "Mi auto"'
+                className="mt-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Marca</Label>
+                <Input value={brand} onChange={(e) => setBrand(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Modelo</Label>
+                <Input value={model} onChange={(e) => setModel(e.target.value)} className="mt-1" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Año</Label>
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  placeholder="2020"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Combustible</Label>
+                <Select value={fuelType} onValueChange={(v) => setFuelType(v as any)}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {FUELS.map((f) => (
+                      <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">{fuelType === "electric" ? "Batería (kWh)" : "Estanque (L)"}</Label>
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  value={tank}
+                  onChange={(e) => setTank(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">{fuelType === "electric" ? "Eficiencia (km/kWh)" : "Rendimiento (km/L)"}</Label>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  step="0.1"
+                  value={cons}
+                  onChange={(e) => setCons(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs">Color</Label>
+              <div className="flex flex-wrap gap-2 mt-1.5">
+                {VEHICLE_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-label={`Color ${c}`}
+                    onClick={() => setColor(c)}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${color === c ? "ring-2 ring-offset-2 ring-primary scale-110" : ""}`}
+                    style={{ backgroundColor: c, borderColor: color === c ? c : "transparent" }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={create.isPending || update.isPending}>
+              {vehicle ? "Guardar cambios" : "Agregar vehículo"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <PaywallModal
         open={paywallOpen}
         onOpenChange={setPaywallOpen}
