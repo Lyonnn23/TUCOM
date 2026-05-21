@@ -203,6 +203,51 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          active: boolean
+          created_at: string
+          fuel_type: string
+          id: string
+          last_known_price: number | null
+          notified_read: boolean
+          station_id: string
+          target_price: number
+          triggered: boolean
+          triggered_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          fuel_type: string
+          id?: string
+          last_known_price?: number | null
+          notified_read?: boolean
+          station_id: string
+          target_price: number
+          triggered?: boolean
+          triggered_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          fuel_type?: string
+          id?: string
+          last_known_price?: number | null
+          notified_read?: boolean
+          station_id?: string
+          target_price?: number
+          triggered?: boolean
+          triggered_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string

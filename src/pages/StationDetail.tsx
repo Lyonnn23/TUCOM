@@ -8,6 +8,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import BrandLogo from "@/components/BrandLogo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import PriceAlertDialog from "@/components/PriceAlertDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
@@ -305,6 +306,12 @@ const StationDetail = () => {
                 </span>
               </div>
             )}
+          </div>
+          <div className="px-5 py-4 border-t border-border bg-muted/30">
+            <PriceAlertDialog
+              stationId={station.id}
+              prices={station.prices as Record<string, number>}
+            />
           </div>
         </section>
 
