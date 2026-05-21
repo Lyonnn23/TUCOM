@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.trip-calculator]
 verify_jwt = false
+
+[functions.admin-ai-insights]
+verify_jwt = false
+
+[functions.admin-global-push]
+verify_jwt = false
