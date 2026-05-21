@@ -423,6 +423,7 @@ const Index = () => {
             </div>
           );
         })()}
+        {activeTab === "prices" && <div className="mb-4"><TankRangeBanner /></div>}
         <UnofficialBanner className="mb-4" />
         {/* Prices Tab */}
         {activeTab === "prices" && (
