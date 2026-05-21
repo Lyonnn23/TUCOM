@@ -349,12 +349,21 @@ const StationDetail = () => {
             )}
           </div>
 
-          <Button
-            onClick={handleGoogleMaps}
-            className="mt-5 w-full h-12 rounded-xl bg-white text-primary hover:bg-white/95 font-semibold shadow-elegant"
-          >
-            <Navigation className="w-5 h-5 mr-2" /> Cómo llegar
-          </Button>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Button
+              onClick={handleGoogleMapsDirections}
+              className="h-12 rounded-xl bg-white text-primary hover:bg-white/95 font-semibold shadow-elegant"
+            >
+              <Navigation className="w-5 h-5 mr-2" aria-hidden="true" /> Cómo llegar
+            </Button>
+            <Button
+              onClick={handleViewOnGoogleMaps}
+              variant="outline"
+              className="h-12 rounded-xl bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" aria-hidden="true" /> Ver en Google Maps
+            </Button>
+          </div>
         </div>
       </header>
 
