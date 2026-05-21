@@ -1,6 +1,6 @@
-import { Fuel, Map, List, Tag } from "lucide-react";
+import { Fuel, Map, List, Tag, Heart } from "lucide-react";
 
-export type TabType = "prices" | "map" | "stations" | "benefits";
+export type TabType = "prices" | "map" | "stations" | "favorites" | "benefits";
 
 interface BottomNavProps {
   active: TabType;
@@ -11,12 +11,13 @@ const tabs: { id: TabType; label: string; icon: typeof Fuel }[] = [
   { id: "prices", label: "Precios", icon: Fuel },
   { id: "map", label: "Mapa", icon: Map },
   { id: "stations", label: "Estaciones", icon: List },
+  { id: "favorites", label: "Favoritos", icon: Heart },
   { id: "benefits", label: "Beneficios", icon: Tag },
 ];
 
 const BottomNav = ({ active, onChange }: BottomNavProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card/80 backdrop-blur-xl border-t border-border px-2 pb-[env(safe-area-inset-bottom)] z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card/85 backdrop-blur-xl border-t border-border px-2 pb-[env(safe-area-inset-bottom)] z-50">
       <div className="flex items-center justify-around max-w-md mx-auto">
         {tabs.map((tab) => {
           const isActive = active === tab.id;
@@ -24,7 +25,7 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
             <button
               key={tab.id}
               onClick={() => onChange(tab.id)}
-              className={`flex flex-col items-center py-2.5 px-4 transition-all ${
+              className={`flex flex-col items-center py-2.5 px-3 transition-all press-scale ${
                 isActive
                   ? "text-primary scale-105"
                   : "text-muted-foreground hover:text-foreground"

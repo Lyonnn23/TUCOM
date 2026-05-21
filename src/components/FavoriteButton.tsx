@@ -1,0 +1,70 @@
+import { Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useFavorites } from "@/hooks/useFavorites";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  stationId: string;
+  size?: "sm" | "md" | "lg";
+  variant?: "glass" | "surface";
+  className?: string;
+}
+
+const SIZES = {
+  sm: { btn: "w-8 h-8", icon: "w-4 h-4" },
+  md: { btn: "w-10 h-10", icon: "w-5 h-5" },
+  lg: { btn: "w-12 h-12", icon: "w-6 h-6" },
+};
+
+const FavoriteButton = ({ stationId, size = "md", variant = "surface", className }: Props) => {
+  const { user } = useAuth();
+  const { isFavorite, toggle, toggling } = useFavorites();
+  const navigate = useNavigate();
+  const active = isFavorite(stationId);
+  const s = SIZES[size];
+
+  const handle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      toast.error("Inicia sesión para guardar favoritos", {
+        action: { label: "Entrar", onClick: () => navigate("/auth") },
+      });
+      return;
+    }
+    toggle(stationId);
+  };
+
+  const base =
+    variant === "glass"
+      ? "bg-white/20 hover:bg-white/30 backdrop-blur-md text-white"
+      : "bg-card border border-border hover:bg-muted text-foreground shadow-soft";
+
+  return (
+    <button
+      onClick={handle}
+      disabled={toggling}
+      aria-label={active ? "Quitar de favoritos" : "Añadir a favoritos"}
+      title={active ? "Quitar de favoritos" : "Añadir a favoritos"}
+      className={cn(
+        s.btn,
+        base,
+        "rounded-full flex items-center justify-center press-scale transition-all disabled:opacity-60",
+        className,
+      )}
+    >
+      <Heart
+        className={cn(
+          s.icon,
+          "transition-colors",
+          active ? "fill-[hsl(0,75%,55%)] text-[hsl(0,75%,55%)]" : "fill-transparent",
+        )}
+        strokeWidth={2.25}
+      />
+    </button>
+  );
+};
+
+export default FavoriteButton;
