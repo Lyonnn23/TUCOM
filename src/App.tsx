@@ -121,6 +121,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            </main>
             <InstallBanner />
           </AuthProvider>
         </BrowserRouter>
