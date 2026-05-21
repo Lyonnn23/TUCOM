@@ -861,6 +861,7 @@ const Index = () => {
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <FuelLogFAB />
+      <DriverModeFAB />
     </div>
   );
 };
