@@ -296,6 +296,74 @@ export type Database = {
         }
         Relationships: []
       }
+      organization_members: {
+        Row: {
+          id: string
+          joined_at: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          company_code: string
+          created_at: string
+          created_by: string
+          id: string
+          logo_url: string | null
+          max_vehicles: number
+          name: string
+          plan: string
+          updated_at: string
+        }
+        Insert: {
+          company_code: string
+          created_at?: string
+          created_by: string
+          id?: string
+          logo_url?: string | null
+          max_vehicles?: number
+          name: string
+          plan?: string
+          updated_at?: string
+        }
+        Update: {
+          company_code?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          logo_url?: string | null
+          max_vehicles?: number
+          name?: string
+          plan?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       price_alerts: {
         Row: {
           active: boolean
@@ -818,6 +886,7 @@ export type Database = {
           is_primary: boolean
           model: string
           nickname: string | null
+          organization_id: string | null
           tank_size_l: number
           updated_at: string
           user_id: string
@@ -833,6 +902,7 @@ export type Database = {
           is_primary?: boolean
           model: string
           nickname?: string | null
+          organization_id?: string | null
           tank_size_l?: number
           updated_at?: string
           user_id: string
@@ -848,12 +918,21 @@ export type Database = {
           is_primary?: boolean
           model?: string
           nickname?: string | null
+          organization_id?: string | null
           tank_size_l?: number
           updated_at?: string
           user_id?: string
           year?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_vehicles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -1090,6 +1169,7 @@ export type Database = {
         | { Args: { table_name: string }; Returns: string }
       enablelongtransactions: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      generate_company_code: { Args: never; Returns: string }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
         Args: { geom1: unknown; geom2: unknown }
@@ -1196,6 +1276,23 @@ export type Database = {
           users: number
         }[]
       }
+      get_fleet_breakdown: {
+        Args: { _org_id: string }
+        Returns: {
+          brand: string
+          cost_per_km: number
+          driver_id: string
+          last_log_at: string
+          model: string
+          month_spend: number
+          nickname: string
+          total_km: number
+          total_liters: number
+          total_spend: number
+          vehicle_id: string
+        }[]
+      }
+      get_fleet_stats: { Args: { _org_id: string }; Returns: Json }
       get_fuel_price_averages: {
         Args: never
         Returns: {
@@ -1243,6 +1340,13 @@ export type Database = {
         Args: { _user_id: string; _vehicle_id?: string }
         Returns: Json
       }
+      get_user_org: {
+        Args: { _user_id: string }
+        Returns: {
+          organization_id: string
+          role: string
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       has_pro_plan: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
@@ -1253,6 +1357,14 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
       nearby_stations: {
         Args: {
