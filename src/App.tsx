@@ -46,6 +46,12 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+const RequireOnboarded = ({ children }: { children: JSX.Element }) => {
+  const { user, loading } = useAuth();
+  if (loading || !user) return children;
+  return <OnboardingGate>{children}</OnboardingGate>;
+};
+
 const queryClient = new QueryClient();
 
 const App = () => (
