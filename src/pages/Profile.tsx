@@ -323,6 +323,47 @@ const Profile = () => {
               }}
             />
           </div>
+
+          <div className="pt-3 border-t border-border space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-foreground">Avisar cuando queden pocos km</span>
+              <span className="text-sm font-semibold text-primary tabular-nums">
+                {preferences?.low_fuel_threshold_km ?? 80} km
+              </span>
+            </div>
+            <Slider
+              value={[preferences?.low_fuel_threshold_km ?? 80]}
+              min={20}
+              max={200}
+              step={10}
+              onValueChange={(v) => {
+                save({ low_fuel_threshold_km: v[0] }).catch(() => {
+                  toast.error("No se pudo guardar");
+                });
+              }}
+              aria-label="Umbral de bajo combustible en kilómetros"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+            <div className="min-w-0">
+              <p className="text-sm text-foreground">Resumen mensual por email</p>
+              <p className="text-[11px] text-muted-foreground">
+                Cuánto gastaste y cuánto ahorraste este mes
+              </p>
+            </div>
+            <Switch
+              checked={preferences?.fuel_log_email_optin ?? false}
+              onCheckedChange={async (v) => {
+                try {
+                  await save({ fuel_log_email_optin: v });
+                  toast.success(v ? "Recibirás el resumen mensual" : "Resumen mensual desactivado");
+                } catch {
+                  toast.error("No se pudo actualizar");
+                }
+              }}
+            />
+          </div>
         </section>
 
         {/* About */}
