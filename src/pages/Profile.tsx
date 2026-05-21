@@ -185,6 +185,8 @@ const Profile = () => {
 
         <PlanCard />
 
+        <EmpresaCard />
+
         <PointsAndBadges />
 
 
