@@ -1,11 +1,13 @@
 import { ArrowLeft } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Legal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get("tab") || "about";
+  const pathDefault = /term/i.test(location.pathname) ? "terms" : null;
+  const defaultTab = searchParams.get("tab") || pathDefault || "about";
 
   return (
     <div className="min-h-screen bg-background pb-20">
