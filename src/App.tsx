@@ -10,6 +10,8 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import InstallBanner from "@/components/InstallBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { Navigate, useLocation } from "react-router-dom";
 
 // Lazy-loaded routes (code-split per page)
 const Index = lazy(() => import("./pages/Index.tsx"));
@@ -47,9 +49,15 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
 };
 
 const RequireOnboarded = ({ children }: { children: JSX.Element }) => {
-  const { user, loading } = useAuth();
-  if (loading || !user) return children;
-  return <OnboardingGate>{children}</OnboardingGate>;
+  const { user } = useAuth();
+  const { preferences, isLoading } = useUserPreferences();
+  const location = useLocation();
+  if (!user) return children;
+  if (isLoading) return null;
+  if (!preferences?.onboarding_completed && location.pathname !== "/onboarding") {
+    return <Navigate to="/onboarding" replace />;
+  }
+  return children;
 };
 
 const queryClient = new QueryClient();
