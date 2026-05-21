@@ -1,8 +1,10 @@
 import { MapPin, Navigation, Star, Zap, Fuel, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
 import { formatRelativeTime } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
+import FavoriteButton from "./FavoriteButton";
 
 interface StationCardProps {
   station: GasStation;
@@ -31,6 +33,7 @@ const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
 const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps) => {
+  const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
 
@@ -52,10 +55,24 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
 
   return (
     <div
-      className={`group rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden ${
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(`/station/${station.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/station/${station.id}`);
+        }
+      }}
+      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ${
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
+      {/* Favorite (top right floating) */}
+      <div className="absolute top-2.5 right-2.5 z-10">
+        <FavoriteButton stationId={station.id} size="sm" variant="surface" />
+      </div>
+
       {/* Top: brand + headline price */}
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
@@ -146,17 +163,17 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1.5 p-3 pt-3">
+      <div className="flex items-center gap-1.5 p-3 pt-3" onClick={(e) => e.stopPropagation()}>
         <ReportPriceDialog station={station} />
         <button
-          onClick={() => onNavigate?.(station)}
+          onClick={(e) => { e.stopPropagation(); onNavigate?.(station); }}
           className="bg-muted hover:bg-muted/70 text-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale transition-colors"
           title="Abrir en Waze"
         >
           Waze
         </button>
         <button
-          onClick={() => onNavigateGoogle?.(station)}
+          onClick={(e) => { e.stopPropagation(); onNavigateGoogle?.(station); }}
           className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5"
         >
           <Navigation className="w-3.5 h-3.5" />

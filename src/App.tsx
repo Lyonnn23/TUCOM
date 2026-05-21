@@ -17,6 +17,7 @@ import Privacy from "./pages/Privacy.tsx";
 import DeleteAccount from "./pages/DeleteAccount.tsx";
 import ResponsiveCheck from "./pages/ResponsiveCheck.tsx";
 import Welcome from "./pages/Welcome.tsx";
+import StationDetail from "./pages/StationDetail.tsx";
 import { useAuth } from "@/hooks/useAuth";
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -40,6 +41,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
             <Route path="/welcome" element={<Welcome />} />
+            <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reporte" element={<FuelReport />} />
             <Route path="/historial" element={<PriceHistory />} />
