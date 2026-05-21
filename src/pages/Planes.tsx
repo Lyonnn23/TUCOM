@@ -220,12 +220,17 @@ export default function Planes() {
                   </li>
                 ))}
               </ul>
-              <Button asChild variant="outline" className="mt-6 w-full">
-                <a href={WHATSAPP_EMPRESAS} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Contactar ventas
-                </a>
-              </Button>
+              <div className="mt-6 space-y-2">
+                <Button asChild className="w-full bg-gradient-to-r from-primary to-[hsl(245,75%,60%)]">
+                  <Link to="/empresa">Probar TÜcom Empresa</Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full">
+                  <a href={WHATSAPP_EMPRESAS} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Contactar ventas
+                  </a>
+                </Button>
+              </div>
             </Card>
           </div>
 
