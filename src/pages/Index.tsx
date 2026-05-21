@@ -773,6 +773,7 @@ const Index = () => {
       </main>
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
+      <FuelLogFAB />
     </div>
   );
 };
