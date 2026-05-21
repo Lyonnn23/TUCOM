@@ -1,112 +1,64 @@
-# Bitácora de cargas y consumo
+## Fleet Management Module (TÜcom Empresa)
 
-Construir un módulo completo para registrar cargas de combustible, analizar consumo real y enviar recordatorios cuando quede poco rango.
+Build a complete B2B fleet management layer on top of the existing consumer app, sharing infrastructure (auth, fuel_logs, vehicles) but adding organization-scoped views, roles, and reporting.
 
-## 1. Base de datos (migración)
+### 1. Database (migration)
 
-Tabla `fuel_logs`:
-- `id`, `user_id`, `vehicle_id` (FK lógica a `user_vehicles`, nullable)
-- `station_id` (nullable — permite cargas en estación no listada)
-- `fuel_type` (texto, validado a los 5 tipos)
-- `liters` numeric(8,3), `price_per_liter` int, `total_cost` int
-- `odometer_km` int (nullable)
-- `logged_at` timestamptz default now(), `note` text
-- RLS: usuario sólo ve/edita/borra sus propios logs; admin puede leer
+New tables:
+- `organizations` — id, name, company_code (unique 8-char), logo_url, plan ('basico'|'pro'), max_vehicles, created_by, timestamps
+- `organization_members` — org_id, user_id, role ('admin'|'driver'), joined_at, unique(org_id, user_id)
+- Extend `user_vehicles` with nullable `organization_id` (fleet vehicles)
+- Extend `fuel_logs` already references vehicle_id → fleet attribution flows automatically
 
-Agregar columna a `user_preferences`:
-- `low_fuel_threshold_km` int default 80
-- `fuel_log_email_optin` boolean default false
+Functions:
+- `generate_company_code()` — random 8-char unique code
+- `get_user_org_role(uid)` returns (org_id, role) — security-definer to avoid recursion
+- `is_org_admin(uid, org_id)` security-definer
+- `get_fleet_stats(_org_id)` — returns aggregated month spend, cost/km, vehicle count
+- `get_fleet_vehicle_breakdown(_org_id, _month_start)` — per-vehicle table data
 
-Función RPC `get_user_consumption_stats(_user_id, _vehicle_id)`:
-- Devuelve: real_kml, total_spent_6m, cost_per_km, avg_price_paid, last_odometer, last_log_at
-- Calcula km/L comparando odómetros consecutivos del mismo vehículo
+RLS:
+- Orgs: members can SELECT their org; only creator/admin can UPDATE
+- Members: admins manage; everyone sees own membership and members of their org
+- Fleet vehicles (org_id IS NOT NULL): visible to org admins + owning driver; only driver edits
+- Fleet fuel_logs: admin of vehicle's org can SELECT; driver still owns insert/update/delete
 
-Función RPC `get_monthly_fuel_spend(_user_id, _months)`:
-- Devuelve serie mensual `{month, total_clp, liters, avg_price}` últimos N meses
+### 2. Frontend pages
 
-Función RPC `get_market_avg_price(_fuel_type, _month)`:
-- Promedio de `station_prices` para ese mes (usa snapshot history si disponible)
+- `/empresa` — Landing page (public): hero CTA "Gestiona los gastos de combustible de tu empresa", feature grid, plan comparison, "Crear organización" + "Unirme con código"
+- `/empresa/dashboard` — Admin: summary cards (total spend month, avg cost/km, top spender), fleet table (vehicle/driver/cost/km/$/km/last fill-up), bar chart spend per vehicle, line chart spend over time, anomaly alerts (>20% above fleet avg)
+- `/empresa/configuracion` — Admin: org name, logo upload (storage bucket `org-logos`), company code copy button, member list with roles, remove member
+- `/empresa/reportes` — Admin: month picker → PDF download (jsPDF with logo + per-vehicle breakdown), CSV export
+- `/empresa/mi-vehiculo` — Driver: personal stats, "+12% vs last month" alert, link to log fill-up
 
-## 2. Hooks
+### 3. Components
 
-- `useFuelLogs.ts` — list, create, update, remove (React Query)
-- `useFuelStats.ts` — wrappers a las RPC anteriores
-- `useTankRange.ts` — calcula km restantes en base a último log + odómetro actual estimado + consumo real
+- `OrgGuard` — redirects to /empresa if no org
+- `OrgAdminGuard` — requires admin role
+- `JoinOrgDialog` / `CreateOrgDialog`
+- `FleetSummaryCards`, `FleetVehiclesTable`, `FleetSpendChart`, `FleetCostPerKmChart`, `AnomalyBanner`
+- `FleetPdfReport` (jsPDF) + `FleetCsvExport`
 
-## 3. Componentes
+### 4. Hooks
 
-- `FuelLogFAB.tsx` — botón flotante (Plus + Fuel icon) visible en `/` (Index) y `/mis-cargas`
-- `FuelLogDialog.tsx` — modal con:
-  - Select vehículo (default primario)
-  - Select estación (autocompleta la más cercana, búsqueda libre)
-  - Select fuel_type (precargado del vehículo)
-  - Tabs "Por litros" / "Por monto": calcula automáticamente la otra dimensión usando precio actual de la estación o input manual
-  - Input odómetro (opcional pero recomendado)
-  - Validación con zod (litros 0–200, precio 100–5000, monto 100–500.000)
-- `ConsumptionCard.tsx` — km/L real vs ficha técnica con delta
-- `MonthlySpendChart.tsx` — Recharts BarChart 6 meses
-- `CostPerKmCard.tsx`
-- `AvgPriceCard.tsx` — precio promedio pagado vs mercado, "Ahorraste X%"
-- `TankRangeBanner.tsx` — muestra km estimados restantes en home si < umbral
-- `ExportFuelLogButton.tsx` — genera CSV cliente (Blob) y PDF (jsPDF dinámico)
+- `useOrganization()` — current user's org + role
+- `useFleetStats(orgId)`, `useFleetBreakdown(orgId, month)`, `useFleetMembers(orgId)`
+- `useOrgVehicles(orgId)` for fleet table joining vehicles + month spend
 
-## 4. Páginas
+### 5. Storage
 
-- `src/pages/MisCargas.tsx` (ruta `/mis-cargas`, alias `/fuel-logs`):
-  - Header back + título "Mis cargas"
-  - Sección "Resumen": `ConsumptionCard`, `CostPerKmCard`, `AvgPriceCard`
-  - `MonthlySpendChart`
-  - Lista cronológica de logs con editar/eliminar
-  - Botón "Exportar" (CSV/PDF)
-  - FAB para nueva carga
+- New bucket `org-logos` (public read, admin-of-org write via RLS)
 
-- `src/pages/Index.tsx` (Home):
-  - Mostrar `TankRangeBanner` si hay logs y rango < umbral
-  - Renderizar `FuelLogFAB` global
+### 6. Integration touchpoints
 
-- `src/pages/Profile.tsx`:
-  - Acceso "Mis cargas" en menú
-  - Setting: slider para `low_fuel_threshold_km` (40–200)
-  - Switch: "Resumen mensual por email"
+- Add `/empresa` link in main nav + Profile page
+- Plan paywall: when admin tries to add 4th fleet vehicle on Básico → existing `PaywallModal` with empresa copy
+- Add route to `App.tsx`
 
-## 5. Recordatorios inteligentes
+### Technical notes
 
-- Edge Function `check-tank-range`:
-  - Para cada usuario con `low_fuel_threshold_km > 0` y push activo:
-  - Calcular rango restante (último log + km/L real + odómetro estimado por tiempo, o pedir actualización manual)
-  - Si rango < umbral y no se envió aviso en últimas 12h → buscar estación más barata dentro de 15 km del último `push_subscriptions.lat/lng` y enviar push:
-    - Title: "⛽ Te quedan ~{km} km"
-    - Body: "Más barata cerca: {marca} {comuna} a ${precio}/L"
-    - Actions: "Ver estación", "Cómo llegar"
-- Programar con `pg_cron` cada 2h (vía `supabase--insert`, no migración)
-
-NOTA: rango automático sin telemetría es estimación. Mostrar "Estimado" en UI.
-
-## 6. Export
-
-- CSV: cliente, generación directa, columnas `Fecha,Estación,Combustible,Litros,Precio/L,Total,Odómetro,Consumo`
-- PDF: import dinámico de `jspdf` + `jspdf-autotable`, encabezado con logo TÜcom y totales del periodo
-- Filtros por rango de fechas antes de exportar
-
-## 7. Routing y navegación
-
-- Registrar `/mis-cargas` y `/fuel-logs` en `App.tsx`
-- Agregar item "Mis cargas" en `Profile.tsx`
-- (No tocar BottomNav — ya está saturado; acceso por Home FAB y Profile)
-
-## Detalles técnicos
-
-- Todas las cifras formateadas con `@/lib/format` (`formatPrice`, `formatDistance`, `formatRelativeTime`).
-- Mensajes en español neutro; estados loading/empty/error consistentes con el resto.
-- Validación cliente con zod + mensajes localizados; servidor confía en RLS + check via trigger opcional para rangos.
-- Accesibilidad: FAB con `aria-label="Registrar carga"`, dialog con título asociado, charts con descripción accesible.
-- Memoria: actualizar `mem://index.md` con nueva entrada `[Fuel Logs](mem://features/registro-cargas)`.
-
-## Lo que NO incluye (fuera de alcance)
-
-- OCR de boletas
-- Sync con OBD-II
-- Predicción avanzada de consumo por ML
-- Compartir bitácora con otros usuarios
-
-¿Apruebas para implementar?
+- Plans: `empresa_basico` (3 vehicles, $0), `empresa_pro` (unlimited, pricing TBD shown as "Contactar"). No Stripe wiring yet — reuse existing placeholder checkout button + WhatsApp contact for now.
+- PDF: client-side jsPDF + autotable (already used elsewhere? check; otherwise add `jspdf` + `jspdf-autotable`)
+- Anomaly: compute fleet avg cost/km, flag vehicles where vehicle.cost_per_km > 1.2 * fleet_avg
+- Cost per km derived from consecutive odometer readings in fuel_logs (use existing `get_user_consumption_stats` pattern, new `get_fleet_vehicle_breakdown` SQL function)
+- All UI in Spanish, TÜcom branding (purple→blue gradient), semantic tokens only.

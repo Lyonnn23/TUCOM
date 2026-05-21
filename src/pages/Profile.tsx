@@ -185,6 +185,8 @@ const Profile = () => {
 
         <PlanCard />
 
+        <EmpresaCard />
+
         <PointsAndBadges />
 
 
@@ -529,6 +531,27 @@ const PlanCard = () => {
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-primary" />
+      </div>
+    </button>
+  );
+};
+
+const EmpresaCard = () => {
+  const navigate = useNavigate();
+  return (
+    <button
+      onClick={() => navigate("/empresa")}
+      className="w-full text-left bg-card border border-border rounded-2xl p-5 shadow-soft hover-scale"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[hsl(190,90%,55%)] to-primary flex items-center justify-center text-primary-foreground shrink-0 text-lg font-bold">
+          E
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-heading font-bold text-foreground">TÜcom Empresa</p>
+          <p className="text-xs text-muted-foreground">Gestiona tu flota y los gastos de combustible</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-muted-foreground" />
       </div>
     </button>
   );

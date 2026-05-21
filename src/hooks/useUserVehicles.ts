@@ -14,6 +14,7 @@ export interface UserVehicle {
   consumption_kml: number;
   color: string;
   is_primary: boolean;
+  organization_id?: string | null;
   created_at: string;
 }
 

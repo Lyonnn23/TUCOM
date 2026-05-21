@@ -12,6 +12,8 @@ import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
 import { EV_PRESETS } from "@/lib/evPresets";
 import { useUserVehicles, type UserVehicle } from "@/hooks/useUserVehicles";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useOrganization } from "@/hooks/useOrganization";
+import { Switch } from "@/components/ui/switch";
 import { PaywallModal } from "@/components/PaywallModal";
 import { toast } from "sonner";
 
@@ -32,6 +34,7 @@ const FUELS = [
 const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   const { create, update, vehicles } = useUserVehicles();
   const { isPro, limits } = useSubscription();
+  const { org, isAdmin: isOrgAdmin } = useOrganization();
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [presetIdx, setPresetIdx] = useState<string>("custom");
   const [nickname, setNickname] = useState("");
@@ -42,6 +45,7 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   const [tank, setTank] = useState<string>("50");
   const [cons, setCons] = useState<string>("12");
   const [color, setColor] = useState(VEHICLE_COLORS[0]);
+  const [assignToOrg, setAssignToOrg] = useState(false);
 
   // Block opening if creating a new vehicle and already at limit
   useEffect(() => {
@@ -65,13 +69,15 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
       setCons(String(vehicle.consumption_kml));
       setColor(vehicle.color);
       setPresetIdx("custom");
+      setAssignToOrg(!!(vehicle as any).organization_id);
     } else {
       setNickname(""); setBrand(""); setModel(""); setYear("");
       setFuelType("gasoline95"); setTank("50"); setCons("12");
       setColor(VEHICLE_COLORS[Math.floor(Math.random() * VEHICLE_COLORS.length)]);
       setPresetIdx("custom");
+      setAssignToOrg(!!org);
     }
-  }, [open, vehicle]);
+  }, [open, vehicle, org]);
 
   const applyPreset = (key: string) => {
     setPresetIdx(key);
@@ -118,7 +124,8 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
       tank_size_l: Math.round(tankNum),
       consumption_kml: Math.round(consNum * 10) / 10,
       color,
-    };
+      organization_id: assignToOrg && org ? org.id : null,
+    } as any;
     try {
       if (vehicle) {
         await update.mutateAsync({ id: vehicle.id, patch: payload });
@@ -253,6 +260,16 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                 ))}
               </div>
             </div>
+
+            {org && (
+              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3">
+                <div className="text-sm">
+                  <div className="font-medium">Vehículo de la flota</div>
+                  <div className="text-xs text-muted-foreground">Asignar a {org.name}. El administrador podrá ver el consumo.</div>
+                </div>
+                <Switch checked={assignToOrg} onCheckedChange={setAssignToOrg} />
+              </div>
+            )}
           </div>
 
           <DialogFooter className="mt-4">
