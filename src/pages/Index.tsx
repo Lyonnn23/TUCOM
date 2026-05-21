@@ -50,6 +50,7 @@ const Index = () => {
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
+  const [stationKind, setStationKind] = useState<"all" | "fuel" | "ev" | "glp" | "gnc">("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [locationErrorType, setLocationErrorType] = useState<"denied" | "unavailable" | "timeout" | "unsupported" | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
