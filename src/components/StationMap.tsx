@@ -58,62 +58,64 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   return (
     <APIProvider apiKey={apiKey}>
-      <Map
-        defaultCenter={center}
-        defaultZoom={13}
-        gestureHandling="greedy"
-        disableDefaultUI={false}
-        mapId="tucom-map"
-        style={{ width: "100%", height: "100%" }}
-      >
-        {userLocation && (
-          <AdvancedMarker position={userLocation}>
-            <div className="w-4 h-4 bg-primary rounded-full border-2 border-white shadow-lg animate-pulse" />
-          </AdvancedMarker>
-        )}
-
-        {stations.map((station) => {
-          const isNearby = nearbyIds.has(station.id);
-          // Violet for nearby (TÜcom primary), green for open, red for closed
-          const bg = isNearby ? "#7C3AED" : station.isOpen ? "#22c55e" : "#ef4444";
-          const border = isNearby ? "#4F46E5" : station.isOpen ? "#16a34a" : "#dc2626";
-          return (
-            <AdvancedMarker
-              key={station.id}
-              position={{ lat: station.lat, lng: station.lng }}
-              onClick={() => setSelected(station)}
-            >
-              <Pin background={bg} borderColor={border} glyphColor="#fff" />
+      <div className="relative w-full h-full">
+        <Map
+          defaultCenter={center}
+          defaultZoom={13}
+          gestureHandling="greedy"
+          disableDefaultUI={false}
+          mapId="tucom-map"
+          style={{ width: "100%", height: "100%" }}
+        >
+          {userLocation && (
+            <AdvancedMarker position={userLocation}>
+              <div className="w-4 h-4 bg-primary rounded-full border-2 border-white shadow-lg animate-pulse" />
             </AdvancedMarker>
-          );
-        })}
+          )}
 
-        {selected && (
-          <InfoWindow
-            position={{ lat: selected.lat, lng: selected.lng }}
-            onCloseClick={() => setSelected(null)}
-          >
-            <div className="p-1 min-w-[160px]">
-              <h3 className="font-bold text-sm">{selected.name}</h3>
-              <p className="text-xs text-gray-500">{selected.brand}</p>
-              <p className="text-xs mt-1">{selected.address}</p>
-              {selected.distance !== undefined && (
-                <p className="text-xs font-medium mt-1" style={{ color: "#2563eb" }}>
-                  {selected.distance} km
-                </p>
-              )}
-              <button
-                onClick={() => onStationClick?.(selected)}
-                className="mt-2 w-full text-xs py-1.5 rounded-md font-medium"
-                style={{ background: "#2563eb", color: "#fff" }}
+          {stations.map((station) => {
+            const isNearby = nearbyIds.has(station.id);
+            // Violet for nearby (TÜcom primary), green for open, red for closed
+            const bg = isNearby ? "#7C3AED" : station.isOpen ? "#22c55e" : "#ef4444";
+            const border = isNearby ? "#4F46E5" : station.isOpen ? "#16a34a" : "#dc2626";
+            return (
+              <AdvancedMarker
+                key={station.id}
+                position={{ lat: station.lat, lng: station.lng }}
+                onClick={() => setSelected(station)}
               >
-                Ir con Waze
-              </button>
-            </div>
-          </InfoWindow>
-        )}
+                <Pin background={bg} borderColor={border} glyphColor="#fff" />
+              </AdvancedMarker>
+            );
+          })}
+
+          {selected && (
+            <InfoWindow
+              position={{ lat: selected.lat, lng: selected.lng }}
+              onCloseClick={() => setSelected(null)}
+            >
+              <div className="p-1 min-w-[160px]">
+                <h3 className="font-bold text-sm">{selected.name}</h3>
+                <p className="text-xs text-gray-500">{selected.brand}</p>
+                <p className="text-xs mt-1">{selected.address}</p>
+                {selected.distance !== undefined && (
+                  <p className="text-xs font-medium mt-1" style={{ color: "#7C3AED" }}>
+                    {selected.distance} km
+                  </p>
+                )}
+                <button
+                  onClick={() => onStationClick?.(selected)}
+                  className="mt-2 w-full text-xs py-1.5 rounded-md font-semibold"
+                  style={{ background: "#7C3AED", color: "#fff" }}
+                >
+                  Ir con Waze
+                </button>
+              </div>
+            </InfoWindow>
+          )}
+        </Map>
         {userLocation && <CenterOnMeButton location={userLocation} />}
-      </Map>
+      </div>
     </APIProvider>
   );
 };
