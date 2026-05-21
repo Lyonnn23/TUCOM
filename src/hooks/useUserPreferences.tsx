@@ -7,6 +7,7 @@ export interface UserPreferences {
   search_radius_km: number;
   notifications_enabled: boolean;
   onboarding_completed: boolean;
+  leaderboard_opt_in: boolean;
 }
 
 const DEFAULTS: UserPreferences = {
@@ -14,6 +15,7 @@ const DEFAULTS: UserPreferences = {
   search_radius_km: 10,
   notifications_enabled: false,
   onboarding_completed: false,
+  leaderboard_opt_in: true,
 };
 
 export function useUserPreferences() {
@@ -27,7 +29,7 @@ export function useUserPreferences() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("user_preferences")
-        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed")
+        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed,leaderboard_opt_in")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
