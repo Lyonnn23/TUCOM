@@ -124,6 +124,27 @@ const MisCargas = () => {
 
         <MonthlySpendChart />
 
+        {hiddenCount > 0 && (
+          <Link
+            to="/planes"
+            className="block rounded-2xl border border-primary/30 bg-primary/5 p-4 hover:bg-primary/10 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] flex items-center justify-center text-primary-foreground shrink-0">
+                <Crown className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {hiddenCount} cargas ocultas
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  El plan Básico muestra solo los últimos {limits.fuelLogMonths as number} meses. Hazte Pro para ver tu historial completo.
+                </p>
+              </div>
+            </div>
+          </Link>
+        )}
+
         {/* Logs list */}
         <section className="bg-card rounded-2xl border border-border shadow-soft">
           <header className="px-5 py-4 border-b border-border">
