@@ -36,6 +36,7 @@ const Drive = lazy(() => import("./pages/Drive.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Calculadora = lazy(() => import("./pages/Calculadora.tsx"));
+const CalculadoraEV = lazy(() => import("./pages/CalculadoraEV.tsx"));
 const MisCargas = lazy(() => import("./pages/MisCargas.tsx"));
 import RequireAdmin from "@/components/RequireAdmin";
 
@@ -109,6 +110,7 @@ const App = () => (
                 <Route path="/admin" element={<RequireAuth><RequireAdmin><Admin /></RequireAdmin></RequireAuth>} />
                 <Route path="/calculadora" element={<RequireAuth><Calculadora /></RequireAuth>} />
                 <Route path="/calculator" element={<Navigate to="/calculadora" replace />} />
+                <Route path="/calculadora-ev" element={<RequireAuth><CalculadoraEV /></RequireAuth>} />
                 <Route path="/mis-cargas" element={<RequireAuth><MisCargas /></RequireAuth>} />
                 <Route path="/fuel-logs" element={<Navigate to="/mis-cargas" replace />} />
                 <Route path="/auth" element={<Auth />} />

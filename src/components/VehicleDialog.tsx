@@ -9,6 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
+import { EV_PRESETS } from "@/lib/evPresets";
 import { useUserVehicles, type UserVehicle } from "@/hooks/useUserVehicles";
 import { toast } from "sonner";
 
@@ -61,6 +62,15 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   const applyPreset = (key: string) => {
     setPresetIdx(key);
     if (key === "custom") return;
+    if (key.startsWith("ev-")) {
+      const p = EV_PRESETS[Number(key.slice(3))];
+      if (!p) return;
+      setBrand(p.brand); setModel(p.model);
+      setFuelType("electric");
+      setTank(String(p.battery_kwh));
+      setCons(String(p.efficiency_kmkwh));
+      return;
+    }
     const p = VEHICLE_PRESETS[Number(key)];
     if (!p) return;
     setBrand(p.brand); setModel(p.model);
@@ -76,12 +86,13 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
     }
     const tankNum = Number(tank);
     const consNum = Number(cons);
-    if (!Number.isFinite(tankNum) || tankNum < 20 || tankNum > 200) {
-      toast.error("Capacidad del estanque: 20 a 200 L");
+    const isEv = fuelType === "electric";
+    if (!Number.isFinite(tankNum) || tankNum < (isEv ? 10 : 20) || tankNum > (isEv ? 200 : 200)) {
+      toast.error(isEv ? "Batería: 10 a 200 kWh" : "Capacidad del estanque: 20 a 200 L");
       return;
     }
-    if (!Number.isFinite(consNum) || consNum < 2 || consNum > 40) {
-      toast.error("Rendimiento: 2 a 40 km/L");
+    if (!Number.isFinite(consNum) || consNum < (isEv ? 2 : 2) || consNum > (isEv ? 15 : 40)) {
+      toast.error(isEv ? "Eficiencia: 2 a 15 km/kWh" : "Rendimiento: 2 a 40 km/L");
       return;
     }
     const payload = {
@@ -125,9 +136,16 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="custom">Personalizado</SelectItem>
+                  <SelectItem value="__hdr_ice" disabled>— Combustión —</SelectItem>
                   {VEHICLE_PRESETS.map((p, i) => (
                     <SelectItem key={i} value={String(i)}>
                       {p.brand} {p.model} · {p.consumption_kml} km/L
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__hdr_ev" disabled>— Eléctricos —</SelectItem>
+                  {EV_PRESETS.map((p, i) => (
+                    <SelectItem key={`ev-${i}`} value={`ev-${i}`}>
+                      ⚡ {p.brand} {p.model} · {p.battery_kwh} kWh · {p.efficiency_kmkwh} km/kWh
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -183,7 +201,7 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs">Estanque (L)</Label>
+              <Label className="text-xs">{fuelType === "electric" ? "Batería (kWh)" : "Estanque (L)"}</Label>
               <Input
                 type="number"
                 inputMode="numeric"
@@ -193,7 +211,7 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
               />
             </div>
             <div>
-              <Label className="text-xs">Rendimiento (km/L)</Label>
+              <Label className="text-xs">{fuelType === "electric" ? "Eficiencia (km/kWh)" : "Rendimiento (km/L)"}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
