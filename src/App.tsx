@@ -122,6 +122,13 @@ const App = () => (
                 <Route path="/fuel-logs" element={<Navigate to="/mis-cargas" replace />} />
                 <Route path="/planes" element={<Planes />} />
                 <Route path="/pricing" element={<Navigate to="/planes" replace />} />
+                <Route path="/empresa" element={<RequireAuth><EmpresaLanding /></RequireAuth>} />
+                <Route path="/empresa/*" element={<RequireAuth><EmpresaLayout /></RequireAuth>}>
+                  <Route path="dashboard" element={<EmpresaDashboard />} />
+                  <Route path="configuracion" element={<EmpresaConfig />} />
+                  <Route path="reportes" element={<EmpresaReportes />} />
+                  <Route path="mi-vehiculo" element={<EmpresaMiVehiculo />} />
+                </Route>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />
