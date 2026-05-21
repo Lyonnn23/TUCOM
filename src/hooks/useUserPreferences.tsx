@@ -8,6 +8,8 @@ export interface UserPreferences {
   notifications_enabled: boolean;
   onboarding_completed: boolean;
   leaderboard_opt_in: boolean;
+  low_fuel_threshold_km: number;
+  fuel_log_email_optin: boolean;
 }
 
 const DEFAULTS: UserPreferences = {
@@ -16,6 +18,8 @@ const DEFAULTS: UserPreferences = {
   notifications_enabled: false,
   onboarding_completed: false,
   leaderboard_opt_in: true,
+  low_fuel_threshold_km: 80,
+  fuel_log_email_optin: false,
 };
 
 export function useUserPreferences() {
@@ -29,7 +33,7 @@ export function useUserPreferences() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("user_preferences")
-        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed,leaderboard_opt_in")
+        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed,leaderboard_opt_in,low_fuel_threshold_km,fuel_log_email_optin")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
