@@ -151,7 +151,10 @@ Deno.serve(async (req) => {
       lat: r.gas_stations.lat,
       lng: r.gas_stations.lng,
       price: r.price,
+      ev_power_kw: r.gas_stations.ev_power_kw ?? null,
+      ev_operator: r.gas_stations.ev_operator ?? null,
     }));
+    const refGasPrice = (refGasRes as any)?.data?.price ?? 1200;
 
     const band = getTariffBand(departAt);
     const routes = await fetchAlternatives(key, origin, destination, departAt);
@@ -159,11 +162,9 @@ Deno.serve(async (req) => {
     const summarized = routes.slice(0, 3).map((r: any, i: number) => {
       const encoded = r?.polyline?.encodedPolyline ?? "";
       const path = decodePolyline(encoded);
-      // Sample every ~80m (path is dense) — but Routes returns coarser path so use as-is
       const distanceKm = (r.distanceMeters ?? 0) / 1000;
       const durationSec = Number(String(r.duration ?? "0s").replace("s", ""));
 
-      // Find porticos near path
       const hit: Record<string, any> = {};
       for (const p of porticos) {
         if (hit[p.portico_id]) continue;
@@ -179,7 +180,6 @@ Deno.serve(async (req) => {
       const porticosHit = Object.values(hit) as Array<any>;
       const tagSingle = porticosHit.reduce((s, p) => s + p.tarifa, 0);
 
-      // Find cheapest station near path
       let cheapestStation: any = null;
       for (const s of stations) {
         for (const pt of path) {
@@ -191,13 +191,20 @@ Deno.serve(async (req) => {
         if (cheapestStation && cheapestStation.price === stations[0]?.price) break;
       }
 
-      // Fuel calc
-      const pricePerL = cheapestStation?.price ?? 0;
       const km = roundTrip ? distanceKm * 2 : distanceKm;
-      const liters = vehicle.consumption_kml > 0 ? km / vehicle.consumption_kml : 0;
-      const fuelCost = Math.round(liters * pricePerL);
       const tagCost = roundTrip ? tagSingle * 2 : tagSingle;
+
+      // Energy / fuel calc. For EV, consumption_kml is interpreted as km/kWh.
+      const unitPrice = cheapestStation?.price ?? 0;
+      const units = vehicle.consumption_kml > 0 ? km / vehicle.consumption_kml : 0; // liters OR kWh
+      const fuelCost = Math.round(units * unitPrice);
       const totalCost = fuelCost + tagCost;
+
+      // Equivalent gasoline cost for EV trips (reference: 12 km/L on gasoline95).
+      const ICE_REF_KML = 12;
+      const equivalentIceCost = isEv
+        ? Math.round((km / ICE_REF_KML) * refGasPrice) + tagCost
+        : null;
 
       return {
         index: i,
@@ -215,10 +222,13 @@ Deno.serve(async (req) => {
           tarifa: p.tarifa,
         })),
         tag_cost: tagCost,
-        liters: Math.round(liters * 10) / 10,
+        liters: isEv ? 0 : Math.round(units * 10) / 10,
+        kwh: isEv ? Math.round(units * 10) / 10 : 0,
         fuel_cost: fuelCost,
         total_cost: totalCost,
         cheapest_station: cheapestStation,
+        equivalent_ice_cost: equivalentIceCost,
+        is_ev: isEv,
       };
     });
 
