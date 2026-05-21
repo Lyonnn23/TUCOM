@@ -27,25 +27,36 @@ const staticEntries: Entry[] = [
 ];
 
 async function fetchStations(): Promise<Array<{ id: string; updated_at: string | null }>> {
+  const all: Array<{ id: string; updated_at: string | null }> = [];
+  const PAGE = 1000;
+  let from = 0;
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/gas_stations?select=id,updated_at&limit=5000`,
-      {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    while (true) {
+      const to = from + PAGE - 1;
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/gas_stations?select=id,updated_at`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            Range: `${from}-${to}`,
+            "Range-Unit": "items",
+          },
         },
-      },
-    );
-    if (!res.ok) {
-      console.warn(`[sitemap] gas_stations fetch failed: ${res.status}`);
-      return [];
+      );
+      if (!res.ok) {
+        console.warn(`[sitemap] gas_stations fetch failed: ${res.status}`);
+        break;
+      }
+      const rows = (await res.json()) as Array<{ id: string; updated_at: string | null }>;
+      all.push(...rows);
+      if (rows.length < PAGE) break;
+      from += PAGE;
     }
-    return await res.json();
   } catch (err) {
     console.warn("[sitemap] fetch error:", err);
-    return [];
   }
+  return all;
 }
 
 function render(entries: Entry[]): string {
