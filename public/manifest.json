@@ -35,72 +35,49 @@
     { "src": "/icons/icon-1024x1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
   ],
   "screenshots": [
-    {
-      "src": "/screenshots/screenshot-mobile-1.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Pantalla principal con precios de bencina"
-    },
-    {
-      "src": "/screenshots/screenshot-mobile-2.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Estaciones de servicio cercanas"
-    },
-    {
-      "src": "/screenshots/screenshot-mobile-3.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Beneficios y descuentos por tarjeta"
-    },
-    {
-      "src": "/screenshots/screenshot-wide-1.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "TÜcom — Precios de bencina en Chile"
-    }
+    { "src": "/screenshots/screenshot-mobile-1.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Pantalla principal con precios de bencina" },
+    { "src": "/screenshots/screenshot-mobile-2.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Estaciones de servicio cercanas" },
+    { "src": "/screenshots/screenshot-mobile-3.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Beneficios y descuentos por tarjeta" },
+    { "src": "/screenshots/screenshot-wide-1.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "TÜcom — Precios de bencina en Chile" }
   ],
   "shortcuts": [
     {
-      "name": "Estaciones cercanas",
-      "short_name": "Cercanas",
-      "description": "Ver las estaciones de servicio más cercanas a tu ubicación",
-      "url": "/?tab=estaciones",
+      "name": "Buscar más barata",
+      "short_name": "Más barata",
+      "description": "Ordena las estaciones cercanas por el precio más bajo",
+      "url": "/?tab=estaciones&sort=price",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     },
     {
-      "name": "Beneficios",
-      "short_name": "Beneficios",
-      "description": "Descuentos y beneficios por medio de pago",
-      "url": "/?tab=beneficios",
+      "name": "Mis favoritos",
+      "short_name": "Favoritos",
+      "description": "Accede a tus estaciones favoritas",
+      "url": "/?tab=favoritos",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     },
     {
-      "name": "Reporte de precios",
-      "short_name": "Reporte",
-      "description": "Estadísticas de precios por zona",
-      "url": "/reporte",
+      "name": "Reportar precio",
+      "short_name": "Reportar",
+      "description": "Informa un precio que viste en una estación",
+      "url": "/?tab=estaciones&action=report",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     },
     {
-      "name": "Historial",
-      "short_name": "Historial",
-      "description": "Historial de precios de combustible",
-      "url": "/historial",
+      "name": "Alertas activas",
+      "short_name": "Alertas",
+      "description": "Revisa y administra tus alertas de precio",
+      "url": "/alertas",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
     }
   ],
   "share_target": {
-    "action": "/",
+    "action": "/?shared=1",
     "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
     "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
+      "title": "shared_title",
+      "text": "shared_text",
+      "url": "shared_url"
     }
   },
   "file_handlers": [
@@ -121,11 +98,7 @@
       "data": "/widgets/prices-data.json",
       "type": "application/json",
       "screenshots": [
-        {
-          "src": "/screenshots/screenshot-mobile-1.png",
-          "sizes": "1080x1920",
-          "label": "Widget de precios de bencina"
-        }
+        { "src": "/screenshots/screenshot-mobile-1.png", "sizes": "1080x1920", "label": "Widget de precios de bencina" }
       ],
       "icons": [
         { "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }
