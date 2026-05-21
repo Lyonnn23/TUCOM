@@ -79,11 +79,15 @@ const App = () => (
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
                 <Route path="/alertas" element={<RequireAuth><Alerts /></RequireAuth>} />
+                <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+                <Route path="/perfil" element={<RequireAuth><Profile /></RequireAuth>} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />
+                <Route path="/terms" element={<Legal />} />
+                <Route path="/terminos" element={<Legal />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/privacidad" element={<Privacy />} />
                 <Route path="/eliminar-cuenta" element={<DeleteAccount />} />
