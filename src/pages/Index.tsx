@@ -14,6 +14,8 @@ import BenefitsTab from "@/components/BenefitsTab";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
+import FuelLogFAB from "@/components/FuelLogFAB";
+import TankRangeBanner from "@/components/TankRangeBanner";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
 import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
