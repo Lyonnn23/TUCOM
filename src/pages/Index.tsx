@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown, Heart } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import NearbyRanking from "@/components/NearbyRanking";
 import LocationPermissionGuide from "@/components/LocationPermissionGuide";
@@ -10,6 +10,7 @@ import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
 import StationMap from "@/components/StationMap";
 import BenefitsTab from "@/components/BenefitsTab";
+import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
@@ -703,6 +704,15 @@ const Index = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* Favorites Tab */}
+        {activeTab === "favorites" && (
+          <FavoritesTab
+            stations={stationsWithDistance}
+            onNavigate={handleNavigate}
+            onNavigateGoogle={handleNavigateGoogle}
+          />
         )}
 
         {/* Benefits Tab */}
