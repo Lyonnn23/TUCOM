@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Fuel, MapPin, Bell, Check } from "lucide-react";
+import { Fuel, MapPin, Bell, Check, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useUserVehicles } from "@/hooks/useUserVehicles";
+import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
 import { cn } from "@/lib/utils";
 
 const FUELS = [
@@ -19,10 +24,12 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { preferences, save, defaults } = useUserPreferences();
+  const { create: createVehicle, vehicles } = useUserVehicles();
 
   const [step, setStep] = useState(0);
   const [fuel, setFuel] = useState(defaults.preferred_fuel);
   const [radius, setRadius] = useState(defaults.search_radius_km);
+  const [vehiclePresetIdx, setVehiclePresetIdx] = useState<string>("skip");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -33,9 +40,32 @@ const Onboarding = () => {
     if (preferences?.onboarding_completed) navigate("/", { replace: true });
   }, [preferences, navigate]);
 
+  const saveVehicleIfSelected = async () => {
+    if (vehiclePresetIdx === "skip") return;
+    if ((vehicles?.length ?? 0) > 0) return;
+    const preset = VEHICLE_PRESETS[Number(vehiclePresetIdx)];
+    if (!preset) return;
+    try {
+      await createVehicle.mutateAsync({
+        nickname: null,
+        brand: preset.brand,
+        model: preset.model,
+        year: null,
+        fuel_type: preset.fuel_type,
+        tank_size_l: preset.tank_size_l,
+        consumption_kml: preset.consumption_kml,
+        color: VEHICLE_COLORS[0],
+        is_primary: true,
+      });
+    } catch {
+      // no bloquear el onboarding si falla
+    }
+  };
+
   const finish = async (notificationsEnabled: boolean) => {
     setSaving(true);
     try {
+      await saveVehicleIfSelected();
       await save({
         preferred_fuel: fuel,
         search_radius_km: radius,
@@ -62,9 +92,10 @@ const Onboarding = () => {
     await finish(granted);
   };
 
-  const next = () => setStep((s) => Math.min(2, s + 1));
+  const TOTAL_STEPS = 4;
+  const next = () => setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1));
   const skip = () => {
-    if (step < 2) next();
+    if (step < TOTAL_STEPS - 1) next();
     else finish(false);
   };
 
@@ -78,6 +109,11 @@ const Onboarding = () => {
       icon: MapPin,
       title: "¿Cuánto radio quieres buscar?",
       subtitle: "Te mostraremos estaciones dentro de esta distancia.",
+    },
+    {
+      icon: Car,
+      title: "¿Cuál es tu auto?",
+      subtitle: "Lo usaremos para calcular el costo de tus viajes.",
     },
     {
       icon: Bell,
@@ -94,7 +130,7 @@ const Onboarding = () => {
       {/* Top bar */}
       <div className="flex items-center justify-between py-4">
         <span className="text-xs font-medium text-muted-foreground">
-          Paso {step + 1} de 3
+          Paso {step + 1} de {TOTAL_STEPS}
         </span>
         <button
           onClick={skip}
@@ -166,6 +202,27 @@ const Onboarding = () => {
         )}
 
         {step === 2 && (
+          <div className="w-full space-y-3">
+            <Select value={vehiclePresetIdx} onValueChange={setVehiclePresetIdx}>
+              <SelectTrigger className="h-12 rounded-xl">
+                <SelectValue placeholder="Selecciona tu auto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="skip">Prefiero configurarlo después</SelectItem>
+                {VEHICLE_PRESETS.map((p, i) => (
+                  <SelectItem key={`${p.brand}-${p.model}-${i}`} value={String(i)}>
+                    {p.brand} {p.model} · {p.consumption_kml} km/L
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground text-center">
+              Podrás editarlo o agregar más autos desde tu perfil.
+            </p>
+          </div>
+        )}
+
+        {step === 3 && (
           <div className="w-full rounded-2xl border border-border bg-card p-5 text-center">
             <p className="text-sm text-muted-foreground">
               Te enviaremos alertas cuando alguna estación cercana baje de tu precio objetivo.
@@ -178,7 +235,7 @@ const Onboarding = () => {
       {/* Footer with progress + CTA */}
       <div className="max-w-md mx-auto w-full pb-4">
         <div className="flex items-center justify-center gap-2 mb-6">
-          {[0, 1, 2].map((i) => (
+          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <span
               key={i}
               className={cn(
@@ -189,7 +246,7 @@ const Onboarding = () => {
           ))}
         </div>
 
-        {step < 2 ? (
+        {step < TOTAL_STEPS - 1 ? (
           <Button
             onClick={next}
             className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant hover-scale"

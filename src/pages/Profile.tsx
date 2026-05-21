@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft, Bell, Heart, LogOut, Mail, Save, Trash2, ChevronRight,
-  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles,
+  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles, Calculator, Car,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -245,6 +245,21 @@ const Profile = () => {
             <p className="text-xs text-muted-foreground">
               {favorites?.length ?? 0} estaciones guardadas
             </p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+
+        {/* Trip calculator link */}
+        <button
+          onClick={() => navigate("/calculadora")}
+          className="w-full bg-card rounded-2xl border border-border shadow-soft p-4 flex items-center gap-3 hover-scale text-left"
+        >
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Calculator className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-foreground">Calculadora de viaje</p>
+            <p className="text-xs text-muted-foreground">Estima bencina y TAG por ruta</p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>
