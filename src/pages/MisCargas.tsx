@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Gauge, Coins, TrendingDown, Pencil, Trash2, Fuel } from "lucide-react";
+import { ArrowLeft, Gauge, Coins, TrendingDown, Pencil, Trash2, Fuel, Crown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,11 +11,13 @@ import {
 import { useFuelLogs, type FuelLog } from "@/hooks/useFuelLogs";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { useConsumptionStats, useMarketAvgPrice } from "@/hooks/useFuelStats";
+import { useSubscription } from "@/hooks/useSubscription";
 import FuelLogDialog from "@/components/FuelLogDialog";
 import FuelLogFAB from "@/components/FuelLogFAB";
 import MonthlySpendChart from "@/components/MonthlySpendChart";
 import ExportFuelLogButton from "@/components/ExportFuelLogButton";
 import { formatPrice, formatSmartDate } from "@/lib/format";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 const FUEL_LABEL: Record<string, string> = {
@@ -28,8 +30,22 @@ const FUEL_LABEL: Record<string, string> = {
 
 const MisCargas = () => {
   const navigate = useNavigate();
-  const { logs, isLoading, remove } = useFuelLogs();
+  const { logs: allLogs, isLoading, remove } = useFuelLogs();
   const { primary } = useUserVehicles();
+  const { isPro, limits } = useSubscription();
+
+  // Free plan: limit history to last N months
+  const { visibleLogs, hiddenCount } = useMemo(() => {
+    if (isPro || !Number.isFinite(limits.fuelLogMonths)) {
+      return { visibleLogs: allLogs, hiddenCount: 0 };
+    }
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - (limits.fuelLogMonths as number));
+    const visible = allLogs.filter((l) => new Date(l.logged_at) >= cutoff);
+    return { visibleLogs: visible, hiddenCount: allLogs.length - visible.length };
+  }, [allLogs, isPro, limits.fuelLogMonths]);
+
+  const logs = visibleLogs;
   const { data: stats } = useConsumptionStats(primary?.id ?? null);
 
   const lastFuel = logs[0]?.fuel_type ?? primary?.fuel_type ?? null;

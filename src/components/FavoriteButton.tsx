@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PaywallModal } from "@/components/PaywallModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +23,10 @@ const SIZES = {
 
 const FavoriteButton = ({ stationId, size = "md", variant = "surface", className }: Props) => {
   const { user } = useAuth();
-  const { isFavorite, toggle, toggling } = useFavorites();
+  const { favorites, isFavorite, toggle, toggling } = useFavorites();
+  const { isPro, limits } = useSubscription();
   const navigate = useNavigate();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const active = isFavorite(stationId);
   const s = SIZES[size];
 
@@ -34,6 +39,11 @@ const FavoriteButton = ({ stationId, size = "md", variant = "surface", className
       });
       return;
     }
+    // Only block when ADDING (not when removing) and only on Free plan
+    if (!active && !isPro && (favorites?.length ?? 0) >= limits.favorites) {
+      setPaywallOpen(true);
+      return;
+    }
     toggle(stationId);
   };
 
@@ -43,27 +53,34 @@ const FavoriteButton = ({ stationId, size = "md", variant = "surface", className
       : "bg-card border border-border hover:bg-muted text-foreground shadow-soft";
 
   return (
-    <button
-      onClick={handle}
-      disabled={toggling}
-      aria-label={active ? "Quitar de favoritos" : "Añadir a favoritos"}
-      title={active ? "Quitar de favoritos" : "Añadir a favoritos"}
-      className={cn(
-        s.btn,
-        base,
-        "rounded-full flex items-center justify-center press-scale transition-all disabled:opacity-60",
-        className,
-      )}
-    >
-      <Heart
+    <>
+      <button
+        onClick={handle}
+        disabled={toggling}
+        aria-label={active ? "Quitar de favoritos" : "Añadir a favoritos"}
+        title={active ? "Quitar de favoritos" : "Añadir a favoritos"}
         className={cn(
-          s.icon,
-          "transition-colors",
-          active ? "fill-[hsl(0,75%,55%)] text-[hsl(0,75%,55%)]" : "fill-transparent",
+          s.btn,
+          base,
+          "rounded-full flex items-center justify-center press-scale transition-all disabled:opacity-60",
+          className,
         )}
-        strokeWidth={2.25}
+      >
+        <Heart
+          className={cn(
+            s.icon,
+            "transition-colors",
+            active ? "fill-[hsl(0,75%,55%)] text-[hsl(0,75%,55%)]" : "fill-transparent",
+          )}
+          strokeWidth={2.25}
+        />
+      </button>
+      <PaywallModal
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        reason={`Llegaste al límite de ${limits.favorites} favoritos del plan Básico. Hazte Pro para guardar todas las estaciones que quieras.`}
       />
-    </button>
+    </>
   );
 };
 
