@@ -510,6 +510,23 @@ const StationDetail = () => {
                   {r.comment && (
                     <p className="text-sm text-foreground leading-relaxed">{r.comment}</p>
                   )}
+                  {user && r.user_id !== user.id && (
+                    <button
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from("review_reports")
+                          .insert({ review_id: r.id, user_id: user.id, reason: "inappropriate" });
+                        if (error && !error.message.includes("duplicate")) {
+                          toast.error("No se pudo enviar el reporte");
+                        } else {
+                          toast.success("Gracias, revisaremos esta reseña");
+                        }
+                      }}
+                      className="text-[10px] text-muted-foreground hover:text-destructive mt-2 underline-offset-2 hover:underline"
+                    >
+                      Reportar como inapropiada
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
