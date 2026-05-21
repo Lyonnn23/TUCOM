@@ -8,3 +8,12 @@ verify_jwt = false
 
 [functions.nearby-cheapest-alert]
 verify_jwt = false
+
+[functions.station-static-map]
+verify_jwt = false
+
+[functions.station-distance]
+verify_jwt = false
+
+[functions.station-place-info]
+verify_jwt = false
