@@ -22,6 +22,16 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff,woff2}"],
         runtimeCaching: [
+          // HTML navigations: always try the network first so deploys propagate
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "html-cache",
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
@@ -40,6 +50,27 @@ export default defineConfig(({ mode }) => ({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          // Google Maps tiles & static map assets
+          {
+            urlPattern: /^https:\/\/maps\.(?:googleapis|gstatic)\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-maps-tiles",
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Last-viewed stations / app data
+          {
+            urlPattern: /^https:\/.*\.supabase\.co\/rest\/v1\/(gas_stations|station_prices|fuel_prices|fuel_benefits).*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "stations-data-cache",
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 6 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: /^https:\/.*\.supabase\.co\/rest\/v1\/.*/i,
             handler: "NetworkFirst",
@@ -50,7 +81,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
         ],
-        navigateFallbackDenylist: [/^\/\~oauth/],
+        navigateFallbackDenylist: [/^\/\~oauth/, /^\/api\//],
       },
       manifest: false,
     }),

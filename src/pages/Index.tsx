@@ -19,6 +19,8 @@ import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useG
 import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { analytics } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +39,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>("prices");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
