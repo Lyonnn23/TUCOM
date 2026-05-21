@@ -8,6 +8,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import BrandLogo from "@/components/BrandLogo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import PriceAlertDialog from "@/components/PriceAlertDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
