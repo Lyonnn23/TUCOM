@@ -1,104 +1,112 @@
+# Bitácora de cargas y consumo
 
-## Objetivo
+Construir un módulo completo para registrar cargas de combustible, analizar consumo real y enviar recordatorios cuando quede poco rango.
 
-Convertir el botón de reporte (al lado de Maps en cada estación) en un flujo completo donde el usuario puede:
+## 1. Base de datos (migración)
 
-1. Reportar un precio que cree erróneo (combustible + valor).
-2. Agregar una nota/comentario opcional explicando lo que vio.
-3. Subir una foto del tótem o de la bomba como evidencia.
-4. Que la app analice automáticamente con IA si el reporte parece real, y si pasa la verificación, lo use para actualizar el precio mostrado en la app.
+Tabla `fuel_logs`:
+- `id`, `user_id`, `vehicle_id` (FK lógica a `user_vehicles`, nullable)
+- `station_id` (nullable — permite cargas en estación no listada)
+- `fuel_type` (texto, validado a los 5 tipos)
+- `liters` numeric(8,3), `price_per_liter` int, `total_cost` int
+- `odometer_km` int (nullable)
+- `logged_at` timestamptz default now(), `note` text
+- RLS: usuario sólo ve/edita/borra sus propios logs; admin puede leer
 
-## Flujo del usuario
+Agregar columna a `user_preferences`:
+- `low_fuel_threshold_km` int default 80
+- `fuel_log_email_optin` boolean default false
 
-1. Toca el botón con ícono de reporte en `StationCard`.
-2. Se abre un diálogo con:
-   - Selector de combustible (93, 95, 97, Diésel, EV).
-   - Campo de precio (CLP/L o CLP/kWh).
-   - Nota opcional (máx 280 caracteres).
-   - Botón para subir / tomar una foto (opcional pero recomendado).
-3. Al enviar:
-   - Si hay foto: se sube a un bucket privado de Lovable Cloud.
-   - Se crea el registro en `reported_prices` con `status = 'pending'`.
-   - Una función de backend analiza el reporte con IA (Gemini 2.5 Flash) y lo marca como `verified`, `rejected` o `needs_review`.
-4. El usuario ve un toast: "Gracias, tu reporte está siendo verificado" y, si la IA lo aprueba en segundos, ve un segundo aviso "Reporte verificado".
+Función RPC `get_user_consumption_stats(_user_id, _vehicle_id)`:
+- Devuelve: real_kml, total_spent_6m, cost_per_km, avg_price_paid, last_odometer, last_log_at
+- Calcula km/L comparando odómetros consecutivos del mismo vehículo
 
-## Reglas de verificación
+Función RPC `get_monthly_fuel_spend(_user_id, _months)`:
+- Devuelve serie mensual `{month, total_clp, liters, avg_price}` últimos N meses
 
-La función de backend hace estos chequeos antes de aceptar:
+Función RPC `get_market_avg_price(_fuel_type, _month)`:
+- Promedio de `station_prices` para ese mes (usa snapshot history si disponible)
 
-- Rango de precio plausible por combustible (1.000–3.000 CLP/L, EV 100–600 CLP/kWh).
-- Si el reportado se desvía más de ±25% del precio actual de esa estación, exige foto.
-- Si hay foto, Gemini Vision verifica:
-  - ¿Se ve un tótem/surtidor de combustible?
-  - ¿El número visible coincide con el precio reportado (±20 CLP)?
-  - ¿Se ve el tipo de combustible (93/95/97/Diésel)?
-- Resultado: `verified` (alta confianza), `needs_review` (ambiguo), `rejected` (no coincide / foto inválida).
+## 2. Hooks
 
-La función de agregación existente (`aggregate_reported_prices`) se actualiza para usar **solo reportes con `status = 'verified'`** de las últimas 48h, manteniendo la mediana como criterio.
+- `useFuelLogs.ts` — list, create, update, remove (React Query)
+- `useFuelStats.ts` — wrappers a las RPC anteriores
+- `useTankRange.ts` — calcula km restantes en base a último log + odómetro actual estimado + consumo real
 
-## Cambios técnicos
+## 3. Componentes
 
-### Base de datos (migración)
+- `FuelLogFAB.tsx` — botón flotante (Plus + Fuel icon) visible en `/` (Index) y `/mis-cargas`
+- `FuelLogDialog.tsx` — modal con:
+  - Select vehículo (default primario)
+  - Select estación (autocompleta la más cercana, búsqueda libre)
+  - Select fuel_type (precargado del vehículo)
+  - Tabs "Por litros" / "Por monto": calcula automáticamente la otra dimensión usando precio actual de la estación o input manual
+  - Input odómetro (opcional pero recomendado)
+  - Validación con zod (litros 0–200, precio 100–5000, monto 100–500.000)
+- `ConsumptionCard.tsx` — km/L real vs ficha técnica con delta
+- `MonthlySpendChart.tsx` — Recharts BarChart 6 meses
+- `CostPerKmCard.tsx`
+- `AvgPriceCard.tsx` — precio promedio pagado vs mercado, "Ahorraste X%"
+- `TankRangeBanner.tsx` — muestra km estimados restantes en home si < umbral
+- `ExportFuelLogButton.tsx` — genera CSV cliente (Blob) y PDF (jsPDF dinámico)
 
-- Tabla `reported_prices`: agregar columnas
-  - `note text` (opcional)
-  - `photo_path text` (ruta dentro del bucket)
-  - `status text` default `'pending'` con check en `('pending','verified','needs_review','rejected')`
-  - `verification_notes text` (lo que devolvió la IA)
-  - `verified_at timestamptz`
-- Permitir `electric` en el check de `fuel_type` y ampliar rango de precio del policy a 100–5000 para cubrir kWh.
-- Actualizar `aggregate_reported_prices()` para filtrar `status = 'verified'`.
-- Bucket privado `price-reports` con políticas RLS:
-  - INSERT: usuarios autenticados pueden subir archivos en su propia carpeta `{user_id}/...`.
-  - SELECT: solo el dueño o el service role (edge function).
+## 4. Páginas
 
-### Edge Function nueva: `verify-price-report`
+- `src/pages/MisCargas.tsx` (ruta `/mis-cargas`, alias `/fuel-logs`):
+  - Header back + título "Mis cargas"
+  - Sección "Resumen": `ConsumptionCard`, `CostPerKmCard`, `AvgPriceCard`
+  - `MonthlySpendChart`
+  - Lista cronológica de logs con editar/eliminar
+  - Botón "Exportar" (CSV/PDF)
+  - FAB para nueva carga
 
-- Recibe `{ reportId }`.
-- Lee el reporte + foto (signed URL desde storage).
-- Llama a Lovable AI Gateway (`google/gemini-2.5-flash` para texto, `google/gemini-2.5-pro` si hay imagen) con prompt estructurado.
-- Actualiza `reported_prices.status` y `verification_notes`.
-- Si `verified`, llama a `aggregate_reported_prices()` para refrescar precios.
+- `src/pages/Index.tsx` (Home):
+  - Mostrar `TankRangeBanner` si hay logs y rango < umbral
+  - Renderizar `FuelLogFAB` global
 
-### Frontend
+- `src/pages/Profile.tsx`:
+  - Acceso "Mis cargas" en menú
+  - Setting: slider para `low_fuel_threshold_km` (40–200)
+  - Switch: "Resumen mensual por email"
 
-- `ReportPriceDialog.tsx`: añadir textarea, input file con preview, soporte EV, llamada al hook actualizado.
-- `useReportPrice.ts`: 
-  1. Si hay foto, subirla al bucket.
-  2. Insertar el reporte con `photo_path` y `note`.
-  3. Invocar la edge function `verify-price-report`.
-  4. Mostrar toast con resultado.
-- Mantener requisito de login (ya implementado vía `/auth`).
+## 5. Recordatorios inteligentes
+
+- Edge Function `check-tank-range`:
+  - Para cada usuario con `low_fuel_threshold_km > 0` y push activo:
+  - Calcular rango restante (último log + km/L real + odómetro estimado por tiempo, o pedir actualización manual)
+  - Si rango < umbral y no se envió aviso en últimas 12h → buscar estación más barata dentro de 15 km del último `push_subscriptions.lat/lng` y enviar push:
+    - Title: "⛽ Te quedan ~{km} km"
+    - Body: "Más barata cerca: {marca} {comuna} a ${precio}/L"
+    - Actions: "Ver estación", "Cómo llegar"
+- Programar con `pg_cron` cada 2h (vía `supabase--insert`, no migración)
+
+NOTA: rango automático sin telemetría es estimación. Mostrar "Estimado" en UI.
+
+## 6. Export
+
+- CSV: cliente, generación directa, columnas `Fecha,Estación,Combustible,Litros,Precio/L,Total,Odómetro,Consumo`
+- PDF: import dinámico de `jspdf` + `jspdf-autotable`, encabezado con logo TÜcom y totales del periodo
+- Filtros por rango de fechas antes de exportar
+
+## 7. Routing y navegación
+
+- Registrar `/mis-cargas` y `/fuel-logs` en `App.tsx`
+- Agregar item "Mis cargas" en `Profile.tsx`
+- (No tocar BottomNav — ya está saturado; acceso por Home FAB y Profile)
 
 ## Detalles técnicos
 
-```text
-[Usuario] → ReportPriceDialog
-    │
-    ├── (opcional) sube foto → storage://price-reports/{user_id}/{uuid}.jpg
-    ├── INSERT reported_prices (status='pending')
-    └── invoke('verify-price-report', { reportId })
-            │
-            ▼
-   Edge Function (service role)
-            │
-            ├── Lee reporte + signed URL foto
-            ├── Llama Lovable AI (Gemini Vision)
-            ├── UPDATE status + verification_notes
-            └── Si verified → aggregate_reported_prices()
-```
+- Todas las cifras formateadas con `@/lib/format` (`formatPrice`, `formatDistance`, `formatRelativeTime`).
+- Mensajes en español neutro; estados loading/empty/error consistentes con el resto.
+- Validación cliente con zod + mensajes localizados; servidor confía en RLS + check via trigger opcional para rangos.
+- Accesibilidad: FAB con `aria-label="Registrar carga"`, dialog con título asociado, charts con descripción accesible.
+- Memoria: actualizar `mem://index.md` con nueva entrada `[Fuel Logs](mem://features/registro-cargas)`.
 
-Modelos de IA: gratis vía Lovable AI Gateway, sin pedir API key al usuario. No se usan secrets nuevos.
+## Lo que NO incluye (fuera de alcance)
 
-## Archivos a tocar
+- OCR de boletas
+- Sync con OBD-II
+- Predicción avanzada de consumo por ML
+- Compartir bitácora con otros usuarios
 
-- Migración SQL (nueva).
-- `src/components/ReportPriceDialog.tsx`.
-- `src/hooks/useReportPrice.ts`.
-- `supabase/functions/verify-price-report/index.ts` (nueva).
-
-## Lo que NO se incluye en este paso
-
-- Panel de moderación manual de reportes `needs_review` (se puede agregar después).
-- Recompensas o gamificación por reportes verificados.
-- Notificación push al usuario cuando su reporte es aprobado (solo toast inmediato).
+¿Apruebas para implementar?
