@@ -29,6 +29,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
 const StationDetail = lazy(() => import("./pages/StationDetail.tsx"));
 const Alerts = lazy(() => import("./pages/Alerts.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
+const Compare = lazy(() => import("./pages/Compare.tsx"));
 
 const RouteFallback = () => (
   <div className="min-h-screen bg-background p-4 space-y-3">
