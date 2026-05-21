@@ -120,19 +120,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Pull TAG porticos and cheap stations (only the relevant fuel) in parallel
+    // Pull TAG porticos and cheap stations (matching fuel) in parallel.
+    // For EV trips we still need a reference gasoline price to compute the comparison.
     const supabase = createClient(supabaseUrl, serviceKey);
-    const [porticosRes, pricesRes] = await Promise.all([
+    const isEv = vehicle.fuel_type === "electric";
+    const [porticosRes, pricesRes, refGasRes] = await Promise.all([
       supabase.from("tag_rates").select("autopista_name, portico_id, portico_name, lat, lng, tarifa_baja, tarifa_punta, tarifa_saturacion"),
-      vehicle.fuel_type === "electric"
-        ? Promise.resolve({ data: [], error: null })
-        : supabase
-            .from("station_prices")
-            .select("station_id, price, gas_stations!inner(id, name, brand, lat, lng)")
-            .eq("fuel_type", vehicle.fuel_type)
-            .gt("price", 0)
-            .order("price", { ascending: true })
-            .limit(3000),
+      supabase
+        .from("station_prices")
+        .select("station_id, price, gas_stations!inner(id, name, brand, lat, lng, has_ev_charging, ev_power_kw, ev_operator)")
+        .eq("fuel_type", isEv ? "electric" : vehicle.fuel_type)
+        .gt("price", 0)
+        .order("price", { ascending: true })
+        .limit(3000),
+      isEv
+        ? supabase
+            .from("fuel_prices")
+            .select("price")
+            .eq("fuel_type", "gasoline95")
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
     ]);
 
     const porticos = porticosRes.data ?? [];
