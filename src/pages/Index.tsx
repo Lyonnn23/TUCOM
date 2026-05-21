@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { useRecentReports } from "@/hooks/useRecentReports";
+import { useStationRatings } from "@/hooks/useStationRatings";
 import { analytics } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -67,6 +68,7 @@ const Index = () => {
     radiusKm: 15,
   });
   const { data: recentReports } = useRecentReports();
+  const { data: stationRatings } = useStationRatings();
 
   const handleSyncStations = async () => {
     setSyncing(true);
