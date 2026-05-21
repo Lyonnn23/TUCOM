@@ -61,6 +61,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
     <div
       role="button"
       tabIndex={0}
+      aria-label={`${station.brand} ${station.name}, ${station.address}${station.distance !== undefined ? `, ${formatKm(station.distance)}` : ""}. Ver detalle de la estación.`}
       onClick={() => { analytics.stationClick(station.id, station.brand); navigate(`/station/${station.id}`); }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -69,7 +70,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
           navigate(`/station/${station.id}`);
         }
       }}
-      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ${
+      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
