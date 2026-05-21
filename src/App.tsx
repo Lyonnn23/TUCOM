@@ -73,7 +73,7 @@ const App = () => (
           <AuthProvider>
             <Suspense fallback={<RouteFallback />}>
               <Routes>
-                <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+                <Route path="/" element={<RequireAuth><RequireOnboarded><Index /></RequireOnboarded></RequireAuth>} />
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
