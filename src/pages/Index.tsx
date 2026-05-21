@@ -682,11 +682,21 @@ const Index = () => {
               </div>
             </div>
             {stationsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-44 rounded-2xl" />)}
+              </div>
+            ) : stationsWithDistance.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-primary/10 flex items-center justify-center mb-4">
+                  <Fuel className="w-10 h-10 text-primary" />
+                </div>
+                <p className="font-heading font-bold text-foreground">No encontramos estaciones</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                  Ajusta los filtros, amplía el radio o intenta otra búsqueda.
+                </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in">
                 {stationsWithDistance.map((station) => (
                   <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} />
                 ))}
