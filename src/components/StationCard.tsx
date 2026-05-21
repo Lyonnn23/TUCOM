@@ -13,6 +13,7 @@ interface StationCardProps {
   onNavigate?: (station: GasStation) => void;
   onNavigateGoogle?: (station: GasStation) => void;
   lastCommunityReport?: string | null;
+  rating?: { avg: number; count: number } | null;
 }
 
 const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string }> = {
@@ -35,7 +36,7 @@ const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string
 
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
-const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport }: StationCardProps) => {
+const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport, rating }: StationCardProps) => {
   const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
