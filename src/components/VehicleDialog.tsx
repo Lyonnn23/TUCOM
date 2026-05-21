@@ -34,6 +34,7 @@ const FUELS = [
 const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   const { create, update, vehicles } = useUserVehicles();
   const { isPro, limits } = useSubscription();
+  const { org, isAdmin: isOrgAdmin } = useOrganization();
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [presetIdx, setPresetIdx] = useState<string>("custom");
   const [nickname, setNickname] = useState("");
@@ -44,6 +45,7 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   const [tank, setTank] = useState<string>("50");
   const [cons, setCons] = useState<string>("12");
   const [color, setColor] = useState(VEHICLE_COLORS[0]);
+  const [assignToOrg, setAssignToOrg] = useState(false);
 
   // Block opening if creating a new vehicle and already at limit
   useEffect(() => {
