@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft, Bell, Heart, LogOut, Mail, Save, Trash2, ChevronRight,
-  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles,
+  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles, Calculator, Car,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
