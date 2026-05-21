@@ -11,6 +11,8 @@ import {
 import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
 import { EV_PRESETS } from "@/lib/evPresets";
 import { useUserVehicles, type UserVehicle } from "@/hooks/useUserVehicles";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PaywallModal } from "@/components/PaywallModal";
 import { toast } from "sonner";
 
 interface Props {
@@ -28,7 +30,9 @@ const FUELS = [
 ] as const;
 
 const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
-  const { create, update } = useUserVehicles();
+  const { create, update, vehicles } = useUserVehicles();
+  const { isPro, limits } = useSubscription();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [presetIdx, setPresetIdx] = useState<string>("custom");
   const [nickname, setNickname] = useState("");
   const [brand, setBrand] = useState("");
@@ -38,6 +42,16 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   const [tank, setTank] = useState<string>("50");
   const [cons, setCons] = useState<string>("12");
   const [color, setColor] = useState(VEHICLE_COLORS[0]);
+
+  // Block opening if creating a new vehicle and already at limit
+  useEffect(() => {
+    if (!open) return;
+    if (vehicle) return; // editing is always allowed
+    if (vehicles.length >= limits.vehicles) {
+      onOpenChange(false);
+      setPaywallOpen(true);
+    }
+  }, [open, vehicle, vehicles.length, limits.vehicles, onOpenChange]);
 
   useEffect(() => {
     if (!open) return;
@@ -248,6 +262,16 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+  return (
+    <>
+      {dialog}
+      <PaywallModal
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        reason={`El plan Básico permite ${limits.vehicles} vehículo. Hazte Pro para tener hasta 5 vehículos en tu perfil.`}
+      />
+    </>
   );
 };
 
