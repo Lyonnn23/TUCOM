@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import NearbyRanking from "@/components/NearbyRanking";
 import LocationPermissionGuide from "@/components/LocationPermissionGuide";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
@@ -42,6 +43,14 @@ const Index = () => {
   const [locationLoading, setLocationLoading] = useState(false);
   const [lastLocationUpdate, setLastLocationUpdate] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const { data: fuelPrices, isLoading: pricesLoading, refetch: refetchPrices } = useFuelPrices();
   const { data: stations, isLoading: stationsLoading, refetch: refetchStations } = useGasStations();
