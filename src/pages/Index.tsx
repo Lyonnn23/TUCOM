@@ -326,7 +326,47 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 py-5">
+      <main className="max-w-6xl mx-auto px-4 py-5 animate-fade-in">
+        {/* Hero: lowest local price */}
+        {activeTab === "prices" && (() => {
+          const cheapest = stationsWithDistance
+            .filter((s) => userLocation && (s.distance ?? 999) <= 15 && (s.prices.gasoline93 ?? 0) > 0)
+            .sort((a, b) => (a.prices.gasoline93 ?? 99999) - (b.prices.gasoline93 ?? 99999))[0];
+          if (!cheapest) return null;
+          return (
+            <div className="mb-5 rounded-3xl bg-gradient-hero p-5 shadow-glow text-white relative overflow-hidden animate-scale-in">
+              <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
+              <div className="absolute right-10 bottom-0 w-24 h-24 rounded-full bg-accent/30 blur-2xl" />
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                    <TrendingDown className="w-3 h-3" /> Más barato cerca
+                  </div>
+                  <span className="text-[10px] text-white/75">a {cheapest.distance?.toFixed(1)} km</span>
+                </div>
+                <div className="flex items-end justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-heading font-bold text-base truncate">{cheapest.name}</p>
+                    <p className="text-[11px] text-white/80 truncate">{cheapest.brand} · {cheapest.address}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-[10px] text-white/75 uppercase tracking-wider">93</p>
+                    <p className="font-heading tabular-nums font-extrabold text-4xl leading-none">
+                      ${cheapest.prices.gasoline93}
+                    </p>
+                    <p className="text-[10px] text-white/70 mt-0.5">por litro</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleNavigateGoogle(cheapest)}
+                  className="mt-4 w-full bg-white/95 hover:bg-white text-primary font-semibold text-sm rounded-xl py-2.5 press-scale flex items-center justify-center gap-2 shadow-md"
+                >
+                  <MapPin className="w-4 h-4" /> Cómo llegar
+                </button>
+              </div>
+            </div>
+          );
+        })()}
         <UnofficialBanner className="mb-4" />
         {/* Prices Tab */}
         {activeTab === "prices" && (
