@@ -33,6 +33,8 @@ const Profile = lazy(() => import("./pages/Profile.tsx"));
 const Compare = lazy(() => import("./pages/Compare.tsx"));
 const Drive = lazy(() => import("./pages/Drive.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
+const Admin = lazy(() => import("./pages/Admin.tsx"));
+import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
   <div className="min-h-screen bg-background p-4 space-y-3">
@@ -99,6 +101,7 @@ const App = () => (
                 <Route path="/perfil" element={<RequireAuth><Profile /></RequireAuth>} />
                 <Route path="/ranking" element={<RequireAuth><Leaderboard /></RequireAuth>} />
                 <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
+                <Route path="/admin" element={<RequireAuth><RequireAdmin><Admin /></RequireAdmin></RequireAuth>} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />

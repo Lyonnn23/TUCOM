@@ -39,6 +39,11 @@ const FUEL_ROWS = [
 
 const StationDetail = () => {
   const { id } = useParams<{ id: string }>();
+
+  useEffect(() => {
+    if (!id) return;
+    supabase.from("station_views").insert({ station_id: id }).then(() => {});
+  }, [id]);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: stations, isLoading } = useGasStations();
