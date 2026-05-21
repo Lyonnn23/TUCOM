@@ -414,6 +414,11 @@ const Calculadora = () => {
       </main>
 
       <VehicleDialog open={showDialog} onOpenChange={setShowDialog} />
+      <PaywallModal
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        reason={`Usaste tus ${limits.routeSearchesPerMonth} cálculos de ruta del mes en el plan Básico. Hazte Pro para cálculos ilimitados.`}
+      />
     </div>
   );
 };

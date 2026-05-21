@@ -14,11 +14,14 @@ import {
 } from "@/components/ui/select";
 import ThemeToggle from "@/components/ThemeToggle";
 import BadgeChip from "@/components/BadgeChip";
+import { ProBadge } from "@/components/ProBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useUserPoints, useUserBadges, getLevel, BADGE_META, type BadgeKey } from "@/hooks/useGamification";
+import { Crown, Sparkles as SparklesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -172,10 +175,15 @@ const Profile = () => {
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground truncate">{displayName}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-foreground truncate">{displayName}</p>
+              <ProBadge />
+            </div>
             <p className="text-sm text-muted-foreground truncate">{user.email}</p>
           </div>
         </section>
+
+        <PlanCard />
 
         <PointsAndBadges />
 
@@ -478,6 +486,51 @@ const Profile = () => {
         </Button>
       </main>
     </div>
+  );
+};
+
+const PlanCard = () => {
+  const navigate = useNavigate();
+  const { isPro, subscription } = useSubscription();
+  if (isPro) {
+    return (
+      <button
+        onClick={() => navigate("/planes")}
+        className="w-full text-left bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] text-primary-foreground rounded-2xl p-5 shadow-soft hover-scale"
+      >
+        <div className="flex items-center gap-3">
+          <Crown className="w-6 h-6" />
+          <div className="flex-1 min-w-0">
+            <p className="font-heading font-bold text-lg">TÜcom Pro activo</p>
+            <p className="text-xs opacity-90">
+              {subscription?.expires_at
+                ? `Renueva el ${new Date(subscription.expires_at).toLocaleDateString("es-CL")}`
+                : "Gracias por apoyar TÜcom"}
+            </p>
+          </div>
+          <ChevronRight className="w-5 h-5" />
+        </div>
+      </button>
+    );
+  }
+  return (
+    <button
+      onClick={() => navigate("/planes")}
+      className="w-full text-left bg-card border-2 border-primary/30 rounded-2xl p-5 shadow-soft hover-scale"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] flex items-center justify-center text-primary-foreground shrink-0">
+          <SparklesIcon className="w-6 h-6" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-heading font-bold text-foreground">Hazte TÜcom Pro</p>
+          <p className="text-xs text-muted-foreground">
+            Alertas ilimitadas, 5 vehículos, reportes PDF · $990/mes
+          </p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-primary" />
+      </div>
+    </button>
   );
 };
 
