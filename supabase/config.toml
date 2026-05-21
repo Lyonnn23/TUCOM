@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.station-place-info]
 verify_jwt = false
+
+[functions.trip-calculator]
+verify_jwt = false
