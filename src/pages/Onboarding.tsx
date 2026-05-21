@@ -24,7 +24,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { preferences, save, defaults } = useUserPreferences();
-  const { create: createVehicle, list: vehicleList } = useUserVehicles();
+  const { create: createVehicle, vehicles } = useUserVehicles();
 
   const [step, setStep] = useState(0);
   const [fuel, setFuel] = useState(defaults.preferred_fuel);
