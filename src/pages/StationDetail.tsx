@@ -307,6 +307,12 @@ const StationDetail = () => {
               </div>
             )}
           </div>
+          <div className="px-5 py-4 border-t border-border bg-muted/30">
+            <PriceAlertDialog
+              stationId={station.id}
+              prices={station.prices as Record<string, number>}
+            />
+          </div>
         </section>
 
         {/* Price history chart */}
