@@ -119,6 +119,7 @@ export function useGasStations() {
           evOperator: s.ev_operator ?? null,
           lastUpdated: lastUpdatedMs > 0 ? new Date(lastUpdatedMs) : null,
           electricEstimated,
+          placeId: s.place_id ?? null,
           prices: {
             gasoline93: getPrice("gasoline93"),
             gasoline95: getPrice("gasoline95"),
