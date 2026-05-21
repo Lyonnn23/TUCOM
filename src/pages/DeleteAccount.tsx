@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-const SUPPORT_EMAIL = "soporte@tucombustible.lovable.app";
+const SUPPORT_EMAIL = "soporte@tucom.cl";
 
 const DeleteAccount = () => {
   const navigate = useNavigate();

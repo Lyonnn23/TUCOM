@@ -65,7 +65,7 @@ const Index = () => {
       return;
     }
 
-    // Detect preview iframe (geolocation is blocked by permission policy in Lovable preview)
+    // Detect preview iframe (geolocation may be blocked by permission policy in preview)
     const inIframe = (() => {
       try { return window.self !== window.top; } catch { return true; }
     })();
