@@ -16,6 +16,7 @@ import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
 import FuelLogFAB from "@/components/FuelLogFAB";
+import DriverModeFAB from "@/components/DriverModeFAB";
 import TankRangeBanner from "@/components/TankRangeBanner";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
@@ -860,6 +861,7 @@ const Index = () => {
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <FuelLogFAB />
+      <DriverModeFAB />
     </div>
   );
 };

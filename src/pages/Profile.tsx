@@ -22,6 +22,54 @@ import { useUserPoints, useUserBadges, getLevel, BADGE_META, type BadgeKey } fro
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+const DRIVER_FAB_KEY = "tucom_driver_fab_enabled";
+const DRIVER_AUTO_KEY = "tucom_driver_auto";
+
+const DriverModeSettings = () => {
+  const [fabOn, setFabOn] = useState<boolean>(() => {
+    try { return localStorage.getItem(DRIVER_FAB_KEY) !== "0"; } catch { return true; }
+  });
+  const [autoOn, setAutoOn] = useState<boolean>(() => {
+    try { return localStorage.getItem(DRIVER_AUTO_KEY) === "1"; } catch { return false; }
+  });
+  return (
+    <>
+      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+        <div className="min-w-0">
+          <p className="text-sm text-foreground flex items-center gap-1.5">
+            <Car className="w-3.5 h-3.5 text-primary" /> Botón Modo Conductor
+          </p>
+          <p className="text-[11px] text-muted-foreground">Botón flotante para activar manualmente</p>
+        </div>
+        <Switch
+          checked={fabOn}
+          onCheckedChange={(v) => {
+            setFabOn(v);
+            try { localStorage.setItem(DRIVER_FAB_KEY, v ? "1" : "0"); } catch {}
+            toast.success(v ? "Botón visible en la pantalla principal" : "Botón ocultado");
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+        <div className="min-w-0">
+          <p className="text-sm text-foreground">Activación automática al conducir</p>
+          <p className="text-[11px] text-muted-foreground">
+            Te preguntará si activarlo cuando detecte velocidad &gt; 15 km/h
+          </p>
+        </div>
+        <Switch
+          checked={autoOn}
+          onCheckedChange={(v) => {
+            setAutoOn(v);
+            try { localStorage.setItem(DRIVER_AUTO_KEY, v ? "1" : "0"); } catch {}
+            toast.success(v ? "Detección automática activada" : "Detección automática desactivada");
+          }}
+        />
+      </div>
+    </>
+  );
+};
+
 const FUEL_OPTIONS = [
   { key: "gasoline93", label: "93" },
   { key: "gasoline95", label: "95" },
@@ -364,6 +412,9 @@ const Profile = () => {
               }}
             />
           </div>
+
+          {/* Modo conductor */}
+          <DriverModeSettings />
         </section>
 
         {/* About */}
