@@ -136,9 +136,16 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="custom">Personalizado</SelectItem>
+                  <SelectItem value="__hdr_ice" disabled>— Combustión —</SelectItem>
                   {VEHICLE_PRESETS.map((p, i) => (
                     <SelectItem key={i} value={String(i)}>
                       {p.brand} {p.model} · {p.consumption_kml} km/L
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__hdr_ev" disabled>— Eléctricos —</SelectItem>
+                  {EV_PRESETS.map((p, i) => (
+                    <SelectItem key={`ev-${i}`} value={`ev-${i}`}>
+                      ⚡ {p.brand} {p.model} · {p.battery_kwh} kWh · {p.efficiency_kmkwh} km/kWh
                     </SelectItem>
                   ))}
                 </SelectContent>
