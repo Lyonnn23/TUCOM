@@ -10,22 +10,19 @@ interface StationCardProps {
   onNavigateGoogle?: (station: GasStation) => void;
 }
 
-const BRAND_STYLES: Record<string, { border: string; bg: string; accent: string; badge: string }> = {
+const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string }> = {
   Copec: {
-    border: "border-[hsl(var(--brand-copec))]",
-    bg: "bg-[hsl(var(--brand-copec)/0.06)]",
+    ring: "ring-[hsl(var(--brand-copec))]/40",
     accent: "text-[hsl(var(--brand-copec))]",
     badge: "bg-[hsl(var(--brand-copec))] text-white",
   },
   Shell: {
-    border: "border-[hsl(var(--brand-shell))]",
-    bg: "bg-[hsl(var(--brand-shell)/0.06)]",
+    ring: "ring-[hsl(var(--brand-shell))]/40",
     accent: "text-[hsl(var(--brand-shell))]",
     badge: "bg-[hsl(var(--brand-shell))] text-white",
   },
   Aramco: {
-    border: "border-[hsl(var(--brand-aramco))]",
-    bg: "bg-[hsl(var(--brand-aramco)/0.06)]",
+    ring: "ring-[hsl(var(--brand-aramco))]/40",
     accent: "text-[hsl(var(--brand-aramco))]",
     badge: "bg-[hsl(var(--brand-aramco))] text-white",
   },
@@ -44,102 +41,127 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
     { label: "Diésel", price: station.prices.diesel },
   ];
 
-  // Add electric if station has EV charging
   if (station.hasEvCharging && station.prices.electric > 0) {
     fuelItems.push({ label: "⚡ kWh", price: station.prices.electric, estimated: station.electricEstimated });
   }
 
+  // Headline price for the card hero (93 if present, else cheapest non-zero)
+  const headline = station.prices.gasoline93
+    ? { label: "93", price: station.prices.gasoline93 }
+    : fuelItems.find((f) => f.price > 0) || fuelItems[0];
+
   return (
     <div
-      className={`rounded-xl p-4 shadow-sm border transition-all ${
-        featured
-          ? `${style.bg} ${style.border} border-2 shadow-md`
-          : "bg-card border-border"
+      className={`group rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden ${
+        featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <BrandLogo brand={station.brand} size={24} />
-            {featured && (
-              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${style.badge}`}>
-                <Star className="w-3 h-3" />
-                {station.brand}
-              </span>
-            )}
-            {station.hasEvCharging && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white shrink-0">
-                <Zap className="w-3 h-3" />
-                EV
-              </span>
-            )}
-            <h3 className={`font-heading font-semibold text-sm truncate min-w-0 flex-1 ${featured ? style.accent : "text-foreground"}`} title={station.name}>
-              {station.name}
-            </h3>
-            <span
-              className={`w-2 h-2 rounded-full shrink-0 ${
-                station.isOpen ? "bg-fuel-green animate-pulse-green" : "bg-fuel-red"
-              }`}
-            />
+      {/* Top: brand + headline price */}
+      <div className="p-4 pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+              <BrandLogo brand={station.brand} size={28} />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3
+                  className={`font-heading font-semibold text-sm leading-tight truncate ${
+                    featured ? style.accent : "text-foreground"
+                  }`}
+                  title={station.name}
+                >
+                  {station.name}
+                </h3>
+                <span
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    station.isOpen ? "bg-fuel-green" : "bg-fuel-red"
+                  }`}
+                  title={station.isOpen ? "Abierta" : "Cerrada"}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5 min-w-0" title={station.address}>
+                <MapPin className="w-3 h-3 shrink-0" />
+                <span className="truncate">{station.address}</span>
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 min-w-0" title={station.address}>
-            <MapPin className="w-3 h-3 shrink-0" />
-            <span className="truncate">{station.address}</span>
-          </p>
-          {station.distance !== undefined && (
-            <p className="text-xs text-fuel-blue font-medium mt-1 truncate">
-              <Fuel className="w-3 h-3 inline mr-1" />
-              {station.distance} km
+          <div className="text-right shrink-0">
+            <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">
+              {headline.label}
             </p>
+            <p className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent">
+              ${headline.price || "—"}
+            </p>
+          </div>
+        </div>
+
+        {/* Badges */}
+        <div className="flex items-center gap-1.5 flex-wrap mt-2">
+          {featured && (
+            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
+              <Star className="w-2.5 h-2.5" /> {station.brand}
+            </span>
           )}
-          {station.hasEvCharging && station.evPowerKw && (
-            <p className="text-[10px] text-[hsl(142,70%,45%)] font-medium mt-1 truncate">
-              <Zap className="w-3 h-3 inline mr-0.5" />
-              {station.evPowerKw} kW · {station.evConnectorTypes.slice(0, 2).join(", ")}
-              {station.evOperator ? ` · ${station.evOperator}` : ""}
-            </p>
+          {station.hasEvCharging && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white">
+              <Zap className="w-2.5 h-2.5" /> EV
+            </span>
+          )}
+          {station.distance !== undefined && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              <Navigation className="w-2.5 h-2.5" /> {station.distance} km
+            </span>
           )}
           {station.lastUpdated && (
-            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
               <Clock className="w-2.5 h-2.5" />
-              Actualizado {formatRelativeTime(station.lastUpdated)}
-            </p>
+              {formatRelativeTime(station.lastUpdated)}
+            </span>
           )}
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <ReportPriceDialog station={station} />
-          <button
-            onClick={() => onNavigateGoogle?.(station)}
-            className="bg-muted text-foreground rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-muted/80 transition-colors"
-          >
-            Maps
-          </button>
-          <button
-            onClick={() => onNavigate?.(station)}
-            className="bg-primary text-primary-foreground rounded-lg px-3 py-1.5 text-xs font-medium hover:bg-primary/90 transition-colors"
-          >
-            Waze
-          </button>
         </div>
       </div>
 
-      <div className={`grid gap-2 mt-3 ${fuelItems.length > 4 ? "grid-cols-5" : "grid-cols-4"}`}>
-        {fuelItems.map((item) => (
-          <div
-            key={item.label}
-            className={`text-center rounded-lg py-1.5 px-1 ${
-              featured ? "bg-white/60 dark:bg-white/10" : "bg-muted"
-            }`}
-          >
-            <p className="text-[10px] text-muted-foreground font-medium">{item.label}</p>
-            <p className={`text-xs font-bold ${featured ? style.accent : "text-foreground"}`}>
-              ${item.price}
-            </p>
-            {item.estimated && (
-              <p className="text-[8px] text-muted-foreground leading-none mt-0.5">Est.</p>
-            )}
-          </div>
-        ))}
+      {/* All fuel prices */}
+      <div className={`grid gap-1.5 px-4 ${fuelItems.length > 4 ? "grid-cols-5" : "grid-cols-4"}`}>
+        {fuelItems.map((item) => {
+          const isHero = item.label === headline.label;
+          return (
+            <div
+              key={item.label}
+              className={`text-center rounded-lg py-1.5 px-1 ${
+                isHero ? "bg-accent/15 ring-1 ring-accent/40" : "bg-muted"
+              }`}
+            >
+              <p className="text-[10px] text-muted-foreground font-medium">{item.label}</p>
+              <p className={`text-xs font-bold tabular-nums ${isHero ? "text-accent" : "text-foreground"}`}>
+                ${item.price || "—"}
+              </p>
+              {item.estimated && (
+                <p className="text-[8px] text-muted-foreground leading-none mt-0.5">Est.</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-1.5 p-3 pt-3">
+        <ReportPriceDialog station={station} />
+        <button
+          onClick={() => onNavigate?.(station)}
+          className="bg-muted hover:bg-muted/70 text-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale transition-colors"
+          title="Abrir en Waze"
+        >
+          Waze
+        </button>
+        <button
+          onClick={() => onNavigateGoogle?.(station)}
+          className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5"
+        >
+          <Navigation className="w-3.5 h-3.5" />
+          Cómo llegar
+        </button>
       </div>
     </div>
   );
