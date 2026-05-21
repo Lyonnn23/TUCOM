@@ -1,13 +1,13 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.tucom',
+  appId: 'com.tucom.app',
   appName: 'TUcom',
   webDir: 'dist',
-  // El bloque "server" se usa SOLO en desarrollo con hot-reload desde Lovable.
+  // El bloque "server" se usa SOLO en desarrollo con hot-reload.
   // Para compilar la APK/AAB de producción debe estar comentado/eliminado.
   // server: {
-  //   url: 'https://72bff210-d571-4f6a-8fac-a80aad590768.lovableproject.com?forceHideBadge=true',
+  //   url: 'https://tucombustible.lovable.app?forceHideBadge=true',
   //   cleartext: true
   // }
 };
