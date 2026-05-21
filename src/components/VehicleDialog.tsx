@@ -62,6 +62,15 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
   const applyPreset = (key: string) => {
     setPresetIdx(key);
     if (key === "custom") return;
+    if (key.startsWith("ev-")) {
+      const p = EV_PRESETS[Number(key.slice(3))];
+      if (!p) return;
+      setBrand(p.brand); setModel(p.model);
+      setFuelType("electric");
+      setTank(String(p.battery_kwh));
+      setCons(String(p.efficiency_kmkwh));
+      return;
+    }
     const p = VEHICLE_PRESETS[Number(key)];
     if (!p) return;
     setBrand(p.brand); setModel(p.model);
