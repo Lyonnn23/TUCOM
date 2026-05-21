@@ -18,6 +18,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -235,14 +244,61 @@ const Index = () => {
               </span>
             </button>
             {user ? (
-              <button
-                onClick={signOut}
-                className="flex items-center gap-1 text-xs text-white/90 bg-white/15 rounded-full px-2.5 py-1.5 backdrop-blur-sm hover:bg-white/25 transition-colors"
-              >
-                <User className="w-3 h-3" />
-                <span className="font-medium max-w-[60px] truncate">{user.user_metadata?.display_name || user.email?.split("@")[0]}</span>
-                <LogOut className="w-3 h-3 ml-0.5" />
-              </button>
+              (() => {
+                const displayName =
+                  (user.user_metadata?.full_name as string) ||
+                  (user.user_metadata?.name as string) ||
+                  (user.user_metadata?.display_name as string) ||
+                  user.email?.split("@")[0] ||
+                  "Usuario";
+                const avatarUrl =
+                  (user.user_metadata?.avatar_url as string) ||
+                  (user.user_metadata?.picture as string) ||
+                  undefined;
+                const initials = displayName
+                  .split(" ")
+                  .map((p) => p[0])
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .join("")
+                  .toUpperCase();
+                return (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 rounded-full pl-1 pr-2.5 py-1 backdrop-blur-sm transition-colors"
+                        aria-label="Cuenta"
+                      >
+                        <Avatar className="w-6 h-6 ring-1 ring-white/30">
+                          {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
+                          <AvatarFallback className="bg-white/20 text-white text-[10px] font-semibold">
+                            {initials || <User className="w-3 h-3" />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs font-medium text-white max-w-[70px] truncate">
+                          {displayName}
+                        </span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel className="flex flex-col">
+                        <span className="font-semibold truncate">{displayName}</span>
+                        <span className="text-xs text-muted-foreground font-normal truncate">
+                          {user.email}
+                        </span>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate("/eliminar-cuenta")}>
+                        Eliminar cuenta
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={signOut}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Cerrar sesión
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              })()
             ) : (
               <button
                 onClick={() => navigate("/auth")}
