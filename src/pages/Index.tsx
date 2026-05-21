@@ -14,6 +14,8 @@ import BenefitsTab from "@/components/BenefitsTab";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
+import FuelLogFAB from "@/components/FuelLogFAB";
+import TankRangeBanner from "@/components/TankRangeBanner";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
 import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
@@ -421,6 +423,7 @@ const Index = () => {
             </div>
           );
         })()}
+        {activeTab === "prices" && <div className="mb-4"><TankRangeBanner /></div>}
         <UnofficialBanner className="mb-4" />
         {/* Prices Tab */}
         {activeTab === "prices" && (
@@ -773,6 +776,7 @@ const Index = () => {
       </main>
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
+      <FuelLogFAB />
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft, Bell, Heart, LogOut, Mail, Save, Trash2, ChevronRight,
-  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles, Calculator, Car,
+  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles, Calculator, Car, ClipboardList,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -264,6 +264,21 @@ const Profile = () => {
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>
 
+        {/* Fuel logs link */}
+        <button
+          onClick={() => navigate("/mis-cargas")}
+          className="w-full bg-card rounded-2xl border border-border shadow-soft p-4 flex items-center gap-3 hover-scale text-left"
+        >
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <ClipboardList className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-foreground">Mis cargas</p>
+            <p className="text-xs text-muted-foreground">Bitácora y consumo real</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+
         {/* Settings */}
         <section className="bg-card rounded-2xl border border-border shadow-soft p-5 space-y-4">
           <h2 className="font-semibold text-foreground">Ajustes</h2>
@@ -302,6 +317,47 @@ const Profile = () => {
                 try {
                   await save({ leaderboard_opt_in: v });
                   toast.success(v ? "Aparecerás en el ranking" : "Te quitamos del ranking");
+                } catch {
+                  toast.error("No se pudo actualizar");
+                }
+              }}
+            />
+          </div>
+
+          <div className="pt-3 border-t border-border space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-foreground">Avisar cuando queden pocos km</span>
+              <span className="text-sm font-semibold text-primary tabular-nums">
+                {preferences?.low_fuel_threshold_km ?? 80} km
+              </span>
+            </div>
+            <Slider
+              value={[preferences?.low_fuel_threshold_km ?? 80]}
+              min={20}
+              max={200}
+              step={10}
+              onValueChange={(v) => {
+                save({ low_fuel_threshold_km: v[0] }).catch(() => {
+                  toast.error("No se pudo guardar");
+                });
+              }}
+              aria-label="Umbral de bajo combustible en kilómetros"
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+            <div className="min-w-0">
+              <p className="text-sm text-foreground">Resumen mensual por email</p>
+              <p className="text-[11px] text-muted-foreground">
+                Cuánto gastaste y cuánto ahorraste este mes
+              </p>
+            </div>
+            <Switch
+              checked={preferences?.fuel_log_email_optin ?? false}
+              onCheckedChange={async (v) => {
+                try {
+                  await save({ fuel_log_email_optin: v });
+                  toast.success(v ? "Recibirás el resumen mensual" : "Resumen mensual desactivado");
                 } catch {
                   toast.error("No se pudo actualizar");
                 }

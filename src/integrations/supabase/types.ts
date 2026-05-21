@@ -101,6 +101,54 @@ export type Database = {
         }
         Relationships: []
       }
+      fuel_logs: {
+        Row: {
+          created_at: string
+          fuel_type: string
+          id: string
+          liters: number
+          logged_at: string
+          note: string | null
+          odometer_km: number | null
+          price_per_liter: number
+          station_id: string | null
+          total_cost: number
+          updated_at: string
+          user_id: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          fuel_type: string
+          id?: string
+          liters: number
+          logged_at?: string
+          note?: string | null
+          odometer_km?: number | null
+          price_per_liter: number
+          station_id?: string | null
+          total_cost: number
+          updated_at?: string
+          user_id: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          fuel_type?: string
+          id?: string
+          liters?: number
+          logged_at?: string
+          note?: string | null
+          odometer_km?: number | null
+          price_per_liter?: number
+          station_id?: string | null
+          total_cost?: number
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string | null
+        }
+        Relationships: []
+      }
       fuel_price_history: {
         Row: {
           avg_price: number
@@ -543,8 +591,10 @@ export type Database = {
       user_preferences: {
         Row: {
           created_at: string
+          fuel_log_email_optin: boolean
           id: string
           leaderboard_opt_in: boolean
+          low_fuel_threshold_km: number
           notifications_enabled: boolean
           onboarding_completed: boolean
           preferred_fuel: string
@@ -554,8 +604,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fuel_log_email_optin?: boolean
           id?: string
           leaderboard_opt_in?: boolean
+          low_fuel_threshold_km?: number
           notifications_enabled?: boolean
           onboarding_completed?: boolean
           preferred_fuel?: string
@@ -565,8 +617,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fuel_log_email_optin?: boolean
           id?: string
           leaderboard_opt_in?: boolean
+          low_fuel_threshold_km?: number
           notifications_enabled?: boolean
           onboarding_completed?: boolean
           preferred_fuel?: string
@@ -712,6 +766,16 @@ export type Database = {
           station_count: number
         }[]
       }
+      get_market_avg_price: { Args: { _fuel_type: string }; Returns: number }
+      get_monthly_fuel_spend: {
+        Args: { _months?: number; _user_id: string }
+        Returns: {
+          avg_price: number
+          liters: number
+          month: string
+          total_clp: number
+        }[]
+      }
       get_monthly_leaderboard: {
         Args: never
         Returns: {
@@ -736,6 +800,10 @@ export type Database = {
           station_id: string
           views: number
         }[]
+      }
+      get_user_consumption_stats: {
+        Args: { _user_id: string; _vehicle_id?: string }
+        Returns: Json
       }
       has_role: {
         Args: {
