@@ -38,6 +38,7 @@ const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Calculadora = lazy(() => import("./pages/Calculadora.tsx"));
 const CalculadoraEV = lazy(() => import("./pages/CalculadoraEV.tsx"));
 const MisCargas = lazy(() => import("./pages/MisCargas.tsx"));
+const Planes = lazy(() => import("./pages/Planes.tsx"));
 import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
@@ -113,6 +114,8 @@ const App = () => (
                 <Route path="/calculadora-ev" element={<RequireAuth><CalculadoraEV /></RequireAuth>} />
                 <Route path="/mis-cargas" element={<RequireAuth><MisCargas /></RequireAuth>} />
                 <Route path="/fuel-logs" element={<Navigate to="/mis-cargas" replace />} />
+                <Route path="/planes" element={<Planes />} />
+                <Route path="/pricing" element={<Navigate to="/planes" replace />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />

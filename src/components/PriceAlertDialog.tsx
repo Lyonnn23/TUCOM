@@ -16,6 +16,8 @@ import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PaywallModal } from "@/components/PaywallModal";
 
 const FUEL_OPTIONS = [
   { key: "gasoline93", label: "93" },
@@ -32,18 +34,27 @@ interface Props {
 export default function PriceAlertDialog({ stationId, prices }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { create, creating } = usePriceAlerts();
+  const { create, creating, alerts } = usePriceAlerts();
+  const { isPro, limits } = useSubscription();
   const [open, setOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [fuel, setFuel] = useState("gasoline95");
   const [target, setTarget] = useState<string>("");
 
   const currentPrice = prices?.[fuel] || 0;
+  const activeAlerts = alerts?.filter((a) => a.active).length ?? 0;
+  const atLimit = !isPro && activeAlerts >= limits.alerts;
 
   const handleClick = (e: React.MouseEvent) => {
     if (!user) {
       e.preventDefault();
       toast.error("Inicia sesión para crear alertas");
       navigate("/auth");
+      return;
+    }
+    if (atLimit) {
+      e.preventDefault();
+      setPaywallOpen(true);
     }
   };
 
@@ -130,6 +141,11 @@ export default function PriceAlertDialog({ stationId, prices }: Props) {
           </Button>
         </DialogFooter>
       </DialogContent>
+      <PaywallModal
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        reason={`Llegaste al límite de ${limits.alerts} alertas del plan Básico. Hazte Pro para alertas ilimitadas.`}
+      />
     </Dialog>
   );
 }

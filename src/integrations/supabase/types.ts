@@ -451,6 +451,24 @@ export type Database = {
         }
         Relationships: []
       }
+      route_search_logs: {
+        Row: {
+          id: string
+          searched_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          searched_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          searched_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -579,6 +597,48 @@ export type Database = {
           station_id?: string
           user_id?: string | null
           viewed_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string
+          expires_at: string | null
+          external_ref: string | null
+          id: string
+          plan: string
+          provider: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          external_ref?: string | null
+          id?: string
+          plan?: string
+          provider?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          external_ref?: string | null
+          id?: string
+          plan?: string
+          provider?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -993,6 +1053,10 @@ export type Database = {
       }
       admin_verify_report: { Args: { _report_id: string }; Returns: undefined }
       aggregate_reported_prices: { Args: never; Returns: undefined }
+      count_user_route_searches_this_month: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -1180,6 +1244,7 @@ export type Database = {
         Returns: Json
       }
       gettransactionid: { Args: never; Returns: unknown }
+      has_pro_plan: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

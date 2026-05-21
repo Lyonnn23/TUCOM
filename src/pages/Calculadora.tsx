@@ -12,6 +12,8 @@ import {
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import VehicleDialog from "@/components/VehicleDialog";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
+import { useSubscription, useRouteSearchUsage } from "@/hooks/useSubscription";
+import { PaywallModal } from "@/components/PaywallModal";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice, formatDistance } from "@/lib/format";
 import { toast } from "sonner";
@@ -48,12 +50,15 @@ const bandLabel: Record<string, string> = {
 const Calculadora = () => {
   const navigate = useNavigate();
   const { vehicles, primary, isLoading: vehiclesLoading } = useUserVehicles();
+  const { isPro, limits } = useSubscription();
+  const { data: usedSearches = 0, refetch: refetchUsage } = useRouteSearchUsage();
   const [origin, setOrigin] = useState<LatLng | null>(null);
   const [destination, setDestination] = useState<LatLng | null>(null);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
   const [roundTrip, setRoundTrip] = useState(false);
   const [departLater, setDepartLater] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const [resultNow, setResultNow] = useState<TripResponse | null>(null);
   const [resultLater, setResultLater] = useState<TripResponse | null>(null);
@@ -90,6 +95,10 @@ const Calculadora = () => {
       toast.error("Agrega un vehículo primero");
       return;
     }
+    if (!isPro && usedSearches >= limits.routeSearchesPerMonth) {
+      setPaywallOpen(true);
+      return;
+    }
     setLoading(true);
     setError(null);
     setResultNow(null);
@@ -119,6 +128,14 @@ const Calculadora = () => {
       if (eNow) throw eNow;
       setResultNow(dNow as TripResponse);
       if (departLater && !latRes.error) setResultLater(latRes.data as TripResponse);
+      // Log route search for free-plan monthly counter
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("route_search_logs").insert({ user_id: user.id });
+          refetchUsage();
+        }
+      } catch { /* non-blocking */ }
     } catch (err: any) {
       setError(err?.message ?? "Error al calcular el viaje");
     } finally {
@@ -397,6 +414,11 @@ const Calculadora = () => {
       </main>
 
       <VehicleDialog open={showDialog} onOpenChange={setShowDialog} />
+      <PaywallModal
+        open={paywallOpen}
+        onOpenChange={setPaywallOpen}
+        reason={`Usaste tus ${limits.routeSearchesPerMonth} cálculos de ruta del mes en el plan Básico. Hazte Pro para cálculos ilimitados.`}
+      />
     </div>
   );
 };

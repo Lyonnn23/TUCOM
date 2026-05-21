@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Gauge, Coins, TrendingDown, Pencil, Trash2, Fuel } from "lucide-react";
+import { ArrowLeft, Gauge, Coins, TrendingDown, Pencil, Trash2, Fuel, Crown } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,11 +11,13 @@ import {
 import { useFuelLogs, type FuelLog } from "@/hooks/useFuelLogs";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { useConsumptionStats, useMarketAvgPrice } from "@/hooks/useFuelStats";
+import { useSubscription } from "@/hooks/useSubscription";
 import FuelLogDialog from "@/components/FuelLogDialog";
 import FuelLogFAB from "@/components/FuelLogFAB";
 import MonthlySpendChart from "@/components/MonthlySpendChart";
 import ExportFuelLogButton from "@/components/ExportFuelLogButton";
 import { formatPrice, formatSmartDate } from "@/lib/format";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 const FUEL_LABEL: Record<string, string> = {
@@ -28,8 +30,22 @@ const FUEL_LABEL: Record<string, string> = {
 
 const MisCargas = () => {
   const navigate = useNavigate();
-  const { logs, isLoading, remove } = useFuelLogs();
+  const { logs: allLogs, isLoading, remove } = useFuelLogs();
   const { primary } = useUserVehicles();
+  const { isPro, limits } = useSubscription();
+
+  // Free plan: limit history to last N months
+  const { visibleLogs, hiddenCount } = useMemo(() => {
+    if (isPro || !Number.isFinite(limits.fuelLogMonths)) {
+      return { visibleLogs: allLogs, hiddenCount: 0 };
+    }
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - (limits.fuelLogMonths as number));
+    const visible = allLogs.filter((l) => new Date(l.logged_at) >= cutoff);
+    return { visibleLogs: visible, hiddenCount: allLogs.length - visible.length };
+  }, [allLogs, isPro, limits.fuelLogMonths]);
+
+  const logs = visibleLogs;
   const { data: stats } = useConsumptionStats(primary?.id ?? null);
 
   const lastFuel = logs[0]?.fuel_type ?? primary?.fuel_type ?? null;
@@ -107,6 +123,27 @@ const MisCargas = () => {
         </div>
 
         <MonthlySpendChart />
+
+        {hiddenCount > 0 && (
+          <Link
+            to="/planes"
+            className="block rounded-2xl border border-primary/30 bg-primary/5 p-4 hover:bg-primary/10 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] flex items-center justify-center text-primary-foreground shrink-0">
+                <Crown className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {hiddenCount} cargas ocultas
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  El plan Básico muestra solo los últimos {limits.fuelLogMonths as number} meses. Hazte Pro para ver tu historial completo.
+                </p>
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* Logs list */}
         <section className="bg-card rounded-2xl border border-border shadow-soft">
