@@ -9,6 +9,7 @@ import BrandLogo from "@/components/BrandLogo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import PriceAlertDialog from "@/components/PriceAlertDialog";
+import { Helmet } from "react-helmet-async";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
@@ -192,6 +193,31 @@ const StationDetail = () => {
 
   return (
     <div className="min-h-screen bg-background pb-12">
+      <Helmet>
+        <title>{`${station.name} · TÜcom`}</title>
+        <meta name="description" content={`Precios de bencina en ${station.name} (${station.brand}) · ${station.address}`} />
+        <link rel="canonical" href={`https://tucombustible.lovable.app/station/${station.id}`} />
+        <meta property="og:title" content={`${station.name} — TÜcom`} />
+        <meta property="og:description" content={`Precios actualizados de 93, 95, 97 y Diésel en ${station.address}.`} />
+        <meta property="og:url" content={`https://tucombustible.lovable.app/station/${station.id}`} />
+        <meta property="og:type" content="place" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "GasStation",
+          name: station.name,
+          brand: station.brand,
+          address: { "@type": "PostalAddress", streetAddress: station.address, addressCountry: "CL" },
+          geo: { "@type": "GeoCoordinates", latitude: station.lat, longitude: station.lng },
+          url: `https://tucombustible.lovable.app/station/${station.id}`,
+          ...(avgRating > 0 ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: avgRating.toFixed(1),
+              reviewCount: reviews.length,
+            },
+          } : {}),
+        })}</script>
+      </Helmet>
       {/* Hero */}
       <header className="relative bg-gradient-hero text-white px-4 pt-[env(safe-area-inset-top)] pb-6 shadow-elegant">
         <div className="max-w-3xl mx-auto pt-3">
