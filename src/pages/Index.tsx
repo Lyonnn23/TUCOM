@@ -210,8 +210,42 @@ const Index = () => {
     window.open(gmapsUrl, "_blank");
   };
 
+  const titleByTab: Record<string, { title: string; description: string }> = {
+    prices: {
+      title: "Precios de bencina hoy en Chile | TÜcom",
+      description: "Compara precios de bencina 93, 95, 97, Diésel y carga EV en estaciones cerca de ti en Chile. Actualizados a diario.",
+    },
+    stations: {
+      title: "Estaciones de servicio cerca de mí | TÜcom",
+      description: "Encuentra estaciones de servicio cercanas en un mapa interactivo. Filtra por marca y combustible.",
+    },
+    favoritos: {
+      title: "Mis estaciones favoritas | TÜcom",
+      description: "Accede rápido a tus estaciones de servicio guardadas en TÜcom.",
+    },
+    beneficios: {
+      title: "Descuentos y beneficios en combustible | TÜcom",
+      description: "Promociones y descuentos disponibles en estaciones de servicio de Chile.",
+    },
+  };
+  const meta = titleByTab[activeTab] ?? titleByTab.prices;
+
   return (
     <div className="min-h-screen bg-background pb-20">
+      <Helmet>
+        <title>{meta.title}</title>
+        <meta name="description" content={meta.description} />
+        <link rel="canonical" href="https://tucombustible.lovable.app/" />
+        <meta property="og:title" content={meta.title} />
+        <meta property="og:description" content={meta.description} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Inicio", item: "https://tucombustible.lovable.app/" },
+          ],
+        })}</script>
+      </Helmet>
       {/* Header */}
       <header
         className={`bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 transition-shadow duration-300 ${
