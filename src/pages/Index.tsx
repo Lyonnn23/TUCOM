@@ -520,7 +520,7 @@ const Index = () => {
                 ].map((opt) => (
                   <button
                     key={opt.key}
-                    onClick={() => setMapFuelFilter(opt.key)}
+                    onClick={() => { setMapFuelFilter(opt.key); analytics.filterFuel(opt.key); }}
                     className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
                       mapFuelFilter === opt.key
                         ? opt.key === "electric"
@@ -615,7 +615,7 @@ const Index = () => {
                   return (
                     <button
                       key={brand}
-                      onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+                      onClick={() => { const next = brand === selectedBrand ? "all" : brand; setSelectedBrand(next); analytics.filterBrand(next); }}
                       className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
                         isSelected
                           ? colors?.active ?? "bg-primary text-primary-foreground"
@@ -679,7 +679,7 @@ const Index = () => {
                 ].map((opt) => (
                   <button
                     key={opt.key}
-                    onClick={() => setSortByFuel(opt.key)}
+                    onClick={() => { setSortByFuel(opt.key); analytics.filterFuel(opt.key); }}
                     className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
                       sortByFuel === opt.key
                         ? "bg-secondary text-secondary-foreground"
