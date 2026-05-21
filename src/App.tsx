@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -10,6 +10,7 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import InstallBanner from "@/components/InstallBanner";
 import ShareTargetHandler from "@/components/ShareTargetHandler";
 import SkipLink from "@/components/SkipLink";
+import SplashScreen from "@/components/SplashScreen";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
@@ -80,10 +81,34 @@ const RequireOnboarded = ({ children }: { children: JSX.Element }) => {
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const RouteTransition = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="page-enter">
+      {children}
+    </div>
+  );
+};
+
+const App = () => {
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      // Show splash only once per session
+      return sessionStorage.getItem("tucom_splash_shown") !== "1";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    if (!showSplash) return;
+    try { sessionStorage.setItem("tucom_splash_shown", "1"); } catch { /* ignore */ }
+  }, [showSplash]);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <TooltipProvider>
+        {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
         <OfflineIndicator />
         <Toaster />
         <Sonner />
@@ -93,6 +118,7 @@ const App = () => (
             <ShareTargetHandler />
             <main id="main-content" tabIndex={-1}>
             <Suspense fallback={<RouteFallback />}>
+              <RouteTransition>
               <Routes>
                 <Route path="/" element={<RequireAuth><RequireOnboarded><Index /></RequireOnboarded></RequireAuth>} />
                 <Route path="/welcome" element={<Welcome />} />
@@ -144,6 +170,7 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </RouteTransition>
             </Suspense>
             </main>
             <InstallBanner />
@@ -152,6 +179,7 @@ const App = () => (
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
