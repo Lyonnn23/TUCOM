@@ -135,6 +135,13 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
               <Navigation className="w-2.5 h-2.5" /> {station.distance} km
             </span>
           )}
+          {rating && rating.count > 0 && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+              <Star className="w-2.5 h-2.5 fill-current" />
+              {rating.avg.toFixed(1)}
+              <span className="opacity-70 ml-0.5">({rating.count})</span>
+            </span>
+          )}
           {station.lastUpdated && (
             <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
               <Clock className="w-2.5 h-2.5" />
