@@ -1,8 +1,10 @@
 import { MapPin, Navigation, Star, Zap, Fuel, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
 import { formatRelativeTime } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
+import FavoriteButton from "./FavoriteButton";
 
 interface StationCardProps {
   station: GasStation;
