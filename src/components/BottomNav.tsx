@@ -57,6 +57,17 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
           </div>
           <span className="text-[10px] font-semibold mt-0.5">Conducir</span>
         </button>
+        <button
+          type="button"
+          onClick={() => navigate("/calculadora")}
+          className="flex flex-col items-center py-2.5 px-2 min-h-11 min-w-11 text-muted-foreground hover:text-primary press-scale focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+          aria-label="Abrir calculadora de viaje"
+        >
+          <div className="p-1.5 rounded-xl">
+            <Calculator className="w-5 h-5" aria-hidden="true" />
+          </div>
+          <span className="text-[10px] font-semibold mt-0.5">Calcular</span>
+        </button>
       </div>
     </nav>
   );
