@@ -160,7 +160,7 @@ const Index = () => {
   }, [stations]);
 
   const stationsWithDistance = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
+    const q = debouncedSearch.toLowerCase().trim();
     return (stations ?? [])
       .map((s) => ({
         ...s,
@@ -185,7 +185,7 @@ const Index = () => {
         }
         return (a.distance ?? 999) - (b.distance ?? 999);
       });
-  }, [stations, userLocation, searchQuery, selectedBrand, sortByFuel, radiusKm]);
+  }, [stations, userLocation, debouncedSearch, selectedBrand, sortByFuel, radiusKm]);
 
   const mapStations = useMemo(() => {
     return stationsWithDistance.filter((s) => {
