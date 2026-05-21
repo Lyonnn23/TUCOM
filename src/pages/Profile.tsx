@@ -364,6 +364,9 @@ const Profile = () => {
               }}
             />
           </div>
+
+          {/* Modo conductor */}
+          <DriverModeSettings />
         </section>
 
         {/* About */}
