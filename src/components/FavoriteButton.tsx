@@ -7,6 +7,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { PaywallModal } from "@/components/PaywallModal";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { haptic } from "@/lib/haptics";
 
 interface Props {
   stationId: string;
@@ -34,6 +35,7 @@ const FavoriteButton = ({ stationId, size = "md", variant = "surface", className
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
+      haptic("error");
       toast.error("Inicia sesión para guardar favoritos", {
         action: { label: "Entrar", onClick: () => navigate("/auth") },
       });
@@ -41,9 +43,11 @@ const FavoriteButton = ({ stationId, size = "md", variant = "surface", className
     }
     // Only block when ADDING (not when removing) and only on Free plan
     if (!active && !isPro && (favorites?.length ?? 0) >= limits.favorites) {
+      haptic("error");
       setPaywallOpen(true);
       return;
     }
+    haptic(active ? "light" : "success");
     toggle(stationId);
   };
 
@@ -67,10 +71,13 @@ const FavoriteButton = ({ stationId, size = "md", variant = "surface", className
         )}
       >
         <Heart
+          key={String(active)}
           className={cn(
             s.icon,
             "transition-colors",
-            active ? "fill-[hsl(0,75%,55%)] text-[hsl(0,75%,55%)]" : "fill-transparent",
+            active
+              ? "fill-[hsl(0,75%,55%)] text-[hsl(0,75%,55%)] animate-spring-pop"
+              : "fill-transparent",
           )}
           strokeWidth={2.25}
         />

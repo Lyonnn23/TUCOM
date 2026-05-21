@@ -168,8 +168,12 @@
   .shadow-glow { box-shadow: var(--shadow-glow); }
 
   /* Interactive */
-  .hover-scale { @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]; }
-  .press-scale { @apply transition-transform duration-150 active:scale-95; }
+  .hover-scale { @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.96]; }
+  .press-scale { @apply transition-transform duration-150 hover:scale-[1.02] active:scale-[0.96]; }
+  .tap-feedback { @apply transition-transform duration-100 active:scale-[0.96]; }
+
+  /* Staggered list item entrance: use with style={{ animationDelay }} */
+  .stagger-item { animation: fade-in-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
   /* Pull-to-refresh visual cue */
   .ptr-indicator {
@@ -191,6 +195,35 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .animate-count-up { animation: count-up 0.5s ease-out; }
+
+  /* Page transition: applied to the route container */
+  .page-enter { animation: fade-in-up 0.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+  /* Animated checkmark (draws stroke) */
+  .checkmark-path {
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: check-draw 0.4s ease-out forwards;
+  }
+  @keyframes check-draw { to { stroke-dashoffset: 0; } }
+
+  /* View transitions (List → Detail shared element). Progressive enhancement. */
+  @supports (view-transition-name: x) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.2s;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  }
+}
+
+/* Respect reduced motion preference globally */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 .leaflet-container {
