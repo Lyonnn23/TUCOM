@@ -129,6 +129,10 @@ const Profile = () => {
           </div>
         </section>
 
+        <PointsAndBadges />
+
+
+
         {/* Fuel preferences */}
         <section className="bg-card rounded-2xl border border-border shadow-soft p-5 space-y-4">
           <div className="flex items-center gap-2">
