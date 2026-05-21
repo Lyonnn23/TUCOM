@@ -204,21 +204,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="bg-gradient-to-r from-primary to-secondary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-lg">
-        <div className="flex items-center justify-between py-3 max-w-md mx-auto">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner">
+      <header
+        className={`bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 transition-shadow duration-300 ${
+          scrolled ? "shadow-premium" : "shadow-soft"
+        }`}
+      >
+        <div className="flex items-center justify-between py-3 max-w-6xl mx-auto">
+          <div className="flex items-center gap-2.5 animate-fade-in">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner ring-1 ring-white/20">
               <Zap className="w-5 h-5 text-white" />
             </div>
             <div>
               <h1 className="font-heading font-extrabold text-white text-xl leading-tight tracking-tight">TÜcom</h1>
-              <p className="text-[10px] text-white/70">Bencina inteligente 🇨🇱</p>
+              <p className="text-[10px] text-white/75">Bencina inteligente 🇨🇱</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle variant="glass" />
             <button
               onClick={() => navigate("/legal")}
-              className="flex items-center gap-1 text-xs text-white/80 bg-white/10 rounded-full px-2 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors"
+              className="hidden sm:flex items-center gap-1 text-xs text-white/85 bg-white/10 rounded-full px-2 py-1.5 backdrop-blur-sm hover:bg-white/20 transition-colors"
               title="Legal"
             >
               <Shield className="w-3 h-3" />
