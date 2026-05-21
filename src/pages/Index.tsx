@@ -66,6 +66,7 @@ const Index = () => {
     nationalPrices: fuelPrices,
     radiusKm: 15,
   });
+  const { data: recentReports } = useRecentReports();
 
   const handleSyncStations = async () => {
     setSyncing(true);
