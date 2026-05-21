@@ -9,6 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
+import { EV_PRESETS } from "@/lib/evPresets";
 import { useUserVehicles, type UserVehicle } from "@/hooks/useUserVehicles";
 import { toast } from "sonner";
 
