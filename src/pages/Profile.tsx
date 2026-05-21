@@ -249,6 +249,21 @@ const Profile = () => {
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>
 
+        {/* Trip calculator link */}
+        <button
+          onClick={() => navigate("/calculadora")}
+          className="w-full bg-card rounded-2xl border border-border shadow-soft p-4 flex items-center gap-3 hover-scale text-left"
+        >
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Calculator className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-foreground">Calculadora de viaje</p>
+            <p className="text-xs text-muted-foreground">Estima bencina y TAG por ruta</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+
         {/* Settings */}
         <section className="bg-card rounded-2xl border border-border shadow-soft p-5 space-y-4">
           <h2 className="font-semibold text-foreground">Ajustes</h2>
