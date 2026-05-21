@@ -1,6 +1,15 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
+const FUEL_LABELS: Record<string, string> = {
+  "93": "93",
+  "95": "95",
+  "97": "97",
+  diesel: "Diésel",
+  kerosene: "Kerosene",
+  glp: "GLP",
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -10,15 +19,21 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Load active, non-triggered alerts
     const { data: alerts, error: aErr } = await supabase
       .from("price_alerts")
-      .select("id, station_id, fuel_type, target_price")
+      .select("id, user_id, station_id, fuel_type, target_price")
       .eq("active", true)
       .eq("triggered", false);
     if (aErr) throw aErr;
 
     let triggered = 0;
+    const pushQueue: Array<{
+      title: string;
+      body: string;
+      data: Record<string, unknown>;
+      user_id: string;
+    }> = [];
+
     for (const a of alerts ?? []) {
       const { data: price } = await supabase
         .from("station_prices")
@@ -42,6 +57,34 @@ Deno.serve(async (req) => {
           })
           .eq("id", a.id);
         triggered++;
+
+        const { data: station } = await supabase
+          .from("gas_stations")
+          .select("name, brand, lat, lng")
+          .eq("id", a.station_id)
+          .maybeSingle();
+
+        const stationName = station?.name || station?.brand || "una estación";
+        const fuelLabel = FUEL_LABELS[a.fuel_type] || a.fuel_type;
+        const priceStr = Math.round(price.price).toLocaleString("es-CL");
+        const targetStr = Math.round(a.target_price).toLocaleString("es-CL");
+
+        pushQueue.push({
+          user_id: a.user_id,
+          title: `📉 Bajó el precio en ${stationName}`,
+          body: `La ${fuelLabel} bajó a $${priceStr}/L — tu alerta era $${targetStr}`,
+          data: {
+            station_id: a.station_id,
+            station_name: stationName,
+            fuel_type: a.fuel_type,
+            price: price.price,
+            target_price: a.target_price,
+            lat: station?.lat,
+            lng: station?.lng,
+            tag: `alert-${a.id}`,
+            url: `/station/${a.station_id}`,
+          },
+        });
       } else {
         await supabase
           .from("price_alerts")
@@ -50,8 +93,25 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Fire-and-forget push deliveries
+    for (const p of pushQueue) {
+      try {
+        await supabase.functions.invoke("send-push-notifications", {
+          body: {
+            title: p.title,
+            body: p.body,
+            data: p.data,
+            user_ids: [p.user_id],
+            changed_fuel_types: [p.data.fuel_type],
+          },
+        });
+      } catch (err) {
+        console.error("[check-price-alerts] push failed", err);
+      }
+    }
+
     return new Response(
-      JSON.stringify({ ok: true, evaluated: alerts?.length ?? 0, triggered }),
+      JSON.stringify({ ok: true, evaluated: alerts?.length ?? 0, triggered, pushed: pushQueue.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err: any) {
