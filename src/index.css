@@ -175,6 +175,22 @@
   .ptr-indicator {
     transition: transform 0.2s ease, opacity 0.2s ease;
   }
+
+  /* Landing animated gradient */
+  .bg-animated-gradient {
+    background: linear-gradient(-45deg, #7C3AED, #4F46E5, #6366F1, #4338CA);
+    background-size: 300% 300%;
+    animation: gradient-pulse 14s ease-in-out infinite;
+  }
+  @keyframes gradient-pulse {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes count-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-count-up { animation: count-up 0.5s ease-out; }
 }
 
 .leaflet-container {
