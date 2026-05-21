@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown, Heart } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import AlertsBell from "@/components/AlertsBell";
 import NearbyRanking from "@/components/NearbyRanking";
 import LocationPermissionGuide from "@/components/LocationPermissionGuide";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
@@ -258,6 +259,7 @@ const Index = () => {
                 {locationLoading ? "..." : userLocation ? "GPS" : locationErrorType ? "Reintentar" : "GPS"}
               </span>
             </button>
+            {user && <AlertsBell />}
             {user ? (
               (() => {
                 const displayName =
