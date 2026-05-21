@@ -128,6 +128,14 @@ const Calculadora = () => {
       if (eNow) throw eNow;
       setResultNow(dNow as TripResponse);
       if (departLater && !latRes.error) setResultLater(latRes.data as TripResponse);
+      // Log route search for free-plan monthly counter
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("route_search_logs").insert({ user_id: user.id });
+          refetchUsage();
+        }
+      } catch { /* non-blocking */ }
     } catch (err: any) {
       setError(err?.message ?? "Error al calcular el viaje");
     } finally {
