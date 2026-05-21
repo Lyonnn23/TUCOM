@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import InstallBanner from "@/components/InstallBanner";
+import ShareTargetHandler from "@/components/ShareTargetHandler";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
@@ -75,6 +76,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <ShareTargetHandler />
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<RequireAuth><RequireOnboarded><Index /></RequireOnboarded></RequireAuth>} />
@@ -82,6 +84,13 @@ const App = () => (
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
                 <Route path="/alertas" element={<RequireAuth><Alerts /></RequireAuth>} />
+                <Route path="/alerts" element={<Navigate to="/alertas" replace />} />
+                <Route path="/favorites" element={<Navigate to="/?tab=favoritos" replace />} />
+                <Route path="/favoritos" element={<Navigate to="/?tab=favoritos" replace />} />
+                <Route path="/map" element={<Navigate to="/?tab=estaciones&sort=price" replace />} />
+                <Route path="/mapa" element={<Navigate to="/?tab=estaciones" replace />} />
+                <Route path="/report" element={<Navigate to="/?tab=estaciones&action=report" replace />} />
+                <Route path="/reportar" element={<Navigate to="/?tab=estaciones&action=report" replace />} />
                 <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
                 <Route path="/compare" element={<RequireAuth><Compare /></RequireAuth>} />
                 <Route path="/comparar" element={<RequireAuth><Compare /></RequireAuth>} />
