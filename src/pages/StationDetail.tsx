@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useGasStations, formatRelativeTime, type GasStation } from "@/hooks/useGasStations";
 import { useAuth } from "@/hooks/useAuth";
 import FavoriteButton from "@/components/FavoriteButton";
 import BrandLogo from "@/components/BrandLogo";
+import StationStaticMap from "@/components/StationStaticMap";
+import StationDistanceInfo from "@/components/StationDistanceInfo";
+import StationPhotos from "@/components/StationPhotos";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import PriceAlertDialog from "@/components/PriceAlertDialog";
