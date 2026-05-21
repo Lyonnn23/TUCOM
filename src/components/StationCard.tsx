@@ -140,7 +140,12 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
               {formatRelativeTime(station.lastUpdated)}
             </span>
           )}
-        </div>
+        {lastCommunityReport && (
+          <div className="mt-2">
+            <CommunityReportBadge reportedAt={lastCommunityReport} />
+          </div>
+        )}
+      </div>
       </div>
 
       {/* All fuel prices */}
