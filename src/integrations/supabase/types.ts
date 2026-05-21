@@ -459,6 +459,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tag_rates: {
+        Row: {
+          autopista_name: string
+          id: string
+          lat: number
+          lng: number
+          portico_id: string
+          portico_name: string | null
+          tarifa_baja: number
+          tarifa_punta: number
+          tarifa_saturacion: number
+          updated_at: string
+          vehicle_class: string
+        }
+        Insert: {
+          autopista_name: string
+          id?: string
+          lat: number
+          lng: number
+          portico_id: string
+          portico_name?: string | null
+          tarifa_baja: number
+          tarifa_punta: number
+          tarifa_saturacion: number
+          updated_at?: string
+          vehicle_class?: string
+        }
+        Update: {
+          autopista_name?: string
+          id?: string
+          lat?: number
+          lng?: number
+          portico_id?: string
+          portico_name?: string | null
+          tarifa_baja?: number
+          tarifa_punta?: number
+          tarifa_saturacion?: number
+          updated_at?: string
+          vehicle_class?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_key: string
@@ -573,6 +615,54 @@ export type Database = {
           reason?: string | null
           suspended_by?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_vehicles: {
+        Row: {
+          brand: string
+          color: string
+          consumption_kml: number
+          created_at: string
+          fuel_type: string
+          id: string
+          is_primary: boolean
+          model: string
+          nickname: string | null
+          tank_size_l: number
+          updated_at: string
+          user_id: string
+          year: number | null
+        }
+        Insert: {
+          brand: string
+          color?: string
+          consumption_kml?: number
+          created_at?: string
+          fuel_type?: string
+          id?: string
+          is_primary?: boolean
+          model: string
+          nickname?: string | null
+          tank_size_l?: number
+          updated_at?: string
+          user_id: string
+          year?: number | null
+        }
+        Update: {
+          brand?: string
+          color?: string
+          consumption_kml?: number
+          created_at?: string
+          fuel_type?: string
+          id?: string
+          is_primary?: boolean
+          model?: string
+          nickname?: string | null
+          tank_size_l?: number
+          updated_at?: string
+          user_id?: string
+          year?: number | null
         }
         Relationships: []
       }
