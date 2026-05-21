@@ -714,24 +714,26 @@ const Index = () => {
                 ))}
               </div>
             </div>
-            {/* Sort by fuel price (octanaje) */}
+            {/* Station type filter */}
             <div className="flex items-center gap-2">
-              <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <span className="text-[11px] font-medium text-muted-foreground shrink-0">Octanaje:</span>
+              <Zap className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
+              <span className="text-[11px] font-medium text-muted-foreground shrink-0">Tipo:</span>
               <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-                {[
-                  { key: "gasoline93", label: "93" },
-                  { key: "gasoline95", label: "95" },
-                  { key: "gasoline97", label: "97" },
-                  { key: "diesel", label: "Diésel" },
-                  { key: "electric", label: "⚡ EV" },
-                ].map((opt) => (
+                {([
+                  { key: "all", label: "Todos" },
+                  { key: "fuel", label: "Combustible" },
+                  { key: "ev", label: "⚡ Eléctrico" },
+                  { key: "glp", label: "GLP" },
+                  { key: "gnc", label: "GNC" },
+                ] as const).map((opt) => (
                   <button
                     key={opt.key}
-                    onClick={() => { setSortByFuel(opt.key); analytics.filterFuel(opt.key); }}
+                    onClick={() => setStationKind(opt.key)}
                     className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
-                      sortByFuel === opt.key
-                        ? "bg-secondary text-secondary-foreground"
+                      stationKind === opt.key
+                        ? opt.key === "ev"
+                          ? "bg-emerald-500 text-white"
+                          : "bg-secondary text-secondary-foreground"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     }`}
                   >
@@ -740,27 +742,106 @@ const Index = () => {
                 ))}
               </div>
             </div>
-            {stationsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-44 rounded-2xl" />)}
-              </div>
-            ) : stationsWithDistance.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-primary/10 flex items-center justify-center mb-4">
-                  <Fuel className="w-10 h-10 text-primary" />
+            {stationKind !== "ev" && (
+              <div className="flex items-center gap-2">
+                <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="text-[11px] font-medium text-muted-foreground shrink-0">Octanaje:</span>
+                <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                  {[
+                    { key: "gasoline93", label: "93" },
+                    { key: "gasoline95", label: "95" },
+                    { key: "gasoline97", label: "97" },
+                    { key: "diesel", label: "Diésel" },
+                    { key: "electric", label: "⚡ EV" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.key}
+                      onClick={() => { setSortByFuel(opt.key); analytics.filterFuel(opt.key); }}
+                      className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
+                        sortByFuel === opt.key
+                          ? "bg-secondary text-secondary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
-                <p className="font-heading font-bold text-foreground">No encontramos estaciones</p>
-                <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                  Ajusta los filtros, amplía el radio o intenta otra búsqueda.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in">
-                {stationsWithDistance.map((station) => (
-                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
-                ))}
               </div>
             )}
+            {stationKind === "ev" && (
+              <button
+                onClick={() => navigate("/calculadora-ev")}
+                className="w-full rounded-2xl bg-emerald-500/10 border border-emerald-500/30 px-4 py-3 flex items-center justify-between gap-3 hover:bg-emerald-500/15 transition-colors"
+              >
+                <div className="flex items-center gap-2 text-left">
+                  <Calculator className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+                  <div>
+                    <p className="font-heading font-bold text-sm text-foreground">Calculadora de viaje EV</p>
+                    <p className="text-[11px] text-muted-foreground">Energía, costo de carga y ahorro vs bencina</p>
+                  </div>
+                </div>
+                <span className="text-emerald-600">→</span>
+              </button>
+            )}
+            {(() => {
+              const filtered = stationsWithDistance.filter((s) => {
+                if (stationKind === "all" || stationKind === "fuel") return stationKind === "all" ? true : !s.hasEvCharging || (s.prices.gasoline93 || s.prices.gasoline95 || s.prices.gasoline97 || s.prices.diesel) > 0;
+                if (stationKind === "ev") return s.hasEvCharging || (s.prices.electric ?? 0) > 0;
+                // GLP / GNC not yet sourced in DB
+                return false;
+              });
+              if (stationsLoading) {
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-44 rounded-2xl" />)}
+                  </div>
+                );
+              }
+              if (stationKind === "glp" || stationKind === "gnc") {
+                return (
+                  <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
+                    <div className="w-16 h-16 rounded-2xl bg-fuel-amber/15 flex items-center justify-center mb-3">
+                      <Fuel className="w-8 h-8 text-fuel-amber" aria-hidden="true" />
+                    </div>
+                    <p className="font-heading font-bold text-foreground">Estaciones {stationKind.toUpperCase()}</p>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                      Próximamente: catálogo de estaciones de {stationKind === "glp" ? "GLP vehicular" : "Gas Natural Comprimido"} en Chile.
+                      Recuerda revisar que tu vehículo cuente con el adaptador certificado.
+                    </p>
+                  </div>
+                );
+              }
+              if (filtered.length === 0) {
+                return (
+                  <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+                    <div className="w-20 h-20 rounded-3xl bg-gradient-primary/10 flex items-center justify-center mb-4">
+                      <Fuel className="w-10 h-10 text-primary" />
+                    </div>
+                    <p className="font-heading font-bold text-foreground">No encontramos estaciones</p>
+                    <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                      Ajusta los filtros, amplía el radio o intenta otra búsqueda.
+                    </p>
+                  </div>
+                );
+              }
+              if (stationKind === "ev") {
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in">
+                    {filtered.map((station) => (
+                      <EVChargerCard key={station.id} station={station} onNavigate={handleNavigate} />
+                    ))}
+                  </div>
+                );
+              }
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in">
+                  {filtered.map((station) => (
+                    <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 
