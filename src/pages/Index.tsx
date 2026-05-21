@@ -34,6 +34,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Helmet } from "react-helmet-async";
+
 
 const Index = () => {
   const navigate = useNavigate();
