@@ -2,19 +2,23 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft, Bell, Heart, LogOut, Mail, Save, Trash2, ChevronRight,
-  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon,
+  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import ThemeToggle from "@/components/ThemeToggle";
+import BadgeChip from "@/components/BadgeChip";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useUserPoints, useUserBadges, getLevel, BADGE_META, type BadgeKey } from "@/hooks/useGamification";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
