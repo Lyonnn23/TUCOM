@@ -9,6 +9,7 @@ import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
+import EVChargerCard from "@/components/EVChargerCard";
 import StationMap from "@/components/StationMap";
 import BenefitsTab from "@/components/BenefitsTab";
 import FavoritesTab from "@/components/FavoritesTab";
