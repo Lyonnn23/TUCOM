@@ -156,15 +156,15 @@ const StationDetail = () => {
 
   const handleGoogleMapsDirections = () => {
     if (!station) return;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}${station.place_id ? `&destination_place_id=${station.place_id}` : ""}`;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}${station.placeId ? `&destination_place_id=${station.placeId}` : ""}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleViewOnGoogleMaps = () => {
     if (!station) return;
     const q = encodeURIComponent(`${station.name} ${station.address}`);
-    const url = station.place_id
-      ? `https://www.google.com/maps/search/?api=1&query=${q}&query_place_id=${station.place_id}`
+    const url = station.placeId
+      ? `https://www.google.com/maps/search/?api=1&query=${q}&query_place_id=${station.placeId}`
       : `https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
