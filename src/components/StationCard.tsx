@@ -5,12 +5,14 @@ import { formatRelativeTime } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
 import FavoriteButton from "./FavoriteButton";
+import CommunityReportBadge from "./CommunityReportBadge";
 import { analytics } from "@/lib/analytics";
 
 interface StationCardProps {
   station: GasStation;
   onNavigate?: (station: GasStation) => void;
   onNavigateGoogle?: (station: GasStation) => void;
+  lastCommunityReport?: string | null;
 }
 
 const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string }> = {
@@ -33,7 +35,7 @@ const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string
 
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
-const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps) => {
+const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport }: StationCardProps) => {
   const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
