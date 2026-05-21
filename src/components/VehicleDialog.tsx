@@ -69,13 +69,15 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
       setCons(String(vehicle.consumption_kml));
       setColor(vehicle.color);
       setPresetIdx("custom");
+      setAssignToOrg(!!(vehicle as any).organization_id);
     } else {
       setNickname(""); setBrand(""); setModel(""); setYear("");
       setFuelType("gasoline95"); setTank("50"); setCons("12");
       setColor(VEHICLE_COLORS[Math.floor(Math.random() * VEHICLE_COLORS.length)]);
       setPresetIdx("custom");
+      setAssignToOrg(!!org);
     }
-  }, [open, vehicle]);
+  }, [open, vehicle, org]);
 
   const applyPreset = (key: string) => {
     setPresetIdx(key);
