@@ -33,6 +33,7 @@ const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
 const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps) => {
+  const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
 
@@ -54,10 +55,24 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
 
   return (
     <div
-      className={`group rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden ${
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(`/station/${station.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/station/${station.id}`);
+        }
+      }}
+      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ${
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
+      {/* Favorite (top right floating) */}
+      <div className="absolute top-2.5 right-2.5 z-10">
+        <FavoriteButton stationId={station.id} size="sm" variant="surface" />
+      </div>
+
       {/* Top: brand + headline price */}
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
