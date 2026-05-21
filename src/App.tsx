@@ -35,6 +35,7 @@ const Compare = lazy(() => import("./pages/Compare.tsx"));
 const Drive = lazy(() => import("./pages/Drive.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
+const Calculadora = lazy(() => import("./pages/Calculadora.tsx"));
 import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
