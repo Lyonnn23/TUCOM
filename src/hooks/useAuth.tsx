@@ -24,10 +24,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (event === "SIGNED_IN" && session?.user) {
+        try {
+          const method = (session.user.app_metadata?.provider as string) || "email";
+          import("@/lib/analytics").then((m) => m.analytics.login(method));
+        } catch { /* no-op */ }
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
