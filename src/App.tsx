@@ -23,6 +23,7 @@ const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const DeleteAccount = lazy(() => import("./pages/DeleteAccount.tsx"));
 const ResponsiveCheck = lazy(() => import("./pages/ResponsiveCheck.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
+const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
 const StationDetail = lazy(() => import("./pages/StationDetail.tsx"));
 const Alerts = lazy(() => import("./pages/Alerts.tsx"));
 
@@ -34,10 +35,14 @@ const RouteFallback = () => (
   </div>
 );
 
+const isGuest = () => {
+  try { return sessionStorage.getItem("tucom_guest_mode") === "1"; } catch { return false; }
+};
+
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (!user) return <Welcome />;
+  if (!user && !isGuest()) return <Welcome />;
   return children;
 };
 
@@ -56,6 +61,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
                 <Route path="/welcome" element={<Welcome />} />
+                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
                 <Route path="/alertas" element={<RequireAuth><Alerts /></RequireAuth>} />
                 <Route path="/auth" element={<Auth />} />
