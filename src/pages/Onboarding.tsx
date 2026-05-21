@@ -42,7 +42,7 @@ const Onboarding = () => {
 
   const saveVehicleIfSelected = async () => {
     if (vehiclePresetIdx === "skip") return;
-    if ((vehicleList.data?.length ?? 0) > 0) return;
+    if ((vehicles?.length ?? 0) > 0) return;
     const preset = VEHICLE_PRESETS[Number(vehiclePresetIdx)];
     if (!preset) return;
     try {
