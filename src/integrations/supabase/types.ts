@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -420,6 +438,27 @@ export type Database = {
         }
         Relationships: []
       }
+      station_views: {
+        Row: {
+          id: string
+          station_id: string
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          station_id: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          station_id?: string
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_key: string
@@ -495,12 +534,86 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_suspensions: {
+        Row: {
+          created_at: string
+          reason: string | null
+          suspended_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          reason?: string | null
+          suspended_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          reason?: string | null
+          suspended_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_reject_report: { Args: { _report_id: string }; Returns: undefined }
+      admin_search_users: {
+        Args: { _query: string }
+        Returns: {
+          alerts: number
+          created_at: string
+          email: string
+          favorites: number
+          is_admin: boolean
+          is_suspended: boolean
+          last_sign_in_at: string
+          reports: number
+          user_id: string
+        }[]
+      }
+      admin_set_user_role: {
+        Args: {
+          _grant: boolean
+          _role: Database["public"]["Enums"]["app_role"]
+          _target: string
+        }
+        Returns: undefined
+      }
+      admin_verify_report: { Args: { _report_id: string }; Returns: undefined }
       aggregate_reported_prices: { Args: never; Returns: undefined }
+      get_admin_overview: { Args: never; Returns: Json }
+      get_daily_active_users: {
+        Args: { _days?: number }
+        Returns: {
+          day: string
+          users: number
+        }[]
+      }
       get_fuel_price_averages: {
         Args: never
         Returns: {
@@ -517,9 +630,34 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_search_heatmap: {
+        Args: never
+        Returns: {
+          lat: number
+          lng: number
+          weight: number
+        }[]
+      }
+      get_top_viewed_stations: {
+        Args: { _limit?: number }
+        Returns: {
+          brand: string
+          name: string
+          station_id: string
+          views: number
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -646,6 +784,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
