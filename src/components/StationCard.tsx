@@ -5,12 +5,15 @@ import { formatRelativeTime } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
 import FavoriteButton from "./FavoriteButton";
+import CommunityReportBadge from "./CommunityReportBadge";
 import { analytics } from "@/lib/analytics";
 
 interface StationCardProps {
   station: GasStation;
   onNavigate?: (station: GasStation) => void;
   onNavigateGoogle?: (station: GasStation) => void;
+  lastCommunityReport?: string | null;
+  rating?: { avg: number; count: number } | null;
 }
 
 const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string }> = {
@@ -33,7 +36,7 @@ const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string
 
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
-const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps) => {
+const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport, rating }: StationCardProps) => {
   const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
@@ -132,13 +135,25 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
               <Navigation className="w-2.5 h-2.5" /> {station.distance} km
             </span>
           )}
+          {rating && rating.count > 0 && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent">
+              <Star className="w-2.5 h-2.5 fill-current" />
+              {rating.avg.toFixed(1)}
+              <span className="opacity-70 ml-0.5">({rating.count})</span>
+            </span>
+          )}
           {station.lastUpdated && (
             <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
               <Clock className="w-2.5 h-2.5" />
               {formatRelativeTime(station.lastUpdated)}
             </span>
           )}
-        </div>
+        {lastCommunityReport && (
+          <div className="mt-2">
+            <CommunityReportBadge reportedAt={lastCommunityReport} />
+          </div>
+        )}
+      </div>
       </div>
 
       {/* All fuel prices */}

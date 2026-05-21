@@ -451,12 +451,15 @@ const StationDetail = () => {
               </div>
               <Textarea
                 value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Cuéntanos tu experiencia (opcional)"
+                onChange={(e) => setComment(e.target.value.slice(0, 200))}
+                placeholder="Cuéntanos tu experiencia (máx 200 caracteres)"
                 rows={3}
                 className="rounded-xl"
-                maxLength={500}
+                maxLength={200}
               />
+              <p className="text-[10px] text-muted-foreground text-right mt-1">
+                {comment.length}/200
+              </p>
               <Button
                 onClick={handleSubmitReview}
                 disabled={submitting || rating < 1}
@@ -506,6 +509,23 @@ const StationDetail = () => {
                   </div>
                   {r.comment && (
                     <p className="text-sm text-foreground leading-relaxed">{r.comment}</p>
+                  )}
+                  {user && r.user_id !== user.id && (
+                    <button
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from("review_reports")
+                          .insert({ review_id: r.id, user_id: user.id, reason: "inappropriate" });
+                        if (error && !error.message.includes("duplicate")) {
+                          toast.error("No se pudo enviar el reporte");
+                        } else {
+                          toast.success("Gracias, revisaremos esta reseña");
+                        }
+                      }}
+                      className="text-[10px] text-muted-foreground hover:text-destructive mt-2 underline-offset-2 hover:underline"
+                    >
+                      Reportar como inapropiada
+                    </button>
                   )}
                 </div>
               ))}

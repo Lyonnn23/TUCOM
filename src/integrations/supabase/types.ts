@@ -334,6 +334,30 @@ export type Database = {
           },
         ]
       }
+      review_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       station_prices: {
         Row: {
           created_at: string
@@ -396,10 +420,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_key: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_points: {
+        Row: {
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
           id: string
+          leaderboard_opt_in: boolean
           notifications_enabled: boolean
           onboarding_completed: boolean
           preferred_fuel: string
@@ -410,6 +474,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          leaderboard_opt_in?: boolean
           notifications_enabled?: boolean
           onboarding_completed?: boolean
           preferred_fuel?: string
@@ -420,6 +485,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          leaderboard_opt_in?: boolean
           notifications_enabled?: boolean
           onboarding_completed?: boolean
           preferred_fuel?: string
@@ -441,6 +507,14 @@ export type Database = {
           avg_price: number
           fuel_type: string
           station_count: number
+        }[]
+      }
+      get_monthly_leaderboard: {
+        Args: never
+        Returns: {
+          points: number
+          reports: number
+          user_id: string
         }[]
       }
     }

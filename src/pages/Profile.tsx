@@ -2,19 +2,23 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft, Bell, Heart, LogOut, Mail, Save, Trash2, ChevronRight,
-  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon,
+  Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Progress } from "@/components/ui/progress";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import ThemeToggle from "@/components/ThemeToggle";
+import BadgeChip from "@/components/BadgeChip";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useUserPoints, useUserBadges, getLevel, BADGE_META, type BadgeKey } from "@/hooks/useGamification";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -124,6 +128,10 @@ const Profile = () => {
             <p className="text-sm text-muted-foreground truncate">{user.email}</p>
           </div>
         </section>
+
+        <PointsAndBadges />
+
+
 
         {/* Fuel preferences */}
         <section className="bg-card rounded-2xl border border-border shadow-soft p-5 space-y-4">
@@ -267,6 +275,24 @@ const Profile = () => {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex items-center justify-between gap-3 pt-2 border-t border-border">
+            <div className="min-w-0">
+              <p className="text-sm text-foreground">Aparecer en el ranking público</p>
+              <p className="text-[11px] text-muted-foreground">Top 10 reporteros del mes</p>
+            </div>
+            <Switch
+              checked={preferences?.leaderboard_opt_in ?? true}
+              onCheckedChange={async (v) => {
+                try {
+                  await save({ leaderboard_opt_in: v });
+                  toast.success(v ? "Aparecerás en el ranking" : "Te quitamos del ranking");
+                } catch {
+                  toast.error("No se pudo actualizar");
+                }
+              }}
+            />
+          </div>
         </section>
 
         {/* About */}
@@ -330,6 +356,89 @@ const Profile = () => {
         </Button>
       </main>
     </div>
+  );
+};
+
+const PointsAndBadges = () => {
+  const navigate = useNavigate();
+  const { data: points = 0, isLoading: pointsLoading } = useUserPoints();
+  const { data: badges = [], isLoading: badgesLoading } = useUserBadges();
+  const { level, next, progress } = getLevel(points);
+
+  const levelColors: Record<string, string> = {
+    Bronze: "from-amber-700 to-amber-500",
+    Silver: "from-slate-400 to-slate-200",
+    Gold: "from-yellow-500 to-amber-300",
+    Platinum: "from-violet-500 to-fuchsia-400",
+  };
+
+  const earnedSet = new Set(badges.map((b) => b.badge_key));
+  const allBadges: BadgeKey[] = [
+    "primer_reporte",
+    "diez_reportes",
+    "cincuenta_reportes",
+    "favorito_frecuente",
+    "ahorron_del_mes",
+  ];
+
+  return (
+    <section className="bg-card rounded-2xl border border-border shadow-soft p-5 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary" />
+          <h2 className="font-semibold text-foreground">Mis puntos y logros</h2>
+        </div>
+        <button
+          onClick={() => navigate("/ranking")}
+          className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+        >
+          <Trophy className="w-3.5 h-3.5" />
+          Ranking
+        </button>
+      </div>
+
+      <div className={`rounded-xl p-4 bg-gradient-to-br ${levelColors[level]} text-white shadow-soft`}>
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-[11px] uppercase tracking-wider opacity-80">Nivel</p>
+            <p className="font-heading font-extrabold text-2xl leading-none">{level}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[11px] uppercase tracking-wider opacity-80">Puntos</p>
+            <p className="font-heading font-extrabold text-3xl leading-none tabular-nums">
+              {pointsLoading ? "—" : points}
+            </p>
+          </div>
+        </div>
+        {next !== null && (
+          <div className="mt-3">
+            <Progress value={Math.round(progress * 100)} className="h-1.5 bg-white/20" />
+            <p className="text-[10px] opacity-90 mt-1">
+              {next - points} pts para el siguiente nivel
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground mb-2">
+          Logros ({badges.length}/{allBadges.length})
+        </p>
+        {badgesLoading ? (
+          <p className="text-xs text-muted-foreground">Cargando...</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {allBadges.map((b) => (
+              <BadgeChip key={b} badge={b} earned={earnedSet.has(b)} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <p className="text-[11px] text-muted-foreground">
+        Gana <strong>10 puntos</strong> por cada reporte verificado. Bronce 0+, Plata 50+, Oro 200+, Platino 500+.
+      </p>
+    </section>
   );
 };
 

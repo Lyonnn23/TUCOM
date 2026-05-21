@@ -20,6 +20,8 @@ import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useRecentReports } from "@/hooks/useRecentReports";
+import { useStationRatings } from "@/hooks/useStationRatings";
 import { analytics } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -65,6 +67,8 @@ const Index = () => {
     nationalPrices: fuelPrices,
     radiusKm: 15,
   });
+  const { data: recentReports } = useRecentReports();
+  const { data: stationRatings } = useStationRatings();
 
   const handleSyncStations = async () => {
     setSyncing(true);
@@ -712,7 +716,7 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in">
                 {stationsWithDistance.map((station) => (
-                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} />
+                  <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
                 ))}
               </div>
             )}
