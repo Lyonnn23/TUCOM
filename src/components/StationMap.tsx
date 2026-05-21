@@ -1,4 +1,5 @@
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from "@vis.gl/react-google-maps";
+import { LocateFixed } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { GasStation } from "@/hooks/useGasStations";
@@ -73,8 +74,9 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
         {stations.map((station) => {
           const isNearby = nearbyIds.has(station.id);
-          const bg = isNearby ? "#06b6d4" : station.isOpen ? "#22c55e" : "#ef4444";
-          const border = isNearby ? "#0891b2" : station.isOpen ? "#16a34a" : "#dc2626";
+          // Violet for nearby (TÜcom primary), green for open, red for closed
+          const bg = isNearby ? "#7C3AED" : station.isOpen ? "#22c55e" : "#ef4444";
+          const border = isNearby ? "#4F46E5" : station.isOpen ? "#16a34a" : "#dc2626";
           return (
             <AdvancedMarker
               key={station.id}
@@ -110,8 +112,27 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
             </div>
           </InfoWindow>
         )}
+        {userLocation && <CenterOnMeButton location={userLocation} />}
       </Map>
     </APIProvider>
+  );
+};
+
+const CenterOnMeButton = ({ location }: { location: { lat: number; lng: number } }) => {
+  const map = useMap();
+  if (!map) return null;
+  return (
+    <button
+      onClick={() => {
+        map.panTo(location);
+        map.setZoom(15);
+      }}
+      className="absolute bottom-4 right-4 z-10 w-12 h-12 rounded-full bg-card border border-border shadow-elegant flex items-center justify-center press-scale hover:shadow-glow transition-all"
+      aria-label="Centrar en mi ubicación"
+      title="Centrar en mi ubicación"
+    >
+      <LocateFixed className="w-5 h-5 text-primary" />
+    </button>
   );
 };
 
