@@ -201,7 +201,7 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs">Estanque (L)</Label>
+              <Label className="text-xs">{fuelType === "electric" ? "Batería (kWh)" : "Estanque (L)"}</Label>
               <Input
                 type="number"
                 inputMode="numeric"
@@ -211,7 +211,7 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
               />
             </div>
             <div>
-              <Label className="text-xs">Rendimiento (km/L)</Label>
+              <Label className="text-xs">{fuelType === "electric" ? "Eficiencia (km/kWh)" : "Rendimiento (km/L)"}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
