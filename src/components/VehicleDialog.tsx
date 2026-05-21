@@ -86,12 +86,13 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
     }
     const tankNum = Number(tank);
     const consNum = Number(cons);
-    if (!Number.isFinite(tankNum) || tankNum < 20 || tankNum > 200) {
-      toast.error("Capacidad del estanque: 20 a 200 L");
+    const isEv = fuelType === "electric";
+    if (!Number.isFinite(tankNum) || tankNum < (isEv ? 10 : 20) || tankNum > (isEv ? 200 : 200)) {
+      toast.error(isEv ? "Batería: 10 a 200 kWh" : "Capacidad del estanque: 20 a 200 L");
       return;
     }
-    if (!Number.isFinite(consNum) || consNum < 2 || consNum > 40) {
-      toast.error("Rendimiento: 2 a 40 km/L");
+    if (!Number.isFinite(consNum) || consNum < (isEv ? 2 : 2) || consNum > (isEv ? 15 : 40)) {
+      toast.error(isEv ? "Eficiencia: 2 a 15 km/kWh" : "Rendimiento: 2 a 40 km/L");
       return;
     }
     const payload = {
