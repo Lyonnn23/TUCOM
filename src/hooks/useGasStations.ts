@@ -23,6 +23,7 @@ export interface GasStation {
   evOperator: string | null;
   lastUpdated: Date | null;
   electricEstimated: boolean;
+  placeId: string | null;
 }
 
 const PRICE_RANGES: Record<string, { min: number; max: number }> = {
