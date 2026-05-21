@@ -163,17 +163,17 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1.5 p-3 pt-3">
+      <div className="flex items-center gap-1.5 p-3 pt-3" onClick={(e) => e.stopPropagation()}>
         <ReportPriceDialog station={station} />
         <button
-          onClick={() => onNavigate?.(station)}
+          onClick={(e) => { e.stopPropagation(); onNavigate?.(station); }}
           className="bg-muted hover:bg-muted/70 text-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale transition-colors"
           title="Abrir en Waze"
         >
           Waze
         </button>
         <button
-          onClick={() => onNavigateGoogle?.(station)}
+          onClick={(e) => { e.stopPropagation(); onNavigateGoogle?.(station); }}
           className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5"
         >
           <Navigation className="w-3.5 h-3.5" />
