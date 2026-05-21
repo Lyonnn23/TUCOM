@@ -260,6 +260,16 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                 ))}
               </div>
             </div>
+
+            {org && (
+              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3">
+                <div className="text-sm">
+                  <div className="font-medium">Vehículo de la flota</div>
+                  <div className="text-xs text-muted-foreground">Asignar a {org.name}. El administrador podrá ver el consumo.</div>
+                </div>
+                <Switch checked={assignToOrg} onCheckedChange={setAssignToOrg} />
+              </div>
+            )}
           </div>
 
           <DialogFooter className="mt-4">
