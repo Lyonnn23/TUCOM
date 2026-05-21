@@ -23,6 +23,7 @@ export interface GasStation {
   evOperator: string | null;
   lastUpdated: Date | null;
   electricEstimated: boolean;
+  placeId: string | null;
 }
 
 const PRICE_RANGES: Record<string, { min: number; max: number }> = {
@@ -118,6 +119,7 @@ export function useGasStations() {
           evOperator: s.ev_operator ?? null,
           lastUpdated: lastUpdatedMs > 0 ? new Date(lastUpdatedMs) : null,
           electricEstimated,
+          placeId: s.place_id ?? null,
           prices: {
             gasoline93: getPrice("gasoline93"),
             gasoline95: getPrice("gasoline95"),

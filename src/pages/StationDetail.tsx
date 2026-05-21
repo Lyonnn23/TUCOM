@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useGasStations, formatRelativeTime, type GasStation } from "@/hooks/useGasStations";
 import { useAuth } from "@/hooks/useAuth";
 import FavoriteButton from "@/components/FavoriteButton";
 import BrandLogo from "@/components/BrandLogo";
+import StationStaticMap from "@/components/StationStaticMap";
+import StationDistanceInfo from "@/components/StationDistanceInfo";
+import StationPhotos from "@/components/StationPhotos";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import PriceAlertDialog from "@/components/PriceAlertDialog";
@@ -61,6 +64,16 @@ const StationDetail = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 5 * 60 * 1000 },
+    );
+  }, []);
 
   // Aggregated 93 price history (last 7 days)
   useEffect(() => {
@@ -141,10 +154,19 @@ const StationDetail = () => {
     }
   };
 
-  const handleGoogleMaps = () => {
+  const handleGoogleMapsDirections = () => {
     if (!station) return;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`;
-    window.open(url, "_blank");
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}${station.placeId ? `&destination_place_id=${station.placeId}` : ""}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleViewOnGoogleMaps = () => {
+    if (!station) return;
+    const q = encodeURIComponent(`${station.name} ${station.address}`);
+    const url = station.placeId
+      ? `https://www.google.com/maps/search/?api=1&query=${q}&query_place_id=${station.placeId}`
+      : `https://www.google.com/maps/search/?api=1&query=${station.lat},${station.lng}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleSubmitReview = async () => {
@@ -196,31 +218,68 @@ const StationDetail = () => {
     );
   }
 
+  const pricesArr = Object.values(station.prices).filter((p) => p > 0) as number[];
+  const priceMin = pricesArr.length ? Math.min(...pricesArr) : null;
+  const priceMax = pricesArr.length ? Math.max(...pricesArr) : null;
+  const priceRange = priceMin && priceMax ? `$${priceMin}–$${priceMax} CLP/L` : "$$";
+  const stationUrl = `https://tucombustible.lovable.app/station/${station.id}`;
+  const ogImage = `https://laldmbpaleeykbsgtchk.supabase.co/functions/v1/station-static-map?lat=${station.lat}&lng=${station.lng}`;
+
   return (
     <div className="min-h-screen bg-background pb-12">
       <Helmet>
-        <title>{`${station.name} · TÜcom`}</title>
-        <meta name="description" content={`Precios de bencina en ${station.name} (${station.brand}) · ${station.address}`} />
-        <link rel="canonical" href={`https://tucombustible.lovable.app/station/${station.id}`} />
-        <meta property="og:title" content={`${station.name} — TÜcom`} />
-        <meta property="og:description" content={`Precios actualizados de 93, 95, 97 y Diésel en ${station.address}.`} />
-        <meta property="og:url" content={`https://tucombustible.lovable.app/station/${station.id}`} />
+        <title>{`${station.name} — Precios de combustible hoy | TÜcom`}</title>
+        <meta
+          name="description"
+          content={`Precios actualizados de bencina 93, 95, 97 y Diésel en ${station.name} (${station.brand}), ${station.address}. Compara y ahorra con TÜcom.`}
+        />
+        <link rel="canonical" href={stationUrl} />
+        <meta property="og:title" content={`${station.name} — Precios hoy | TÜcom`} />
+        <meta property="og:description" content={`Precios de combustible actualizados en ${station.address}.`} />
+        <meta property="og:url" content={stationUrl} />
         <meta property="og:type" content="place" />
+        <meta property="og:image" content={ogImage} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "GasStation",
+          "@id": stationUrl,
           name: station.name,
-          brand: station.brand,
-          address: { "@type": "PostalAddress", streetAddress: station.address, addressCountry: "CL" },
-          geo: { "@type": "GeoCoordinates", latitude: station.lat, longitude: station.lng },
-          url: `https://tucombustible.lovable.app/station/${station.id}`,
-          ...(avgRating > 0 ? {
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: avgRating.toFixed(1),
-              reviewCount: reviews.length,
-            },
-          } : {}),
+          brand: { "@type": "Brand", name: station.brand },
+          url: stationUrl,
+          image: ogImage,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: station.address,
+            addressCountry: "CL",
+          },
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: station.lat,
+            longitude: station.lng,
+          },
+          openingHours: "Mo-Su 00:00-23:59",
+          priceRange,
+          amenityFeature: station.hasEvCharging
+            ? [{ "@type": "LocationFeatureSpecification", name: "EV Charging", value: true }]
+            : undefined,
+          ...(avgRating > 0
+            ? {
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: avgRating.toFixed(1),
+                  reviewCount: reviews.length,
+                },
+              }
+            : {}),
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Inicio", item: "https://tucombustible.lovable.app/" },
+            { "@type": "ListItem", position: 2, name: "Estaciones", item: "https://tucombustible.lovable.app/?tab=stations" },
+            { "@type": "ListItem", position: 3, name: station.name, item: stationUrl },
+          ],
         })}</script>
       </Helmet>
       {/* Hero */}
@@ -290,16 +349,41 @@ const StationDetail = () => {
             )}
           </div>
 
-          <Button
-            onClick={handleGoogleMaps}
-            className="mt-5 w-full h-12 rounded-xl bg-white text-primary hover:bg-white/95 font-semibold shadow-elegant"
-          >
-            <Navigation className="w-5 h-5 mr-2" /> Cómo llegar
-          </Button>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Button
+              onClick={handleGoogleMapsDirections}
+              className="h-12 rounded-xl bg-white text-primary hover:bg-white/95 font-semibold shadow-elegant"
+            >
+              <Navigation className="w-5 h-5 mr-2" aria-hidden="true" /> Cómo llegar
+            </Button>
+            <Button
+              onClick={handleViewOnGoogleMaps}
+              variant="outline"
+              className="h-12 rounded-xl bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" aria-hidden="true" /> Ver en Google Maps
+            </Button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+        {/* Map preview + distance */}
+        <section className="bg-card border border-border rounded-2xl shadow-soft p-4 space-y-3">
+          <StationStaticMap
+            lat={station.lat}
+            lng={station.lng}
+            name={station.name}
+            onClick={handleViewOnGoogleMaps}
+          />
+          <StationDistanceInfo
+            origin={userLocation}
+            dest={{ lat: station.lat, lng: station.lng }}
+          />
+        </section>
+
+        <StationPhotos placeId={station.placeId} name={station.name} />
+
         {/* Prices table */}
         <section className="bg-card border border-border rounded-2xl shadow-soft overflow-hidden">
           <div className="px-5 py-4 border-b border-border">
