@@ -308,6 +308,10 @@ const Index = () => {
                         </span>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate("/profile")}>
+                        <User className="w-4 h-4 mr-2" />
+                        Mi cuenta
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/alertas")}>
                         <Bell className="w-4 h-4 mr-2" />
                         Mis alertas
