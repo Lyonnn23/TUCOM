@@ -1,4 +1,4 @@
-import { Car, Fuel, Heart, List, Map, Tag } from "lucide-react";
+import { Calculator, Car, Fuel, Heart, List, Map, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export type TabType = "prices" | "map" | "stations" | "favorites" | "benefits";
