@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import InstallBanner from "@/components/InstallBanner";
 import ShareTargetHandler from "@/components/ShareTargetHandler";
+import SkipLink from "@/components/SkipLink";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
@@ -78,7 +79,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <SkipLink />
             <ShareTargetHandler />
+            <main id="main-content" tabIndex={-1}>
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<RequireAuth><RequireOnboarded><Index /></RequireOnboarded></RequireAuth>} />
@@ -118,6 +121,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            </main>
             <InstallBanner />
           </AuthProvider>
         </BrowserRouter>

@@ -1,5 +1,6 @@
 import { TrendingDown, TrendingUp, Minus, Zap } from "lucide-react";
 import type { FuelPrice } from "@/hooks/useFuelPrices";
+import { formatPrice } from "@/lib/format";
 
 interface FuelPriceCardProps {
   fuel: FuelPrice;
@@ -27,20 +28,30 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
   const colorClass = fuelColors[fuel.type] ?? "from-muted to-muted border-border";
   const isElectric = fuel.type === "electric";
 
+  const trendLabel = trendUp ? "Subió" : trendDown ? "Bajó" : "Estable";
+  const TrendIcon = trendDown ? TrendingDown : trendUp ? TrendingUp : Minus;
+
   return (
-    <div className={`bg-gradient-to-r ${colorClass} rounded-2xl p-4 border flex items-center justify-between`}>
+    <article
+      className={`bg-gradient-to-r ${colorClass} rounded-2xl p-4 border flex items-center justify-between`}
+      aria-label={`${fuel.name}: ${formatPrice(fuel.price)} por litro. Tendencia: ${trendLabel}.`}
+    >
       <div className="flex items-center gap-3">
         {isElectric ? (
-          <div className="w-9 h-9 rounded-xl bg-[hsl(142,70%,45%)]/20 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[hsl(142,70%,45%)]/20 flex items-center justify-center" aria-hidden="true">
             <Zap className="w-5 h-5 text-[hsl(142,70%,45%)]" />
           </div>
         ) : (
-          <span className="text-2xl">{fuelEmoji[fuel.type] ?? "⛽"}</span>
+          <span className="text-2xl" aria-hidden="true">{fuelEmoji[fuel.type] ?? "⛽"}</span>
         )}
         <div>
           <p className="text-xs font-semibold text-foreground tracking-wide">{fuel.name}</p>
-          <p className="text-2xl font-heading font-bold text-foreground mt-0.5">
-            ${fuel.price.toLocaleString("es-CL")}
+          <p
+            className="text-2xl font-heading font-bold text-foreground mt-0.5"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {formatPrice(fuel.price)}
           </p>
           <p className="text-[10px] text-muted-foreground">{fuel.unit}</p>
         </div>
@@ -53,11 +64,13 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
             ? "bg-fuel-red/20 text-fuel-red"
             : "bg-muted text-muted-foreground"
         }`}
+        role="status"
+        aria-label={`Tendencia: ${trendLabel}`}
       >
-        {trendDown ? <TrendingDown className="w-3.5 h-3.5" /> : trendUp ? <TrendingUp className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
-        {fuel.trend === "up" ? "Subió" : fuel.trend === "down" ? "Bajó" : "Estable"}
+        <TrendIcon className="w-3.5 h-3.5" aria-hidden="true" />
+        <span>{trendLabel}</span>
       </div>
-    </div>
+    </article>
   );
 };
 

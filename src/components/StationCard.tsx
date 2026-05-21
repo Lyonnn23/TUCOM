@@ -1,12 +1,12 @@
-import { MapPin, Navigation, Star, Zap, Fuel, Clock } from "lucide-react";
+import { MapPin, Navigation, Star, Zap, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
-import { formatRelativeTime } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
 import FavoriteButton from "./FavoriteButton";
 import CommunityReportBadge from "./CommunityReportBadge";
 import { analytics } from "@/lib/analytics";
+import { formatPrice, formatKm, formatRelativeTime } from "@/lib/format";
 
 interface StationCardProps {
   station: GasStation;
@@ -61,6 +61,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
     <div
       role="button"
       tabIndex={0}
+      aria-label={`${station.brand} ${station.name}, ${station.address}${station.distance !== undefined ? `, ${formatKm(station.distance)}` : ""}. Ver detalle de la estación.`}
       onClick={() => { analytics.stationClick(station.id, station.brand); navigate(`/station/${station.id}`); }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -69,7 +70,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
           navigate(`/station/${station.id}`);
         }
       }}
-      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/40 ${
+      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
@@ -99,11 +100,12 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
                   className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                     station.isOpen ? "bg-fuel-green" : "bg-fuel-red"
                   }`}
-                  title={station.isOpen ? "Abierta" : "Cerrada"}
+                  role="img"
+                  aria-label={station.isOpen ? "Estación abierta" : "Estación cerrada"}
                 />
               </div>
               <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5 min-w-0" title={station.address}>
-                <MapPin className="w-3 h-3 shrink-0" />
+                <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />
                 <span className="truncate">{station.address}</span>
               </p>
             </div>
@@ -112,8 +114,12 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
             <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">
               {headline.label}
             </p>
-            <p className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent">
-              ${headline.price || "—"}
+            <p
+              className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent"
+              aria-live="polite"
+              aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
+            >
+              {headline.price ? formatPrice(headline.price) : "—"}
             </p>
           </div>
         </div>
@@ -122,30 +128,30 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
         <div className="flex items-center gap-1.5 flex-wrap mt-2">
           {featured && (
             <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
-              <Star className="w-2.5 h-2.5" /> {station.brand}
+              <Star className="w-2.5 h-2.5" aria-hidden="true" /> {station.brand}
             </span>
           )}
           {station.hasEvCharging && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white">
-              <Zap className="w-2.5 h-2.5" /> EV
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white" aria-label="Carga eléctrica disponible">
+              <Zap className="w-2.5 h-2.5" aria-hidden="true" /> EV
             </span>
           )}
           {station.distance !== undefined && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              <Navigation className="w-2.5 h-2.5" /> {station.distance} km
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary" aria-label={`Distancia: ${formatKm(station.distance)}`}>
+              <Navigation className="w-2.5 h-2.5" aria-hidden="true" /> {formatKm(station.distance)}
             </span>
           )}
           {rating && rating.count > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-              <Star className="w-2.5 h-2.5 fill-current" />
-              {rating.avg.toFixed(1)}
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent" aria-label={`Calificación promedio: ${rating.avg.toFixed(1)} de 5, basada en ${rating.count} reseñas`}>
+              <Star className="w-2.5 h-2.5 fill-current" aria-hidden="true" />
+              {rating.avg.toFixed(1).replace(".", ",")}
               <span className="opacity-70 ml-0.5">({rating.count})</span>
             </span>
           )}
           {station.lastUpdated && (
             <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
-              <Clock className="w-2.5 h-2.5" />
-              {formatRelativeTime(station.lastUpdated)}
+              <Clock className="w-2.5 h-2.5" aria-hidden="true" />
+              <span>Actualizado {formatRelativeTime(station.lastUpdated)}</span>
             </span>
           )}
         {lastCommunityReport && (
@@ -169,7 +175,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
             >
               <p className="text-[10px] text-muted-foreground font-medium">{item.label}</p>
               <p className={`text-xs font-bold tabular-nums ${isHero ? "text-accent" : "text-foreground"}`}>
-                ${item.price || "—"}
+                {item.price ? formatPrice(item.price) : "—"}
               </p>
               {item.estimated && (
                 <p className="text-[8px] text-muted-foreground leading-none mt-0.5">Est.</p>
@@ -184,16 +190,17 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
         <ReportPriceDialog station={station} />
         <button
           onClick={(e) => { e.stopPropagation(); onNavigate?.(station); }}
-          className="bg-muted hover:bg-muted/70 text-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale transition-colors"
-          title="Abrir en Waze"
+          className="bg-muted hover:bg-muted/70 text-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale transition-colors min-h-11"
+          aria-label={`Abrir ${station.name} en Waze`}
         >
           Waze
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onNavigateGoogle?.(station); }}
-          className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5"
+          className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5 min-h-11"
+          aria-label={`Cómo llegar a ${station.name} con Google Maps`}
         >
-          <Navigation className="w-3.5 h-3.5" />
+          <Navigation className="w-3.5 h-3.5" aria-hidden="true" />
           Cómo llegar
         </button>
       </div>
