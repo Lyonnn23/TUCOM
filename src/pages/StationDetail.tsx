@@ -218,31 +218,68 @@ const StationDetail = () => {
     );
   }
 
+  const pricesArr = Object.values(station.prices).filter((p) => p > 0) as number[];
+  const priceMin = pricesArr.length ? Math.min(...pricesArr) : null;
+  const priceMax = pricesArr.length ? Math.max(...pricesArr) : null;
+  const priceRange = priceMin && priceMax ? `$${priceMin}–$${priceMax} CLP/L` : "$$";
+  const stationUrl = `https://tucombustible.lovable.app/station/${station.id}`;
+  const ogImage = `https://laldmbpaleeykbsgtchk.supabase.co/functions/v1/station-static-map?lat=${station.lat}&lng=${station.lng}`;
+
   return (
     <div className="min-h-screen bg-background pb-12">
       <Helmet>
-        <title>{`${station.name} · TÜcom`}</title>
-        <meta name="description" content={`Precios de bencina en ${station.name} (${station.brand}) · ${station.address}`} />
-        <link rel="canonical" href={`https://tucombustible.lovable.app/station/${station.id}`} />
-        <meta property="og:title" content={`${station.name} — TÜcom`} />
-        <meta property="og:description" content={`Precios actualizados de 93, 95, 97 y Diésel en ${station.address}.`} />
-        <meta property="og:url" content={`https://tucombustible.lovable.app/station/${station.id}`} />
+        <title>{`${station.name} — Precios de combustible hoy | TÜcom`}</title>
+        <meta
+          name="description"
+          content={`Precios actualizados de bencina 93, 95, 97 y Diésel en ${station.name} (${station.brand}), ${station.address}. Compara y ahorra con TÜcom.`}
+        />
+        <link rel="canonical" href={stationUrl} />
+        <meta property="og:title" content={`${station.name} — Precios hoy | TÜcom`} />
+        <meta property="og:description" content={`Precios de combustible actualizados en ${station.address}.`} />
+        <meta property="og:url" content={stationUrl} />
         <meta property="og:type" content="place" />
+        <meta property="og:image" content={ogImage} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "GasStation",
+          "@id": stationUrl,
           name: station.name,
-          brand: station.brand,
-          address: { "@type": "PostalAddress", streetAddress: station.address, addressCountry: "CL" },
-          geo: { "@type": "GeoCoordinates", latitude: station.lat, longitude: station.lng },
-          url: `https://tucombustible.lovable.app/station/${station.id}`,
-          ...(avgRating > 0 ? {
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: avgRating.toFixed(1),
-              reviewCount: reviews.length,
-            },
-          } : {}),
+          brand: { "@type": "Brand", name: station.brand },
+          url: stationUrl,
+          image: ogImage,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: station.address,
+            addressCountry: "CL",
+          },
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: station.lat,
+            longitude: station.lng,
+          },
+          openingHours: "Mo-Su 00:00-23:59",
+          priceRange,
+          amenityFeature: station.hasEvCharging
+            ? [{ "@type": "LocationFeatureSpecification", name: "EV Charging", value: true }]
+            : undefined,
+          ...(avgRating > 0
+            ? {
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: avgRating.toFixed(1),
+                  reviewCount: reviews.length,
+                },
+              }
+            : {}),
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Inicio", item: "https://tucombustible.lovable.app/" },
+            { "@type": "ListItem", position: 2, name: "Estaciones", item: "https://tucombustible.lovable.app/?tab=stations" },
+            { "@type": "ListItem", position: 3, name: station.name, item: stationUrl },
+          ],
         })}</script>
       </Helmet>
       {/* Hero */}
