@@ -39,6 +39,12 @@ const Calculadora = lazy(() => import("./pages/Calculadora.tsx"));
 const CalculadoraEV = lazy(() => import("./pages/CalculadoraEV.tsx"));
 const MisCargas = lazy(() => import("./pages/MisCargas.tsx"));
 const Planes = lazy(() => import("./pages/Planes.tsx"));
+const EmpresaLanding = lazy(() => import("./pages/empresa/EmpresaLanding.tsx"));
+const EmpresaLayout = lazy(() => import("./pages/empresa/EmpresaLayout.tsx"));
+const EmpresaDashboard = lazy(() => import("./pages/empresa/EmpresaDashboard.tsx"));
+const EmpresaConfig = lazy(() => import("./pages/empresa/EmpresaConfig.tsx"));
+const EmpresaReportes = lazy(() => import("./pages/empresa/EmpresaReportes.tsx"));
+const EmpresaMiVehiculo = lazy(() => import("./pages/empresa/EmpresaMiVehiculo.tsx"));
 import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
