@@ -3,10 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>TÜcom — Precios de bencina y estaciones en Chile</title>
-    <meta name="description" content="Consulta precios actuales de bencina y encuentra las estaciones de servicio más cercanas en Chile con TÜcom.">
+    <title>TÜcom — Precios de bencina en tiempo real</title>
+    <meta name="description" content="Encuentra las estaciones más baratas cerca de ti en Chile. Precios de 93, 95, 97, Diésel y carga eléctrica actualizados." />
     <meta name="author" content="TÜcom" />
-    <meta name="theme-color" content="#7c3aed" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="theme-color" content="#7c3aed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F0F1A" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
     <meta name="application-name" content="TÜcom" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,26 +20,63 @@
     <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
     <meta name="msapplication-config" content="none" />
     <meta name="format-detection" content="telephone=no" />
+
     <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-120x120.png" />
     <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
     <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-    <link rel="canonical" href="https://tucombustible.lovable.app" />
 
-    
-    
+    <!-- iOS splash screens (common iPhone sizes). Use /splash.png as a single launch image; replace per-size assets when available. -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/icons/icon-1024x1024.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" />
+
+    <link rel="canonical" href="https://tucombustible.lovable.app/" />
+
+    <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TÜcom" />
+    <meta property="og:locale" content="es_CL" />
+    <meta property="og:url" content="https://tucombustible.lovable.app/" />
+    <meta property="og:title" content="TÜcom — Precios de bencina en tiempo real" />
+    <meta property="og:description" content="Encuentra las estaciones más baratas cerca de ti en Chile." />
+    <meta property="og:image" content="https://tucombustible.lovable.app/og-image.jpg" />
+    <meta property="og:image:width" content="1216" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:image:alt" content="TÜcom — Precios de bencina en tiempo real · Chile" />
+
     <meta name="twitter:card" content="summary_large_image" />
-    <meta property="og:title" content="TÜcom — Precios de bencina y estaciones en Chile">
-  <meta name="twitter:title" content="TÜcom — Precios de bencina y estaciones en Chile">
-  <meta property="og:description" content="Consulta precios actuales de bencina y encuentra las estaciones de servicio más cercanas en Chile con TÜcom.">
-  <meta name="twitter:description" content="Consulta precios actuales de bencina y encuentra las estaciones de servicio más cercanas en Chile con TÜcom.">
-</head>
+    <meta name="twitter:title" content="TÜcom — Precios de bencina en tiempo real" />
+    <meta name="twitter:description" content="Encuentra las estaciones más baratas cerca de ti en Chile." />
+    <meta name="twitter:image" content="https://tucombustible.lovable.app/og-image.jpg" />
+
+    <!-- Organization JSON-LD -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "TÜcom",
+        "url": "https://tucombustible.lovable.app/",
+        "logo": "https://tucombustible.lovable.app/icons/icon-512x512.png",
+        "areaServed": "CL"
+      }
+    </script>
+
+    <!-- Plausible Analytics -->
+    <script defer data-domain="tucombustible.lovable.app" src="https://plausible.io/js/script.tagged-events.js"></script>
+    <script>window.plausible = window.plausible || function () { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+  </head>
 
   <body>
     <div id="root"></div>

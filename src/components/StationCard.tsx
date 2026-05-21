@@ -5,6 +5,7 @@ import { formatRelativeTime } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
 import FavoriteButton from "./FavoriteButton";
+import { analytics } from "@/lib/analytics";
 
 interface StationCardProps {
   station: GasStation;
@@ -57,10 +58,11 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle }: StationCardProps
     <div
       role="button"
       tabIndex={0}
-      onClick={() => navigate(`/station/${station.id}`)}
+      onClick={() => { analytics.stationClick(station.id, station.brand); navigate(`/station/${station.id}`); }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
+          analytics.stationClick(station.id, station.brand);
           navigate(`/station/${station.id}`);
         }
       }}

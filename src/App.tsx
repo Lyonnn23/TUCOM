@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,20 +7,32 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
-import Index from "./pages/Index.tsx";
-import Auth from "./pages/Auth.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import FuelReport from "./pages/FuelReport.tsx";
-import PriceHistory from "./pages/PriceHistory.tsx";
-import Install from "./pages/Install.tsx";
-import Legal from "./pages/Legal.tsx";
-import Privacy from "./pages/Privacy.tsx";
-import DeleteAccount from "./pages/DeleteAccount.tsx";
-import ResponsiveCheck from "./pages/ResponsiveCheck.tsx";
-import Welcome from "./pages/Welcome.tsx";
-import StationDetail from "./pages/StationDetail.tsx";
-import Alerts from "./pages/Alerts.tsx";
+import InstallBanner from "@/components/InstallBanner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+
+// Lazy-loaded routes (code-split per page)
+const Index = lazy(() => import("./pages/Index.tsx"));
+const Auth = lazy(() => import("./pages/Auth.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const FuelReport = lazy(() => import("./pages/FuelReport.tsx"));
+const PriceHistory = lazy(() => import("./pages/PriceHistory.tsx"));
+const Install = lazy(() => import("./pages/Install.tsx"));
+const Legal = lazy(() => import("./pages/Legal.tsx"));
+const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const DeleteAccount = lazy(() => import("./pages/DeleteAccount.tsx"));
+const ResponsiveCheck = lazy(() => import("./pages/ResponsiveCheck.tsx"));
+const Welcome = lazy(() => import("./pages/Welcome.tsx"));
+const StationDetail = lazy(() => import("./pages/StationDetail.tsx"));
+const Alerts = lazy(() => import("./pages/Alerts.tsx"));
+
+const RouteFallback = () => (
+  <div className="min-h-screen bg-background p-4 space-y-3">
+    <Skeleton className="h-14 rounded-2xl" />
+    <Skeleton className="h-40 rounded-2xl" />
+    <Skeleton className="h-64 rounded-2xl" />
+  </div>
+);
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
@@ -39,24 +52,27 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-          <Routes>
-            <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
-            <Route path="/alertas" element={<RequireAuth><Alerts /></RequireAuth>} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/reporte" element={<FuelReport />} />
-            <Route path="/historial" element={<PriceHistory />} />
-            <Route path="/install" element={<Install />} />
-            <Route path="/legal" element={<Legal />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/privacidad" element={<Privacy />} />
-            <Route path="/eliminar-cuenta" element={<DeleteAccount />} />
-            <Route path="/delete-account" element={<DeleteAccount />} />
-            <Route path="/responsive-check" element={<ResponsiveCheck />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
+                <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
+                <Route path="/alertas" element={<RequireAuth><Alerts /></RequireAuth>} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reporte" element={<FuelReport />} />
+                <Route path="/historial" element={<PriceHistory />} />
+                <Route path="/install" element={<Install />} />
+                <Route path="/legal" element={<Legal />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/privacidad" element={<Privacy />} />
+                <Route path="/eliminar-cuenta" element={<DeleteAccount />} />
+                <Route path="/delete-account" element={<DeleteAccount />} />
+                <Route path="/responsive-check" element={<ResponsiveCheck />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            <InstallBanner />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

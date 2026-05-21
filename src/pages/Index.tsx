@@ -19,6 +19,8 @@ import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useG
 import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { analytics } from "@/lib/analytics";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,6 +39,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<TabType>("prices");
   const [selectedBrand, setSelectedBrand] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
@@ -157,7 +160,7 @@ const Index = () => {
   }, [stations]);
 
   const stationsWithDistance = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
+    const q = debouncedSearch.toLowerCase().trim();
     return (stations ?? [])
       .map((s) => ({
         ...s,
@@ -182,7 +185,7 @@ const Index = () => {
         }
         return (a.distance ?? 999) - (b.distance ?? 999);
       });
-  }, [stations, userLocation, searchQuery, selectedBrand, sortByFuel, radiusKm]);
+  }, [stations, userLocation, debouncedSearch, selectedBrand, sortByFuel, radiusKm]);
 
   const mapStations = useMemo(() => {
     return stationsWithDistance.filter((s) => {
@@ -517,7 +520,7 @@ const Index = () => {
                 ].map((opt) => (
                   <button
                     key={opt.key}
-                    onClick={() => setMapFuelFilter(opt.key)}
+                    onClick={() => { setMapFuelFilter(opt.key); analytics.filterFuel(opt.key); }}
                     className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
                       mapFuelFilter === opt.key
                         ? opt.key === "electric"
@@ -612,7 +615,7 @@ const Index = () => {
                   return (
                     <button
                       key={brand}
-                      onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+                      onClick={() => { const next = brand === selectedBrand ? "all" : brand; setSelectedBrand(next); analytics.filterBrand(next); }}
                       className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
                         isSelected
                           ? colors?.active ?? "bg-primary text-primary-foreground"
@@ -676,7 +679,7 @@ const Index = () => {
                 ].map((opt) => (
                   <button
                     key={opt.key}
-                    onClick={() => setSortByFuel(opt.key)}
+                    onClick={() => { setSortByFuel(opt.key); analytics.filterFuel(opt.key); }}
                     className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
                       sortByFuel === opt.key
                         ? "bg-secondary text-secondary-foreground"
