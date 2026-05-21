@@ -124,7 +124,8 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
       tank_size_l: Math.round(tankNum),
       consumption_kml: Math.round(consNum * 10) / 10,
       color,
-    };
+      organization_id: assignToOrg && org ? org.id : null,
+    } as any;
     try {
       if (vehicle) {
         await update.mutateAsync({ id: vehicle.id, patch: payload });
