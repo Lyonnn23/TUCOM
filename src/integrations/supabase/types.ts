@@ -793,6 +793,8 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          ai_chat_count: number
+          ai_chat_count_date: string
           created_at: string
           fuel_log_email_optin: boolean
           id: string
@@ -806,6 +808,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_chat_count?: number
+          ai_chat_count_date?: string
           created_at?: string
           fuel_log_email_optin?: boolean
           id?: string
@@ -819,6 +823,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_chat_count?: number
+          ai_chat_count_date?: string
           created_at?: string
           fuel_log_email_optin?: boolean
           id?: string
