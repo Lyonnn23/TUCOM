@@ -1,424 +1,441 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Car, Clock, Fuel, Plus, Repeat, Share2, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, Calculator, Car, Share2, Sparkles, ExternalLink, MapPin, RotateCcw, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import PlacesAutocomplete from "@/components/PlacesAutocomplete";
-import VehicleDialog from "@/components/VehicleDialog";
-import { useUserVehicles } from "@/hooks/useUserVehicles";
-import { useSubscription, useRouteSearchUsage } from "@/hooks/useSubscription";
-import { PaywallModal } from "@/components/PaywallModal";
-import { supabase } from "@/integrations/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import CatalogVehiclePicker from "@/components/calculadora/CatalogVehiclePicker";
+import ConsumptionStrip from "@/components/calculadora/ConsumptionStrip";
+import CompareCarsTab from "@/components/calculadora/CompareCarsTab";
+import { QUICK_DESTINATIONS, calcTrip, vehicleLabel, type RouteType } from "@/lib/tripCalc";
+import type { CatalogVehicle } from "@/hooks/useVehiclesCatalog";
+import { useFuelPrices } from "@/hooks/useFuelPrices";
+import { useCheapestStations } from "@/hooks/useNearbyStations";
 import { formatPrice, formatDistance } from "@/lib/format";
 import { toast } from "sonner";
 
-interface LatLng { lat: number; lng: number; label?: string; }
-
-interface RouteSummary {
-  index: number;
-  description: string | null;
-  distance_km: number;
-  duration_min: number;
-  polyline: string;
-  tariff_band: "baja" | "punta" | "saturacion";
-  porticos: Array<{ portico_id: string; name: string; autopista: string; lat: number; lng: number; tarifa: number }>;
-  tag_cost: number;
-  liters: number;
-  fuel_cost: number;
-  total_cost: number;
-  cheapest_station: { id: string; name: string; brand: string; lat: number; lng: number; price: number } | null;
-}
-
-interface TripResponse {
-  band: string;
-  depart_at: string;
-  routes: RouteSummary[];
-}
-
-const bandLabel: Record<string, string> = {
-  baja: "Tarifa baja",
-  punta: "Hora punta",
-  saturacion: "Saturación",
-};
+const LOADING_MSGS = [
+  "Buscando precios CNE...",
+  "Calculando rendimiento oficial...",
+  "Consultando estaciones en tu ruta...",
+  "Generando análisis personalizado...",
+];
 
 const Calculadora = () => {
   const navigate = useNavigate();
-  const { vehicles, primary, isLoading: vehiclesLoading } = useUserVehicles();
-  const { isPro, limits } = useSubscription();
-  const { data: usedSearches = 0, refetch: refetchUsage } = useRouteSearchUsage();
-  const [origin, setOrigin] = useState<LatLng | null>(null);
-  const [destination, setDestination] = useState<LatLng | null>(null);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string>("");
+  const [params, setParams] = useSearchParams();
+
+  // Vehicle selection state
+  const [brand, setBrand] = useState<string | null>(params.get("brand"));
+  const [model, setModel] = useState<string | null>(params.get("model"));
+  const [year, setYear] = useState<number | null>(params.get("year") ? Number(params.get("year")) : null);
+  const [versionId, setVersionId] = useState<string | null>(null);
+  const [vehicle, setVehicle] = useState<CatalogVehicle | null>(null);
+
+  // Destination
+  const initialKm = params.get("km") ? Number(params.get("km")) : 0;
+  const [destKm, setDestKm] = useState<number>(initialKm);
+  const [destLabel, setDestLabel] = useState<string>(params.get("dest") ?? "");
+  const [route, setRoute] = useState<RouteType>("mixed");
   const [roundTrip, setRoundTrip] = useState(false);
-  const [departLater, setDepartLater] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
-  const [paywallOpen, setPaywallOpen] = useState(false);
 
-  const [resultNow, setResultNow] = useState<TripResponse | null>(null);
-  const [resultLater, setResultLater] = useState<TripResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Auto-fill origin with current location
+  // Pre-select destination chip from URL ?dest=
   useEffect(() => {
-    if (origin) return;
+    const slug = params.get("dest");
+    if (slug && !destKm) {
+      const found = QUICK_DESTINATIONS.find((d) => d.id === slug || d.label.toLowerCase().includes(slug.toLowerCase()));
+      if (found) { setDestKm(found.km); setDestLabel(found.label); }
+    }
+  }, [params, destKm]);
+
+  // Geolocation for "cheapest station near you"
+  const [loc, setLoc] = useState<{ lat: number; lng: number } | null>(null);
+  useEffect(() => {
     if (!("geolocation" in navigator)) return;
     navigator.geolocation.getCurrentPosition(
-      (pos) => setOrigin({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: "Mi ubicación" }),
+      (p) => setLoc({ lat: p.coords.latitude, lng: p.coords.longitude }),
       () => {},
       { enableHighAccuracy: false, timeout: 6000, maximumAge: 5 * 60 * 1000 },
     );
-  }, [origin]);
+  }, []);
 
-  // Pick primary vehicle by default
+  const fuelKey = vehicle?.fuel_type === "hybrid" ? "gasoline95" : (vehicle?.fuel_type ?? "gasoline95");
+  const cheapestRPC = useCheapestStations(loc?.lat ?? null, loc?.lng ?? null, 15000, fuelKey === "electric" ? "electric" : (fuelKey as any), 3);
+  const fuelPrices = useFuelPrices();
+
+  // Loading / step state
+  const [calculating, setCalculating] = useState(false);
+  const [msgIdx, setMsgIdx] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   useEffect(() => {
-    if (!selectedVehicleId && primary) setSelectedVehicleId(primary.id);
-  }, [primary, selectedVehicleId]);
+    if (!calculating) return;
+    const id = setInterval(() => setMsgIdx((i) => (i + 1) % LOADING_MSGS.length), 600);
+    return () => clearInterval(id);
+  }, [calculating]);
 
-  const selectedVehicle = useMemo(
-    () => vehicles.find((v) => v.id === selectedVehicleId) ?? primary,
-    [vehicles, selectedVehicleId, primary],
-  );
+  const step: 1 | 2 | 3 = showResult ? 3 : !vehicle ? 1 : destKm > 0 ? 2 : 2;
+
+  const referencePrice = useMemo(() => {
+    if (!vehicle) return 0;
+    if (vehicle.fuel_type === "electric") return 250; // CLP/kWh promedio público
+    const row = fuelPrices.data?.find((r) => r.fuel_type === fuelKey);
+    return row?.price ?? 1200;
+  }, [vehicle, fuelKey, fuelPrices.data]);
+
+  const cheapestStation = cheapestRPC.data?.[0] ?? null;
+  const effectivePrice = cheapestStation?.price ?? referencePrice;
+
+  const totalKm = roundTrip ? destKm * 2 : destKm;
+  const calc = vehicle ? calcTrip(vehicle, totalKm, route, effectivePrice) : null;
+  const avgSavings = calc && referencePrice > effectivePrice
+    ? Math.round((referencePrice - effectivePrice) * calc.units)
+    : 0;
+
+  // AI analysis
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+
+  const fetchAnalysis = async (v: CatalogVehicle, c: ReturnType<typeof calcTrip>, station: typeof cheapestStation) => {
+    setAnalysisLoading(true);
+    setAnalysis(null);
+    try {
+      const ctx = {
+        vehicle: vehicleLabel(v),
+        consumption_kml: c.consumption.toFixed(1),
+        km: c.km,
+        route,
+        fuel: v.fuel_type,
+        price_cne: effectivePrice,
+        avg_price: referencePrice,
+        total: c.total,
+        station: station ? `${station.brand} ${station.name}` : null,
+      };
+      const prompt = `Analiza este viaje en Chile y entrega exactamente:\n1) Una oración con el costo y si el vehículo es eficiente para esta ruta.\n2) Si hay ahorro vs promedio: cuánto y dónde cargar.\n3) Si conviene cargar ahora o esperar al MEPCO del jueves.\n4) Un tip de conducción para esta ruta.\nResponde en español chileno informal, máximo 4 oraciones, sin bullet points.\n\nDatos: ${JSON.stringify(ctx)}`;
+      const { data, error } = await (await import("@/integrations/supabase/client")).supabase.functions.invoke("tucom-assistant", {
+        body: { messages: [{ role: "user", content: prompt }] },
+      });
+      if (error) throw error;
+      const text = (data as any)?.message ?? (data as any)?.reply ?? (data as any)?.content ?? null;
+      setAnalysis(typeof text === "string" ? text : null);
+    } catch (e) {
+      console.error("ai analysis failed", e);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
 
   const handleCalculate = async () => {
-    if (!origin || !destination) {
-      toast.error("Indica origen y destino");
-      return;
-    }
-    if (!selectedVehicle) {
-      toast.error("Agrega un vehículo primero");
-      return;
-    }
-    if (!isPro && usedSearches >= limits.routeSearchesPerMonth) {
-      setPaywallOpen(true);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setResultNow(null);
-    setResultLater(null);
-    try {
-      const payload = {
-        origin: { lat: origin.lat, lng: origin.lng },
-        destination: { lat: destination.lat, lng: destination.lng },
-        vehicle: {
-          consumption_kml: selectedVehicle.consumption_kml,
-          fuel_type: selectedVehicle.fuel_type,
-        },
-        roundTrip,
-      };
-      const now = new Date();
-      const later = new Date(now.getTime() + 60 * 60 * 1000);
-      const [{ data: dNow, error: eNow }, latRes] = await Promise.all([
-        supabase.functions.invoke("trip-calculator", {
-          body: { ...payload, departAt: now.toISOString() },
-        }),
-        departLater
-          ? supabase.functions.invoke("trip-calculator", {
-              body: { ...payload, departAt: later.toISOString() },
-            })
-          : Promise.resolve({ data: null, error: null }),
-      ]);
-      if (eNow) throw eNow;
-      setResultNow(dNow as TripResponse);
-      if (departLater && !latRes.error) setResultLater(latRes.data as TripResponse);
-      // Log route search for free-plan monthly counter
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from("route_search_logs").insert({ user_id: user.id });
-          refetchUsage();
-        }
-      } catch { /* non-blocking */ }
-    } catch (err: any) {
-      setError(err?.message ?? "Error al calcular el viaje");
-    } finally {
-      setLoading(false);
-    }
+    if (!vehicle) { toast.error("Elige un vehículo"); return; }
+    if (!destKm) { toast.error("Indica un destino o km"); return; }
+    setCalculating(true);
+    setMsgIdx(0);
+    setShowResult(false);
+    await new Promise((r) => setTimeout(r, 1800));
+    setCalculating(false);
+    setShowResult(true);
+    if (vehicle && calc) fetchAnalysis(vehicle, calc, cheapestStation);
   };
 
-  const shareTrip = async (route: RouteSummary) => {
-    const oLabel = origin?.label ?? "origen";
-    const dLabel = destination?.label ?? "destino";
-    const text = `Mi viaje de ${oLabel} a ${dLabel} costará ${formatPrice(route.fuel_cost)} en bencina + ${formatPrice(route.tag_cost)} en TAG (total ${formatPrice(route.total_cost)}). Calculado con TÜcom.`;
+  const reset = () => {
+    setShowResult(false);
+    setAnalysis(null);
+    setDestKm(0);
+    setDestLabel("");
+    setRoundTrip(false);
+  };
+
+  const shareCalc = async () => {
+    if (!calc || !vehicle) return;
+    const text = `Mi ${vehicle.brand} ${vehicle.model} ${vehicle.year} gastaría ${formatPrice(calc.total)} para ir ${destLabel || `${totalKm} km`}. Calculado con TÜcom.`;
     try {
-      if (navigator.share) {
-        await navigator.share({ title: "Costo de viaje · TÜcom", text });
-        return;
-      }
+      if (navigator.share) { await navigator.share({ title: "Costo de viaje · TÜcom", text }); return; }
       await navigator.clipboard.writeText(text);
-      toast.success("Resumen copiado al portapapeles");
-    } catch {
-      /* user cancelled */
-    }
+      toast.success("Resumen copiado");
+    } catch { /* cancelled */ }
   };
-
-  const cheapestRoute = resultNow?.routes.reduce(
-    (best, r) => (!best || r.total_cost < best.total_cost ? r : best),
-    null as RouteSummary | null,
-  );
 
   return (
     <div className="min-h-screen bg-background pb-24">
       <Helmet>
-        <title>Calculadora de costo de viaje | TÜcom</title>
-        <meta name="description" content="Calcula el costo de bencina y TAG de tu viaje en Chile. Compara rutas alternativas y encuentra la estación más barata en el camino." />
+        <title>Calculadora de viaje | TÜcom</title>
+        <meta name="description" content="Calcula cuánto te cuesta tu viaje en bencina con el catálogo oficial de vehículos del Ministerio de Energía y precios CNE en tiempo real." />
         <link rel="canonical" href="https://tucombustible.lovable.app/calculadora" />
       </Helmet>
 
-      <header className="bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">
-        <div className="flex items-center gap-3 py-3 max-w-3xl mx-auto">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-xl bg-white/15 text-white hover:bg-white/25"
-            aria-label="Volver"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="font-heading font-extrabold text-white text-lg">Calculadora de viaje</h1>
-            <p className="text-xs text-white/80">Bencina + TAG · Rutas alternativas</p>
+      {/* Header */}
+      <header className="bg-gradient-to-r from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">
+        <div className="max-w-3xl mx-auto py-3">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/15 text-white hover:bg-white/25" aria-label="Volver">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="font-heading font-extrabold text-white text-lg leading-tight">Calculadora de viaje</h1>
+              <p className="text-[11px] text-white/85">Catálogo oficial · Precios CNE en tiempo real</p>
+            </div>
+          </div>
+
+          {/* Step indicator */}
+          <div className="flex items-center gap-1 mt-3 text-[10px] text-white/90">
+            {["Vehículo","Destino","Resultado"].map((label, i) => {
+              const n = (i + 1) as 1|2|3;
+              const active = step === n;
+              const done = step > n;
+              return (
+                <div key={label} className="flex items-center gap-1">
+                  <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${done ? "bg-white text-primary" : active ? "bg-white/90 text-primary" : "bg-white/20 text-white/80"}`}>{n}</span>
+                  <span className={active || done ? "text-white font-semibold" : "text-white/70"}>{label}</span>
+                  {n < 3 && <span className="mx-1 opacity-50">→</span>}
+                </div>
+              );
+            })}
           </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-5 space-y-4">
-        {/* Inputs */}
-        <section className="bg-card border border-border rounded-2xl shadow-soft p-4 space-y-3">
-          <div>
-            <Label className="text-xs">Origen</Label>
-            <div className="mt-1">
-              <PlacesAutocomplete
-                placeholder="¿Desde dónde sales?"
-                initialValue={origin?.label ?? ""}
-                onSelect={(p) => setOrigin(p)}
+      <main className="max-w-3xl mx-auto px-4 py-5">
+        <Tabs defaultValue="calc" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full rounded-xl h-11">
+            <TabsTrigger value="calc" className="rounded-lg">Calcular</TabsTrigger>
+            <TabsTrigger value="compare" className="rounded-lg">Comparar autos</TabsTrigger>
+          </TabsList>
+
+          {/* TAB 1 */}
+          <TabsContent value="calc" className="space-y-4 mt-4">
+            {/* Vehicle */}
+            <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
+              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
+                <Car className="w-4 h-4 text-primary" aria-hidden="true" /> Tu vehículo
+              </h2>
+              <CatalogVehiclePicker
+                brand={brand}
+                model={model}
+                year={year}
+                versionId={versionId}
+                onChange={(next) => {
+                  setBrand(next.brand);
+                  setModel(next.model);
+                  setYear(next.year);
+                  setVersionId(next.versionId);
+                  setVehicle(next.vehicle);
+                }}
               />
-            </div>
-            {origin?.label === "Mi ubicación" && (
-              <p className="text-[11px] text-muted-foreground mt-1">Usando tu ubicación actual.</p>
-            )}
-          </div>
-          <div>
-            <Label className="text-xs">Destino</Label>
-            <div className="mt-1">
-              <PlacesAutocomplete
-                placeholder="¿A dónde vas?"
-                onSelect={(p) => setDestination(p)}
-                bias={origin ?? undefined}
-              />
-            </div>
-          </div>
+              {vehicle && <ConsumptionStrip vehicle={vehicle} />}
+            </section>
 
-          {/* Vehicle */}
-          <div>
-            <Label className="text-xs">Vehículo</Label>
-            <div className="mt-1 flex gap-2">
-              {vehiclesLoading ? (
-                <Skeleton className="h-11 flex-1 rounded-xl" />
-              ) : vehicles.length === 0 ? (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDialog(true)}
-                  className="flex-1 h-11 rounded-xl"
-                >
-                  <Plus className="w-4 h-4 mr-2" aria-hidden="true" /> Agregar vehículo
-                </Button>
-              ) : (
-                <>
-                  <Select value={selectedVehicleId} onValueChange={setSelectedVehicleId}>
-                    <SelectTrigger className="flex-1 h-11 rounded-xl">
-                      <SelectValue placeholder="Elige un vehículo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vehicles.map((v) => (
-                        <SelectItem key={v.id} value={v.id}>
-                          <span className="inline-flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: v.color }} />
-                            {v.nickname ? `${v.nickname} · ` : ""}{v.brand} {v.model}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowDialog(true)}
-                    className="h-11 w-11 rounded-xl"
-                    aria-label="Agregar otro vehículo"
-                  >
-                    <Plus className="w-4 h-4" aria-hidden="true" />
-                  </Button>
-                </>
-              )}
-            </div>
-            {selectedVehicle && (
-              <p className="text-[11px] text-muted-foreground mt-1">
-                {selectedVehicle.consumption_kml} km/L · estanque {selectedVehicle.tank_size_l} L
-              </p>
-            )}
-          </div>
-
-          {/* Toggles */}
-          <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <Repeat className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-              <span className="text-sm text-foreground">Ida y vuelta</span>
-            </div>
-            <Switch checked={roundTrip} onCheckedChange={setRoundTrip} />
-          </div>
-          <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-              <span className="text-sm text-foreground">Comparar: ahora vs en 1 hora</span>
-            </div>
-            <Switch checked={departLater} onCheckedChange={setDepartLater} />
-          </div>
-
-          <Button
-            onClick={handleCalculate}
-            disabled={loading || !origin || !destination || !selectedVehicle}
-            className="w-full h-12 rounded-xl bg-gradient-primary text-white font-semibold"
-          >
-            {loading ? "Calculando..." : "Calcular costo del viaje"}
-          </Button>
-        </section>
-
-        {error && (
-          <div className="rounded-xl bg-destructive/10 text-destructive p-3 text-sm">{error}</div>
-        )}
-
-        {loading && (
-          <div className="space-y-3">
-            <Skeleton className="h-40 rounded-2xl" />
-            <Skeleton className="h-40 rounded-2xl" />
-          </div>
-        )}
-
-        {/* Results */}
-        {resultNow?.routes.length === 0 && !loading && (
-          <p className="text-sm text-muted-foreground text-center py-6">
-            No se encontraron rutas para este viaje.
-          </p>
-        )}
-
-        {resultNow?.routes.map((r, i) => {
-          const isCheapest = r.total_cost === cheapestRoute?.total_cost;
-          const laterRoute = resultLater?.routes[i];
-          const diff = laterRoute ? laterRoute.total_cost - r.total_cost : 0;
-          return (
-            <article
-              key={r.index}
-              className={`bg-card border rounded-2xl shadow-soft p-4 space-y-3 ${isCheapest ? "border-primary ring-2 ring-primary/20" : "border-border"}`}
-              aria-label={`Ruta ${i + 1}`}
-            >
-              <header className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-heading font-bold text-foreground">
-                      Ruta {i + 1}
-                    </h2>
-                    {isCheapest && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
-                        <Sparkles className="w-3 h-3" aria-hidden="true" /> Más barata
-                      </span>
-                    )}
-                  </div>
-                  {r.description && (
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{r.description}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {formatDistance(r.distance_km)} · {r.duration_min} min ·{" "}
-                    <span className="font-medium">{bandLabel[r.tariff_band]}</span>
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[11px] text-muted-foreground">Total estimado</p>
-                  <p className="font-heading font-extrabold text-2xl text-foreground" aria-live="polite">
-                    {formatPrice(r.total_cost)}
-                  </p>
-                </div>
-              </header>
-
+            {/* Destination */}
+            <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
+              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" aria-hidden="true" /> Tu destino
+              </h2>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-muted/30 px-3 py-2.5">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Fuel className="w-3.5 h-3.5" aria-hidden="true" /> Bencina
-                  </div>
-                  <div className="font-heading font-bold text-foreground">{formatPrice(r.fuel_cost)}</div>
-                  <div className="text-[11px] text-muted-foreground">{r.liters} L</div>
-                </div>
-                <div className="rounded-xl bg-muted/30 px-3 py-2.5">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Zap className="w-3.5 h-3.5" aria-hidden="true" /> TAG
-                  </div>
-                  <div className="font-heading font-bold text-foreground">{formatPrice(r.tag_cost)}</div>
-                  <div className="text-[11px] text-muted-foreground">{r.porticos.length} pórticos</div>
+                {QUICK_DESTINATIONS.map((d) => {
+                  const active = destKm === d.km && destLabel === d.label;
+                  return (
+                    <button
+                      key={d.id}
+                      onClick={() => { setDestKm(d.km); setDestLabel(d.label); }}
+                      className={`rounded-xl border px-3 py-2 text-left text-xs press-scale transition ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted/30 text-foreground hover:bg-muted"}`}
+                    >
+                      <div className="font-semibold truncate">{d.label}</div>
+                      <div className="text-[10px] text-muted-foreground">~{d.km} km</div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div>
+                <Label htmlFor="custom-km" className="text-xs">O ingresa los km del viaje</Label>
+                <Input
+                  id="custom-km"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  value={destKm || ""}
+                  onChange={(e) => { setDestKm(Number(e.target.value) || 0); setDestLabel("Personalizado"); }}
+                  placeholder="Ej. 220"
+                  className="h-11 mt-1 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">Tipo de ruta</Label>
+                <div className="flex gap-2 mt-1">
+                  {([
+                    { v: "city", label: "🏙 Ciudad" },
+                    { v: "mixed", label: "🔀 Mixta" },
+                    { v: "hwy", label: "🛣 Carretera" },
+                  ] as const).map((r) => (
+                    <button
+                      key={r.v}
+                      onClick={() => setRoute(r.v)}
+                      className={`flex-1 rounded-xl px-2 py-2 text-xs font-semibold press-scale transition ${route === r.v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {laterRoute && (
-                <p className="text-xs text-muted-foreground rounded-lg bg-muted/30 px-3 py-2">
-                  Salir en 1 h: <strong>{formatPrice(laterRoute.total_cost)}</strong>{" "}
-                  ({diff === 0 ? "igual" : diff > 0 ? `+${formatPrice(diff)} más caro` : `${formatPrice(-diff)} más barato`}).
-                </p>
-              )}
-
-              {r.cheapest_station && (
-                <button
-                  onClick={() => navigate(`/station/${r.cheapest_station!.id}`)}
-                  className="w-full text-left rounded-xl border border-border px-3 py-2.5 hover:bg-accent transition-colors"
-                >
-                  <p className="text-[11px] text-muted-foreground">Estación más barata en la ruta</p>
-                  <p className="text-sm font-semibold text-foreground truncate">
-                    {r.cheapest_station.brand} · {r.cheapest_station.name}
-                  </p>
-                  <p className="text-xs text-primary font-bold">
-                    {formatPrice(r.cheapest_station.price)} /L
-                  </p>
-                </button>
-              )}
-
-              {r.porticos.length > 0 && (
-                <details className="text-xs">
-                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                    Ver {r.porticos.length} pórticos TAG
-                  </summary>
-                  <ul className="mt-2 space-y-1">
-                    {r.porticos.map((p) => (
-                      <li key={p.portico_id} className="flex justify-between gap-2">
-                        <span className="text-foreground truncate">{p.autopista} · {p.name ?? p.portico_id}</span>
-                        <span className="font-medium text-foreground tabular-nums">{formatPrice(p.tarifa)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
+              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-3 py-2.5">
+                <span className="text-sm text-foreground">Ida y vuelta</span>
+                <Switch checked={roundTrip} onCheckedChange={setRoundTrip} />
+              </div>
 
               <Button
-                onClick={() => shareTrip(r)}
-                variant="outline"
-                className="w-full rounded-xl"
+                onClick={handleCalculate}
+                disabled={!vehicle || !destKm || calculating}
+                className="w-full h-12 rounded-xl bg-gradient-primary text-white font-semibold shadow-glow"
               >
-                <Share2 className="w-4 h-4 mr-2" aria-hidden="true" /> Compartir
+                <Calculator className="w-4 h-4 mr-2" /> Calcular costo del viaje
               </Button>
-            </article>
-          );
-        })}
-      </main>
+            </section>
 
-      <VehicleDialog open={showDialog} onOpenChange={setShowDialog} />
-      <PaywallModal
-        open={paywallOpen}
-        onOpenChange={setPaywallOpen}
-        reason={`Usaste tus ${limits.routeSearchesPerMonth} cálculos de ruta del mes en el plan Básico. Hazte Pro para cálculos ilimitados.`}
-      />
+            {/* Loading */}
+            {calculating && (
+              <section className="bg-card border border-border rounded-2xl p-6 text-center space-y-3">
+                <div className="inline-block w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <p className="text-sm text-foreground font-medium animate-fade-in" key={msgIdx}>{LOADING_MSGS[msgIdx]}</p>
+              </section>
+            )}
+
+            {/* Result */}
+            {showResult && calc && vehicle && (
+              <>
+                <section className="rounded-3xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] text-white p-5 shadow-glow space-y-2 animate-scale-in">
+                  <p className="font-heading font-extrabold text-4xl tabular-nums leading-none">{formatPrice(calc.total)}</p>
+                  <p className="text-xs text-white/85">
+                    {roundTrip ? "Ida y vuelta" : "Solo ida"} · {totalKm} km · ruta {route === "city" ? "ciudad" : route === "hwy" ? "carretera" : "mixta"}
+                  </p>
+                  <p className="inline-flex text-[11px] font-semibold bg-white/15 rounded-full px-2 py-0.5">
+                    {vehicle.brand} {vehicle.model} {vehicle.year} · {vehicle.version}
+                  </p>
+                </section>
+
+                <section className="grid grid-cols-2 gap-2">
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{calc.isElectric ? "Energía" : "Litros"}</p>
+                    <p className="font-heading font-bold text-primary text-lg tabular-nums">{calc.units.toFixed(1)} {calc.isElectric ? "kWh" : "L"}</p>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rendimiento</p>
+                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{calc.consumption.toFixed(1)} km/{calc.isElectric ? "kWh" : "L"}</p>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Precio CNE</p>
+                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{formatPrice(effectivePrice)}/{calc.isElectric ? "kWh" : "L"}</p>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ahorro vs prom.</p>
+                    <p className={`font-heading font-bold text-lg tabular-nums ${avgSavings > 0 ? "text-success" : "text-muted-foreground"}`}>
+                      {avgSavings > 0 ? `−${formatPrice(avgSavings)}` : "Precio promedio"}
+                    </p>
+                  </div>
+                </section>
+
+                {cheapestStation && (
+                  <button
+                    onClick={() => navigate(`/station/${cheapestStation.id}`)}
+                    className="w-full text-left bg-card border-2 border-primary/30 rounded-2xl p-3 hover:bg-accent transition"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0">
+                        <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Estación más barata cerca</p>
+                        <p className="font-semibold text-foreground truncate">{cheapestStation.brand} · {cheapestStation.name}</p>
+                        <p className="text-[11px] text-muted-foreground">{formatDistance((cheapestStation.distance_m ?? 0) / 1000)}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-heading font-bold text-primary text-lg">{formatPrice(cheapestStation.price ?? 0)}</p>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Más barata</span>
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                <details className="bg-muted/30 rounded-xl px-3 py-2 text-xs">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">Ver cálculo</summary>
+                  <p className="mt-2 text-foreground tabular-nums">
+                    {totalKm} km ÷ {calc.consumption.toFixed(1)} km/{calc.isElectric ? "kWh" : "L"} = {calc.units.toFixed(1)} {calc.isElectric ? "kWh" : "L"} × {formatPrice(effectivePrice)} = {formatPrice(calc.total)}
+                  </p>
+                  <p className="mt-1 text-[10px] text-muted-foreground">Fuente rendimiento: consumovehicular.cl · Ciclo WLTC oficial</p>
+                </details>
+
+                {/* AI analysis */}
+                <section className="rounded-2xl bg-primary/5 border border-primary/30 p-4 space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider text-primary font-bold inline-flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Análisis del asistente TÜcom
+                  </p>
+                  {analysisLoading ? (
+                    <Skeleton className="h-16 rounded-xl" />
+                  ) : analysis ? (
+                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{analysis}</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No se pudo generar el análisis. Toca un chip abajo para preguntarle al asistente.</p>
+                  )}
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {[
+                      "💡 Cómo mejorar mi rendimiento",
+                      "📅 ¿Cuándo conviene cargar?",
+                      "🔀 Comparar con otro auto",
+                    ].map((q) => (
+                      <button
+                        key={q}
+                        onClick={() => {
+                          try { sessionStorage.setItem("tucom_chat_prefill", q); } catch { /* noop */ }
+                          window.dispatchEvent(new CustomEvent("tucom-open-chat"));
+                        }}
+                        className="text-[11px] bg-card border border-primary/30 rounded-full px-2.5 py-1 text-foreground hover:bg-primary/10"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {cheapestStation && (
+                    <Button variant="outline" className="rounded-xl" onClick={() => {
+                      const url = `https://www.google.com/maps/dir/?api=1&destination=${cheapestStation.lat},${cheapestStation.lng}&travelmode=driving`;
+                      window.open(url, "_blank");
+                    }}>
+                      <MapPin className="w-4 h-4 mr-1" /> Cómo llegar
+                    </Button>
+                  )}
+                  <Button variant="outline" className="rounded-xl" onClick={shareCalc}>
+                    <Share2 className="w-4 h-4 mr-1" /> Compartir
+                  </Button>
+                </div>
+
+                <Button variant="ghost" className="w-full" onClick={reset}>
+                  <RotateCcw className="w-4 h-4 mr-1" /> Calcular otro viaje
+                </Button>
+
+                <p className="text-[10px] text-muted-foreground text-center px-4 leading-relaxed">
+                  Rendimiento oficial: consumovehicular.cl · Ministerio de Energía de Chile.{" "}
+                  Precio combustible: CNE Bencina en Línea.
+                </p>
+
+                <div className="text-center">
+                  <button onClick={() => navigate("/calculadora-rutas")} className="text-[11px] text-primary hover:underline inline-flex items-center gap-1">
+                    Modo ruta avanzada con TAG <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          {/* TAB 2 */}
+          <TabsContent value="compare" className="mt-4">
+            <CompareCarsTab
+              defaultFuelPrice={fuelPrices.data?.find((r) => r.fuel_type === "gasoline95")?.price ?? 1200}
+              defaultElectricPrice={250}
+            />
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };
