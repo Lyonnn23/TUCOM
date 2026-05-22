@@ -15,6 +15,8 @@ import PriceAlertDialog from "@/components/PriceAlertDialog";
 import { Helmet } from "react-helmet-async";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import PriceTrendChart from "@/components/macro/PriceTrendChart";
+
 import {
   LineChart,
   Line,
@@ -494,6 +496,16 @@ const StationDetail = () => {
             </div>
           )}
         </section>
+
+        {/* Per-station projection with MEPCO + FX scenarios */}
+        {station && (
+          <PriceTrendChart
+            stationId={station.id}
+            fuelType="gasoline95"
+            currentPrice={station.prices?.gasoline95}
+          />
+        )}
+
 
         {/* Reviews */}
         <section className="bg-card border border-border rounded-2xl shadow-soft p-5">

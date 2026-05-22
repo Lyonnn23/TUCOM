@@ -48,6 +48,8 @@ const EmpresaConfig = lazy(() => import("./pages/empresa/EmpresaConfig.tsx"));
 const EmpresaReportes = lazy(() => import("./pages/empresa/EmpresaReportes.tsx"));
 const EmpresaMiVehiculo = lazy(() => import("./pages/empresa/EmpresaMiVehiculo.tsx"));
 const VehicleDetail = lazy(() => import("./pages/VehicleDetail.tsx"));
+const MepcoInfo = lazy(() => import("./pages/MepcoInfo.tsx"));
+
 import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
@@ -162,6 +164,9 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />
+                <Route path="/mepco-info" element={<MepcoInfo />} />
+                <Route path="/mepco" element={<Navigate to="/mepco-info" replace />} />
+
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/terms" element={<Legal />} />
