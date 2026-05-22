@@ -1164,6 +1164,72 @@ export type Database = {
           },
         ]
       }
+      vehicles_catalog: {
+        Row: {
+          body_type: string | null
+          brand: string
+          cit_code: string | null
+          co2_city: number | null
+          co2_mixed: number | null
+          consumption_city: number | null
+          consumption_hwy: number | null
+          consumption_mixed: number | null
+          created_at: string
+          drive_type: string | null
+          engine_cc: number | null
+          fuel_type: string
+          id: string
+          kwh_per_km: number | null
+          model: string
+          source: string
+          transmission: string | null
+          version: string
+          year: number
+        }
+        Insert: {
+          body_type?: string | null
+          brand: string
+          cit_code?: string | null
+          co2_city?: number | null
+          co2_mixed?: number | null
+          consumption_city?: number | null
+          consumption_hwy?: number | null
+          consumption_mixed?: number | null
+          created_at?: string
+          drive_type?: string | null
+          engine_cc?: number | null
+          fuel_type: string
+          id?: string
+          kwh_per_km?: number | null
+          model: string
+          source?: string
+          transmission?: string | null
+          version: string
+          year: number
+        }
+        Update: {
+          body_type?: string | null
+          brand?: string
+          cit_code?: string | null
+          co2_city?: number | null
+          co2_mixed?: number | null
+          consumption_city?: number | null
+          consumption_hwy?: number | null
+          consumption_mixed?: number | null
+          created_at?: string
+          drive_type?: string | null
+          engine_cc?: number | null
+          fuel_type?: string
+          id?: string
+          kwh_per_km?: number | null
+          model?: string
+          source?: string
+          transmission?: string | null
+          version?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       geography_columns: {
