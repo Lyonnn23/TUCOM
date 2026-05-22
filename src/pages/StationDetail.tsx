@@ -497,6 +497,16 @@ const StationDetail = () => {
           )}
         </section>
 
+        {/* Per-station projection with MEPCO + FX scenarios */}
+        {station && (
+          <PriceTrendChart
+            stationId={station.id}
+            fuelType="gasoline95"
+            currentPrice={station.prices?.gasoline95}
+          />
+        )}
+
+
         {/* Reviews */}
         <section className="bg-card border border-border rounded-2xl shadow-soft p-5">
           <div className="flex items-center justify-between mb-4">
