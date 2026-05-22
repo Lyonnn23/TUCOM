@@ -38,6 +38,7 @@ const Drive = lazy(() => import("./pages/Drive.tsx"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Calculadora = lazy(() => import("./pages/Calculadora.tsx"));
+const CalculadoraRutas = lazy(() => import("./pages/CalculadoraRutas.tsx"));
 const CalculadoraEV = lazy(() => import("./pages/CalculadoraEV.tsx"));
 const MisCargas = lazy(() => import("./pages/MisCargas.tsx"));
 const Planes = lazy(() => import("./pages/Planes.tsx"));
@@ -148,6 +149,7 @@ const App = () => {
                 <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
                 <Route path="/admin/*" element={<RequireAuth><RequireAdmin><Admin /></RequireAdmin></RequireAuth>} />
                 <Route path="/calculadora" element={<RequireAuth><Calculadora /></RequireAuth>} />
+                <Route path="/calculadora-rutas" element={<RequireAuth><CalculadoraRutas /></RequireAuth>} />
                 <Route path="/calculator" element={<Navigate to="/calculadora" replace />} />
                 <Route path="/calculadora-ev" element={<RequireAuth><CalculadoraEV /></RequireAuth>} />
                 <Route path="/mis-cargas" element={<RequireAuth><MisCargas /></RequireAuth>} />
