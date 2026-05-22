@@ -11,11 +11,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CatalogVehiclePicker from "@/components/calculadora/CatalogVehiclePicker";
 import ConsumptionStrip from "@/components/calculadora/ConsumptionStrip";
 import CompareCarsTab from "@/components/calculadora/CompareCarsTab";
+import RealVsOfficialStrip from "@/components/calculadora/RealVsOfficialStrip";
 import { QUICK_DESTINATIONS, calcTrip, vehicleLabel, type RouteType } from "@/lib/tripCalc";
 import type { CatalogVehicle } from "@/hooks/useVehiclesCatalog";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useCheapestStations } from "@/hooks/useNearbyStations";
 import { formatPrice, formatDistance } from "@/lib/format";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const LOADING_MSGS = [
@@ -28,6 +31,9 @@ const LOADING_MSGS = [
 const Calculadora = () => {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const { user } = useAuth();
+  const [savingVehicle, setSavingVehicle] = useState(false);
+
 
   // Vehicle selection state
   const [brand, setBrand] = useState<string | null>(params.get("brand"));
@@ -225,6 +231,35 @@ const Calculadora = () => {
                 }}
               />
               {vehicle && <ConsumptionStrip vehicle={vehicle} />}
+              {vehicle && (
+                <RealVsOfficialStrip officialKml={vehicle.consumption_mixed ?? vehicle.consumption_city ?? 12} />
+              )}
+              {vehicle && user && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={savingVehicle}
+                  onClick={async () => {
+                    setSavingVehicle(true);
+                    const { error } = await supabase.from("user_vehicles").insert({
+                      user_id: user.id,
+                      brand: vehicle.brand,
+                      model: vehicle.model,
+                      year: vehicle.year,
+                      fuel_type: vehicle.fuel_type === "hybrid" ? "gasoline95" : vehicle.fuel_type,
+                      consumption_kml: vehicle.consumption_mixed ?? vehicle.consumption_city ?? 12,
+                      tank_size_l: 50,
+                      nickname: `${vehicle.brand} ${vehicle.model}`,
+                    });
+                    setSavingVehicle(false);
+                    if (error) { toast.error("No se pudo guardar"); return; }
+                    toast.success("Vehículo guardado en tu perfil");
+                  }}
+                  className="w-full rounded-xl"
+                >
+                  <Save className="w-4 h-4 mr-1" /> Guardar vehículo en mi perfil
+                </Button>
+              )}
             </section>
 
             {/* Destination */}
