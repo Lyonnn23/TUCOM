@@ -32,6 +32,30 @@ export type Database = {
         }
         Relationships: []
       }
+      commodity_prices: {
+        Row: {
+          change_pct_week: number
+          id: string
+          price_usd: number
+          recorded_at: string
+          symbol: string
+        }
+        Insert: {
+          change_pct_week?: number
+          id?: string
+          price_usd: number
+          recorded_at?: string
+          symbol?: string
+        }
+        Update: {
+          change_pct_week?: number
+          id?: string
+          price_usd?: number
+          recorded_at?: string
+          symbol?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -218,6 +242,30 @@ export type Database = {
         }
         Relationships: []
       }
+      fx_rates: {
+        Row: {
+          change_pct: number
+          currency: string
+          id: string
+          rate_clp: number
+          recorded_at: string
+        }
+        Insert: {
+          change_pct?: number
+          currency?: string
+          id?: string
+          rate_clp: number
+          recorded_at?: string
+        }
+        Update: {
+          change_pct?: number
+          currency?: string
+          id?: string
+          rate_clp?: number
+          recorded_at?: string
+        }
+        Relationships: []
+      }
       gas_stations: {
         Row: {
           address: string
@@ -293,6 +341,60 @@ export type Database = {
           region?: string | null
           services?: string[]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      macro_explainers: {
+        Row: {
+          body_es: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          body_es: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          body_es?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mepco_adjustments: {
+        Row: {
+          created_at: string
+          direction: string
+          fuel_changes: Json
+          id: string
+          notes: string | null
+          published_at: string | null
+          source_url: string | null
+          updated_at: string
+          week_of: string
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          fuel_changes?: Json
+          id?: string
+          notes?: string | null
+          published_at?: string | null
+          source_url?: string | null
+          updated_at?: string
+          week_of: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          fuel_changes?: Json
+          id?: string
+          notes?: string | null
+          published_at?: string | null
+          source_url?: string | null
+          updated_at?: string
+          week_of?: string
         }
         Relationships: []
       }
@@ -860,45 +962,54 @@ export type Database = {
           ai_chat_count_date: string
           created_at: string
           fuel_log_email_optin: boolean
+          fx_spike_alert_enabled: boolean
           id: string
           leaderboard_opt_in: boolean
           low_fuel_threshold_km: number
+          mepco_alert_enabled: boolean
           notifications_enabled: boolean
           onboarding_completed: boolean
           preferred_fuel: string
           search_radius_km: number
           updated_at: string
           user_id: string
+          weekly_price_summary_enabled: boolean
         }
         Insert: {
           ai_chat_count?: number
           ai_chat_count_date?: string
           created_at?: string
           fuel_log_email_optin?: boolean
+          fx_spike_alert_enabled?: boolean
           id?: string
           leaderboard_opt_in?: boolean
           low_fuel_threshold_km?: number
+          mepco_alert_enabled?: boolean
           notifications_enabled?: boolean
           onboarding_completed?: boolean
           preferred_fuel?: string
           search_radius_km?: number
           updated_at?: string
           user_id: string
+          weekly_price_summary_enabled?: boolean
         }
         Update: {
           ai_chat_count?: number
           ai_chat_count_date?: string
           created_at?: string
           fuel_log_email_optin?: boolean
+          fx_spike_alert_enabled?: boolean
           id?: string
           leaderboard_opt_in?: boolean
           low_fuel_threshold_km?: number
+          mepco_alert_enabled?: boolean
           notifications_enabled?: boolean
           onboarding_completed?: boolean
           preferred_fuel?: string
           search_radius_km?: number
           updated_at?: string
           user_id?: string
+          weekly_price_summary_enabled?: boolean
         }
         Relationships: []
       }
