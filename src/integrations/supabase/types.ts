@@ -296,6 +296,30 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_log: {
+        Row: {
+          id: string
+          kind: string
+          ref_key: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          ref_key: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          ref_key?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       organization_members: {
         Row: {
           id: string
@@ -442,6 +466,45 @@ export type Database = {
           lng?: number | null
           p256dh?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      recalls: {
+        Row: {
+          brand: string
+          created_at: string
+          description: string
+          id: string
+          model: string
+          official_url: string | null
+          severity: string
+          source: string | null
+          year_from: number | null
+          year_to: number | null
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          description: string
+          id?: string
+          model: string
+          official_url?: string | null
+          severity?: string
+          source?: string | null
+          year_from?: number | null
+          year_to?: number | null
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          description?: string
+          id?: string
+          model?: string
+          official_url?: string | null
+          severity?: string
+          source?: string | null
+          year_from?: number | null
+          year_to?: number | null
         }
         Relationships: []
       }
@@ -936,6 +999,56 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicle_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          due_date: string | null
+          id: string
+          last_done_date: string | null
+          last_done_km: number | null
+          notes: string | null
+          reminder_active: boolean
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          due_date?: string | null
+          id?: string
+          last_done_date?: string | null
+          last_done_km?: number | null
+          notes?: string | null
+          reminder_active?: boolean
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          due_date?: string | null
+          id?: string
+          last_done_date?: string | null
+          last_done_km?: number | null
+          notes?: string | null
+          reminder_active?: boolean
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_documents_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "user_vehicles"
             referencedColumns: ["id"]
           },
         ]
