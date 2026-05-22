@@ -82,7 +82,7 @@ const Calculadora = () => {
   const referencePrice = useMemo(() => {
     if (!vehicle) return 0;
     if (vehicle.fuel_type === "electric") return 250; // CLP/kWh promedio público
-    const row = fuelPrices.data?.find((r) => r.fuel_type === fuelKey);
+    const row = fuelPrices.data?.find((r) => r.type === fuelKey);
     return row?.price ?? 1200;
   }, [vehicle, fuelKey, fuelPrices.data]);
 
@@ -430,7 +430,7 @@ const Calculadora = () => {
           {/* TAB 2 */}
           <TabsContent value="compare" className="mt-4">
             <CompareCarsTab
-              defaultFuelPrice={fuelPrices.data?.find((r) => r.fuel_type === "gasoline95")?.price ?? 1200}
+              defaultFuelPrice={fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? 1200}
               defaultElectricPrice={250}
             />
           </TabsContent>
