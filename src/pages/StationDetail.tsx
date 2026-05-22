@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock, ExternalLink } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock, ExternalLink, Calculator } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useGasStations, formatRelativeTime, type GasStation } from "@/hooks/useGasStations";
 import { useAuth } from "@/hooks/useAuth";
@@ -366,6 +366,27 @@ const StationDetail = () => {
               <ExternalLink className="w-4 h-4 mr-2" aria-hidden="true" /> Ver en Google Maps
             </Button>
           </div>
+          <Button
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (userLocation) {
+                // Haversine
+                const R = 6371;
+                const toRad = (d: number) => (d * Math.PI) / 180;
+                const dLat = toRad(station.lat - userLocation.lat);
+                const dLng = toRad(station.lng - userLocation.lng);
+                const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(userLocation.lat)) * Math.cos(toRad(station.lat)) * Math.sin(dLng / 2) ** 2;
+                const km = Math.max(1, Math.round(2 * R * Math.asin(Math.sqrt(a))));
+                params.set("km", String(km));
+                params.set("dest", station.name);
+              }
+              navigate(`/calculadora?${params.toString()}`);
+            }}
+            variant="outline"
+            className="mt-2 w-full h-11 rounded-xl bg-white/10 border-white/30 text-white hover:bg-white/20 font-semibold"
+          >
+            <Calculator className="w-4 h-4 mr-2" aria-hidden="true" /> Calcular costo hasta aquí
+          </Button>
         </div>
       </header>
 

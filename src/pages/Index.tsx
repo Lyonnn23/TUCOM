@@ -19,6 +19,7 @@ import FuelLogFAB from "@/components/FuelLogFAB";
 import DriverModeFAB from "@/components/DriverModeFAB";
 import TankRangeBanner from "@/components/TankRangeBanner";
 import UpcomingDeadlinesCard from "@/components/UpcomingDeadlinesCard";
+import WhereToGoWidget from "@/components/WhereToGoWidget";
 import MacroWidgets from "@/components/macro/MacroWidgets";
 
 import { useFuelPrices } from "@/hooks/useFuelPrices";
@@ -436,6 +437,7 @@ const Index = () => {
           );
         })()}
         {activeTab === "prices" && <div className="mb-4"><TankRangeBanner /></div>}
+        {activeTab === "prices" && <div className="mb-4"><WhereToGoWidget /></div>}
         {activeTab === "prices" && <div className="mb-4"><UpcomingDeadlinesCard /></div>}
         {activeTab === "prices" && <MacroWidgets />}
 
