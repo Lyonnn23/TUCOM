@@ -423,6 +423,52 @@ const Profile = () => {
             />
           </div>
 
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+            <div className="min-w-0">
+              <p className="text-sm text-foreground">Alerta ajuste MEPCO semanal</p>
+              <p className="text-[11px] text-muted-foreground">
+                Aviso cada martes: si la bencina sube o baja el jueves
+              </p>
+            </div>
+            <Switch
+              checked={preferences?.mepco_alert_enabled ?? true}
+              onCheckedChange={async (v) => {
+                try { await save({ mepco_alert_enabled: v }); } catch { toast.error("No se pudo actualizar"); }
+              }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+            <div className="min-w-0">
+              <p className="text-sm text-foreground">Alerta dólar &gt;2% variación diaria</p>
+              <p className="text-[11px] text-muted-foreground">
+                Avisar cuando el USD/CLP se mueva fuerte en un día
+              </p>
+            </div>
+            <Switch
+              checked={preferences?.fx_spike_alert_enabled ?? false}
+              onCheckedChange={async (v) => {
+                try { await save({ fx_spike_alert_enabled: v }); } catch { toast.error("No se pudo actualizar"); }
+              }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
+            <div className="min-w-0">
+              <p className="text-sm text-foreground">Resumen semanal de precios</p>
+              <p className="text-[11px] text-muted-foreground">
+                Resumen de tendencias y mejor día para cargar
+              </p>
+            </div>
+            <Switch
+              checked={preferences?.weekly_price_summary_enabled ?? true}
+              onCheckedChange={async (v) => {
+                try { await save({ weekly_price_summary_enabled: v }); } catch { toast.error("No se pudo actualizar"); }
+              }}
+            />
+          </div>
+
+
           {/* Modo conductor */}
           <DriverModeSettings />
         </section>
