@@ -1181,10 +1181,15 @@ export type Database = {
           id: string
           kwh_per_km: number | null
           model: string
+          notes: string | null
+          popularity_rank: number | null
           source: string
+          tank_size_l: number | null
           transmission: string | null
           version: string
           year: number
+          year_from: number | null
+          year_to: number | null
         }
         Insert: {
           body_type?: string | null
@@ -1202,10 +1207,15 @@ export type Database = {
           id?: string
           kwh_per_km?: number | null
           model: string
+          notes?: string | null
+          popularity_rank?: number | null
           source?: string
+          tank_size_l?: number | null
           transmission?: string | null
           version: string
           year: number
+          year_from?: number | null
+          year_to?: number | null
         }
         Update: {
           body_type?: string | null
@@ -1223,10 +1233,15 @@ export type Database = {
           id?: string
           kwh_per_km?: number | null
           model?: string
+          notes?: string | null
+          popularity_rank?: number | null
           source?: string
+          tank_size_l?: number | null
           transmission?: string | null
           version?: string
           year?: number
+          year_from?: number | null
+          year_to?: number | null
         }
         Relationships: []
       }
