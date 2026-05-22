@@ -164,6 +164,9 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />
+                <Route path="/mepco-info" element={<MepcoInfo />} />
+                <Route path="/mepco" element={<Navigate to="/mepco-info" replace />} />
+
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/terms" element={<Legal />} />
