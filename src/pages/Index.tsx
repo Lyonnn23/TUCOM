@@ -19,6 +19,8 @@ import FuelLogFAB from "@/components/FuelLogFAB";
 import DriverModeFAB from "@/components/DriverModeFAB";
 import TankRangeBanner from "@/components/TankRangeBanner";
 import UpcomingDeadlinesCard from "@/components/UpcomingDeadlinesCard";
+import MacroWidgets from "@/components/macro/MacroWidgets";
+
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
 import { useLocalFuelPrices } from "@/hooks/useLocalFuelPrices";
