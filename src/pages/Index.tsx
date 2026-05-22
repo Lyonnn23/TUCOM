@@ -431,6 +431,8 @@ const Index = () => {
         })()}
         {activeTab === "prices" && <div className="mb-4"><TankRangeBanner /></div>}
         {activeTab === "prices" && <div className="mb-4"><UpcomingDeadlinesCard /></div>}
+        {activeTab === "prices" && <MacroWidgets />}
+
         <UnofficialBanner className="mb-4" />
         {/* Prices Tab */}
         {activeTab === "prices" && (
