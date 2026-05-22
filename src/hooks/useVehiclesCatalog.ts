@@ -100,6 +100,7 @@ export function useCatalogTop(limit = 12) {
       const { data, error } = await supabase
         .from("vehicles_catalog")
         .select("*")
+        .order("popularity_rank", { ascending: true, nullsFirst: false })
         .order("year", { ascending: false })
         .limit(500);
       if (error) throw error;
