@@ -47,6 +47,7 @@ const EmpresaDashboard = lazy(() => import("./pages/empresa/EmpresaDashboard.tsx
 const EmpresaConfig = lazy(() => import("./pages/empresa/EmpresaConfig.tsx"));
 const EmpresaReportes = lazy(() => import("./pages/empresa/EmpresaReportes.tsx"));
 const EmpresaMiVehiculo = lazy(() => import("./pages/empresa/EmpresaMiVehiculo.tsx"));
+const VehicleDetail = lazy(() => import("./pages/VehicleDetail.tsx"));
 import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
@@ -139,6 +140,8 @@ const App = () => {
                 <Route path="/drive" element={<RequireAuth><Drive /></RequireAuth>} />
                 <Route path="/conducir" element={<RequireAuth><Drive /></RequireAuth>} />
                 <Route path="/perfil" element={<RequireAuth><Profile /></RequireAuth>} />
+                <Route path="/profile/vehicle/:id" element={<RequireAuth><VehicleDetail /></RequireAuth>} />
+                <Route path="/perfil/vehiculo/:id" element={<RequireAuth><VehicleDetail /></RequireAuth>} />
                 <Route path="/ranking" element={<RequireAuth><Leaderboard /></RequireAuth>} />
                 <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
                 <Route path="/admin/*" element={<RequireAuth><RequireAdmin><Admin /></RequireAdmin></RequireAuth>} />
