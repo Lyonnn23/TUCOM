@@ -425,6 +425,12 @@ const Index = () => {
                 >
                   <MapPin className="w-4 h-4" /> Cómo llegar
                 </button>
+                <button
+                  onClick={() => navigate("/calculadora")}
+                  className="mt-2 w-full bg-white/15 hover:bg-white/25 text-white font-semibold text-sm rounded-xl py-2.5 press-scale flex items-center justify-center gap-2 border border-white/30"
+                >
+                  ¿Cuánto cuesta tu viaje?
+                </button>
               </div>
             </div>
           );
