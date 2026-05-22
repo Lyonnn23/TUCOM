@@ -47,7 +47,7 @@ const bandLabel: Record<string, string> = {
   saturacion: "Saturación",
 };
 
-const Calculadora = () => {
+const CalculadoraRutas = () => {
   const navigate = useNavigate();
   const { vehicles, primary, isLoading: vehiclesLoading } = useUserVehicles();
   const { isPro, limits } = useSubscription();
@@ -423,4 +423,4 @@ const Calculadora = () => {
   );
 };
 
-export default Calculadora;
+export default CalculadoraRutas;
