@@ -48,6 +48,8 @@ const EmpresaConfig = lazy(() => import("./pages/empresa/EmpresaConfig.tsx"));
 const EmpresaReportes = lazy(() => import("./pages/empresa/EmpresaReportes.tsx"));
 const EmpresaMiVehiculo = lazy(() => import("./pages/empresa/EmpresaMiVehiculo.tsx"));
 const VehicleDetail = lazy(() => import("./pages/VehicleDetail.tsx"));
+const MepcoInfo = lazy(() => import("./pages/MepcoInfo.tsx"));
+
 import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
