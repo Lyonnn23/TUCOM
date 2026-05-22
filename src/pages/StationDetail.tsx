@@ -15,6 +15,8 @@ import PriceAlertDialog from "@/components/PriceAlertDialog";
 import { Helmet } from "react-helmet-async";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import PriceTrendChart from "@/components/macro/PriceTrendChart";
+
 import {
   LineChart,
   Line,
