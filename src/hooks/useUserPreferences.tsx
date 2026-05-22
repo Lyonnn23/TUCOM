@@ -10,6 +10,9 @@ export interface UserPreferences {
   leaderboard_opt_in: boolean;
   low_fuel_threshold_km: number;
   fuel_log_email_optin: boolean;
+  mepco_alert_enabled: boolean;
+  fx_spike_alert_enabled: boolean;
+  weekly_price_summary_enabled: boolean;
 }
 
 const DEFAULTS: UserPreferences = {
@@ -20,6 +23,9 @@ const DEFAULTS: UserPreferences = {
   leaderboard_opt_in: true,
   low_fuel_threshold_km: 80,
   fuel_log_email_optin: false,
+  mepco_alert_enabled: true,
+  fx_spike_alert_enabled: false,
+  weekly_price_summary_enabled: true,
 };
 
 export function useUserPreferences() {
@@ -33,13 +39,14 @@ export function useUserPreferences() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("user_preferences")
-        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed,leaderboard_opt_in,low_fuel_threshold_km,fuel_log_email_optin")
+        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed,leaderboard_opt_in,low_fuel_threshold_km,fuel_log_email_optin,mepco_alert_enabled,fx_spike_alert_enabled,weekly_price_summary_enabled")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
       return (data as UserPreferences) ?? null;
     },
   });
+
 
   const save = useMutation({
     mutationFn: async (prefs: Partial<UserPreferences>) => {
