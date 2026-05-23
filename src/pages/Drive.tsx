@@ -472,9 +472,19 @@ const Drive = () => {
                           <Star className="w-3 h-3" /> TU HABITUAL
                         </span>
                       )}
-                      {isCheapest && (
+                      {isNearest && isCheapest && (
                         <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500 text-black">
-                          MÁS BARATA
+                          MÁS CERCANA Y MÁS ECONÓMICA
+                        </span>
+                      )}
+                      {isNearest && !isCheapest && (
+                        <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500 text-black">
+                          MÁS CERCANA
+                        </span>
+                      )}
+                      {isCheapest && !isNearest && (
+                        <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500 text-black">
+                          MÁS ECONÓMICA
                         </span>
                       )}
                     </div>
