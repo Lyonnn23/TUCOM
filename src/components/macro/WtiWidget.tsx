@@ -55,13 +55,16 @@ export default function WtiWidget() {
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-border pt-4 animate-fade-in">
-          <h4 className="text-sm font-semibold text-foreground mb-1.5">¿Cómo me afecta?</h4>
+        <div className="px-5 pb-5 border-t border-border pt-4 animate-fade-in space-y-2">
+          <h4 className="text-sm font-semibold text-foreground">Información de referencia</h4>
           {explainerLoading || !explainer ? (
             <Skeleton className="h-16 rounded" />
           ) : (
             <p className="text-sm text-muted-foreground leading-relaxed">{explainer}</p>
           )}
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Fuente: mercados internacionales.
+          </p>
         </div>
       )}
     </div>
