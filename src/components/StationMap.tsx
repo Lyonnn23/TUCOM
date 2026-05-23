@@ -130,6 +130,7 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           )}
         </Map>
         {userLocation && <CenterOnMeButton location={userLocation} />}
+        <MapLegend visibleBrands={visibleBrands} />
       </div>
     </APIProvider>
   );
