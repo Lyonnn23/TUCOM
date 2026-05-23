@@ -12,11 +12,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rangos de mercado Chile - Mayo 2026 (CNE Bencina en Línea)
 const VALID_PRICE_RANGES: Record<string, { min: number; max: number }> = {
-  gasoline93: { min: 1000, max: 3000 },
-  gasoline95: { min: 1000, max: 3000 },
-  gasoline97: { min: 1000, max: 3000 },
-  diesel: { min: 800, max: 3000 },
+  gasoline93: { min: 1450, max: 1750 },
+  gasoline95: { min: 1490, max: 1800 },
+  gasoline97: { min: 1550, max: 1850 },
+  diesel:     { min: 1430, max: 1650 },
 };
 
 async function loginCNE(): Promise<string> {
