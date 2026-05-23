@@ -22,11 +22,11 @@ const FUEL_LABELS: Record<string, string> = {
 
 // Plausible ranges (CLP). Liquids: per liter. Electric: per kWh.
 const RANGES: Record<string, { min: number; max: number }> = {
-  gasoline93: { min: 800, max: 2500 },
-  gasoline95: { min: 800, max: 2500 },
-  gasoline97: { min: 800, max: 2600 },
-  diesel: { min: 700, max: 2400 },
-  electric: { min: 100, max: 800 },
+  gasoline93: { min: 1450, max: 1750 },
+  gasoline95: { min: 1490, max: 1800 },
+  gasoline97: { min: 1550, max: 1850 },
+  diesel:     { min: 1430, max: 1650 },
+  electric:   { min: 50,   max: 1000 },
 };
 
 interface VerifyBody {
