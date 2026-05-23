@@ -34,18 +34,23 @@ export default function FxWidget() {
       >
         <div className="min-w-0 text-left">
           <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
-            USD/CLP
+            Tipo de cambio USD/CLP
           </p>
           {isLoading || !latest ? (
             <Skeleton className="h-5 w-32 mt-1" />
           ) : (
-            <p className="font-heading font-bold text-foreground text-base mt-0.5">
-              ${Math.round(latest.rate_clp)}{" "}
-              <span className={`text-xs font-semibold ${color} ml-1`}>
-                <ArrowIcon className="inline w-3 h-3" />
-                {Math.abs(change).toFixed(2)}% hoy
-              </span>
-            </p>
+            <>
+              <p className="font-heading font-bold text-foreground text-base mt-0.5">
+                ${Math.round(latest.rate_clp).toLocaleString("es-CL")} CLP
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Variación diaria:{" "}
+                <span className={`font-semibold ${color}`}>
+                  <ArrowIcon className="inline w-3 h-3" />
+                  {Math.abs(change).toFixed(2)}%
+                </span>
+              </p>
+            </>
           )}
         </div>
         <div className="flex items-center gap-2">
