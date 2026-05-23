@@ -466,8 +466,8 @@ const Calculadora = () => {
           {/* TAB 2 */}
           <TabsContent value="compare" className="mt-4">
             <CompareCarsTab
-              defaultFuelPrice={fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? 1200}
-              defaultElectricPrice={250}
+              defaultFuelPrice={fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? DEFAULT_PRICES.gasoline95}
+              defaultElectricPrice={DEFAULT_PRICES.electric}
             />
           </TabsContent>
         </Tabs>
