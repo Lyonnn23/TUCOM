@@ -1,8 +1,10 @@
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { LocateFixed } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { GasStation } from "@/hooks/useGasStations";
+import { brandColor, brandInitials } from "@/lib/brandColors";
+import MapLegend from "@/components/MapLegend";
 
 interface StationMapProps {
   stations: GasStation[];
