@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PaywallModal } from "@/components/PaywallModal";
+import { PRICE_RANGES, alertPresets } from "@/lib/priceRanges";
 
 const FUEL_OPTIONS = [
   { key: "gasoline93", label: "93" },
