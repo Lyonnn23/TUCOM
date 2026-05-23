@@ -19,8 +19,14 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   const center = userLocation || { lat: -33.45, lng: -70.65 };
 
-  // IDs of the 5 closest stations to the user (within 15 km) — highlighted in cyan
-  const nearbyIds = (() => {
+  // Unique brands present in the current station set — drives the legend.
+  const visibleBrands = useMemo(
+    () => Array.from(new Set(stations.map((s) => (s.brand ?? "").toUpperCase()).filter(Boolean))),
+    [stations],
+  );
+
+  // IDs of the 5 closest stations to the user (within 15 km)
+  const nearbyIds = useMemo(() => {
     if (!userLocation) return new Set<string>();
     const withDist = stations
       .map((s) => ({ id: s.id, d: (s as any).distance ?? Infinity }))
