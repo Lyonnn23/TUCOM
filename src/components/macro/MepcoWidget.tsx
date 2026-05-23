@@ -34,7 +34,7 @@ export default function MepcoWidget() {
             Ajuste MEPCO
           </p>
           <h3 className="font-heading font-bold text-foreground mt-0.5">
-            Ajuste de precios del jueves
+            Ajuste de precios programado para el día jueves
           </h3>
         </div>
         <Sheet open={open} onOpenChange={setOpen}>
