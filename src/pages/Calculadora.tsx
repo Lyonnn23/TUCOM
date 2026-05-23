@@ -20,6 +20,7 @@ import { formatPrice, formatDistance } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DEFAULT_PRICES } from "@/lib/priceRanges";
 
 const LOADING_MSGS = [
   "Buscando precios CNE...",
