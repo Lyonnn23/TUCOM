@@ -76,17 +76,30 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           )}
 
           {stations.map((station) => {
-            const isNearby = nearbyIds.has(station.id);
-            // Violet for nearby (TÜcom primary), green for open, red for closed
-            const bg = isNearby ? "#7C3AED" : station.isOpen ? "#22c55e" : "#ef4444";
-            const border = isNearby ? "#4F46E5" : station.isOpen ? "#16a34a" : "#dc2626";
+            const color = brandColor(station.brand);
+            const initials = brandInitials(station.brand);
             return (
               <AdvancedMarker
                 key={station.id}
                 position={{ lat: station.lat, lng: station.lng }}
                 onClick={() => setSelected(station)}
               >
-                <Pin background={bg} borderColor={border} glyphColor="#fff" />
+                <div
+                  aria-label={`${station.brand} ${station.name}`}
+                  className="grid place-items-center rounded-full shadow-md"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    backgroundColor: color,
+                    border: "2px solid #fff",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {initials}
+                </div>
               </AdvancedMarker>
             );
           })}
