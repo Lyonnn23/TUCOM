@@ -127,20 +127,38 @@ export default function PriceAlertDialog({ stationId, prices }: Props) {
           </div>
 
           <div>
-            <Label className="text-xs font-semibold">Precio objetivo (CLP)</Label>
+            <Label className="text-xs font-semibold">
+              Precio objetivo (CLP) — entre ${range.min} y ${range.max}
+            </Label>
             <Input
               type="number"
               inputMode="numeric"
-              placeholder={currentPrice ? `Ej: ${Math.max(100, currentPrice - 50)}` : "Ej: 1050"}
+              min={range.min}
+              max={range.max}
+              placeholder={`Ej: ${range.avg - 50}`}
               value={target}
               onChange={(e) => setTarget(e.target.value)}
               className="mt-2 h-11 rounded-xl text-lg font-bold tabular-nums"
             />
-            {currentPrice > 0 && (
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Precio actual: <span className="font-semibold text-foreground">${currentPrice}</span>
-              </p>
-            )}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {presets.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setTarget(String(p))}
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-muted hover:bg-primary/10 hover:text-primary border border-border transition-colors"
+                >
+                  ${p}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              El precio actual de la {FUEL_OPTIONS.find((f) => f.key === fuel)?.label} ronda los $
+              {range.avg}/L
+              {currentPrice > 0 && (
+                <> · esta estación: <span className="font-semibold text-foreground">${currentPrice}</span></>
+              )}
+            </p>
           </div>
         </div>
 
