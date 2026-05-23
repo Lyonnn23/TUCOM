@@ -34,7 +34,8 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
       .sort((a, b) => a.d - b.d)
       .slice(0, 5);
     return new Set(withDist.map((s) => s.id));
-  })();
+  }, [stations, userLocation]);
+  void nearbyIds; // currently used only for future highlighting; kept for backward compat
 
   useEffect(() => {
     supabase.functions
