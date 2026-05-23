@@ -59,10 +59,21 @@ export default function PriceAlertDialog({ stationId, prices }: Props) {
     }
   };
 
+  const range = PRICE_RANGES[fuel] ?? PRICE_RANGES.gasoline95;
+  const presets = alertPresets(fuel);
+
   const submit = () => {
     const tp = parseInt(target, 10);
-    if (!tp || tp < 100 || tp > 5000) {
-      toast.error("Ingresa un precio válido (100–5000)");
+    if (!tp) {
+      toast.error("Ingresa un precio válido");
+      return;
+    }
+    if (tp < range.min) {
+      toast.error(`El valor mínimo de mercado actualmente es $${range.min}/L`);
+      return;
+    }
+    if (tp > range.max) {
+      toast.error(`El valor máximo razonable es $${range.max}/L`);
       return;
     }
     create(
