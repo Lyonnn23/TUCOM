@@ -443,10 +443,11 @@ const Drive = () => {
         )}
 
         {/* Giant station cards */}
-        {top5.map((s) => {
+        {top5.map((s, idx) => {
           const price = (s.prices as any)[preferredFuel] as number;
           const isCheapest = cheapest?.id === s.id;
           const isUsual = usualStationId === s.id;
+          const isNearest = idx === 0 && (!usualStationId || top5[0].id !== usualStationId);
           const strip = BRAND_STRIP[s.brand?.toLowerCase()] ?? "#7C3AED";
           return (
             <article
