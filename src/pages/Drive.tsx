@@ -443,10 +443,11 @@ const Drive = () => {
         )}
 
         {/* Giant station cards */}
-        {top5.map((s) => {
+        {top5.map((s, idx) => {
           const price = (s.prices as any)[preferredFuel] as number;
           const isCheapest = cheapest?.id === s.id;
           const isUsual = usualStationId === s.id;
+          const isNearest = idx === 0 && (!usualStationId || top5[0].id !== usualStationId);
           const strip = BRAND_STRIP[s.brand?.toLowerCase()] ?? "#7C3AED";
           return (
             <article
@@ -471,9 +472,19 @@ const Drive = () => {
                           <Star className="w-3 h-3" /> TU HABITUAL
                         </span>
                       )}
-                      {isCheapest && (
+                      {isNearest && isCheapest && (
                         <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500 text-black">
-                          MÁS BARATA
+                          MÁS CERCANA Y MÁS ECONÓMICA
+                        </span>
+                      )}
+                      {isNearest && !isCheapest && (
+                        <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500 text-black">
+                          MÁS CERCANA
+                        </span>
+                      )}
+                      {isCheapest && !isNearest && (
+                        <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500 text-black">
+                          MÁS ECONÓMICA
                         </span>
                       )}
                     </div>

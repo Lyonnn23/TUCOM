@@ -1,8 +1,10 @@
-import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { LocateFixed } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { GasStation } from "@/hooks/useGasStations";
+import { brandColor, brandInitials } from "@/lib/brandColors";
+import MapLegend from "@/components/MapLegend";
 
 interface StationMapProps {
   stations: GasStation[];
@@ -17,8 +19,14 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   const center = userLocation || { lat: -33.45, lng: -70.65 };
 
-  // IDs of the 5 closest stations to the user (within 15 km) — highlighted in cyan
-  const nearbyIds = (() => {
+  // Unique brands present in the current station set — drives the legend.
+  const visibleBrands = useMemo(
+    () => Array.from(new Set(stations.map((s) => (s.brand ?? "").toUpperCase()).filter(Boolean))),
+    [stations],
+  );
+
+  // IDs of the 5 closest stations to the user (within 15 km)
+  const nearbyIds = useMemo(() => {
     if (!userLocation) return new Set<string>();
     const withDist = stations
       .map((s) => ({ id: s.id, d: (s as any).distance ?? Infinity }))
@@ -26,7 +34,8 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
       .sort((a, b) => a.d - b.d)
       .slice(0, 5);
     return new Set(withDist.map((s) => s.id));
-  })();
+  }, [stations, userLocation]);
+  void nearbyIds; // currently used only for future highlighting; kept for backward compat
 
   useEffect(() => {
     supabase.functions
@@ -74,17 +83,30 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           )}
 
           {stations.map((station) => {
-            const isNearby = nearbyIds.has(station.id);
-            // Violet for nearby (TÜcom primary), green for open, red for closed
-            const bg = isNearby ? "#7C3AED" : station.isOpen ? "#22c55e" : "#ef4444";
-            const border = isNearby ? "#4F46E5" : station.isOpen ? "#16a34a" : "#dc2626";
+            const color = brandColor(station.brand);
+            const initials = brandInitials(station.brand);
             return (
               <AdvancedMarker
                 key={station.id}
                 position={{ lat: station.lat, lng: station.lng }}
                 onClick={() => setSelected(station)}
               >
-                <Pin background={bg} borderColor={border} glyphColor="#fff" />
+                <div
+                  aria-label={`${station.brand} ${station.name}`}
+                  className="grid place-items-center rounded-full shadow-md"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    backgroundColor: color,
+                    border: "2px solid #fff",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {initials}
+                </div>
               </AdvancedMarker>
             );
           })}
@@ -115,6 +137,7 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           )}
         </Map>
         {userLocation && <CenterOnMeButton location={userLocation} />}
+        <MapLegend visibleBrands={visibleBrands} />
       </div>
     </APIProvider>
   );

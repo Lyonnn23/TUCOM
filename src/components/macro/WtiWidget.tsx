@@ -27,18 +27,23 @@ export default function WtiWidget() {
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
-              Petróleo WTI
+              Precio del petróleo WTI
             </p>
             {isLoading || !wti ? (
               <Skeleton className="h-5 w-36 mt-1" />
             ) : (
-              <p className="font-heading font-bold text-foreground text-base mt-0.5">
-                ${wti.price_usd.toFixed(1)}/bbl{" "}
-                <span className={`text-xs font-semibold ${color} ml-1`}>
-                  <ArrowIcon className="inline w-3 h-3" />
-                  {Math.abs(change).toFixed(1)}% esta semana
-                </span>
-              </p>
+              <>
+                <p className="font-heading font-bold text-foreground text-base mt-0.5">
+                  US${wti.price_usd.toFixed(2)}/barril
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Variación semanal:{" "}
+                  <span className={`font-semibold ${color}`}>
+                    <ArrowIcon className="inline w-3 h-3" />
+                    {Math.abs(change).toFixed(2)}%
+                  </span>
+                </p>
+              </>
             )}
           </div>
         </div>
@@ -50,13 +55,16 @@ export default function WtiWidget() {
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-border pt-4 animate-fade-in">
-          <h4 className="text-sm font-semibold text-foreground mb-1.5">¿Cómo me afecta?</h4>
+        <div className="px-5 pb-5 border-t border-border pt-4 animate-fade-in space-y-2">
+          <h4 className="text-sm font-semibold text-foreground">Información de referencia</h4>
           {explainerLoading || !explainer ? (
             <Skeleton className="h-16 rounded" />
           ) : (
             <p className="text-sm text-muted-foreground leading-relaxed">{explainer}</p>
           )}
+          <p className="text-[11px] text-muted-foreground pt-1">
+            Fuente: mercados internacionales.
+          </p>
         </div>
       )}
     </div>

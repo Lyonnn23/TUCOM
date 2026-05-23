@@ -84,7 +84,16 @@ const RequireOnboarded = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 min default
+      gcTime: 30 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 const RouteTransition = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
