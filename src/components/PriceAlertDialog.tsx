@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PaywallModal } from "@/components/PaywallModal";
+import { PRICE_RANGES, alertPresets } from "@/lib/priceRanges";
 
 const FUEL_OPTIONS = [
   { key: "gasoline93", label: "93" },
@@ -58,10 +59,21 @@ export default function PriceAlertDialog({ stationId, prices }: Props) {
     }
   };
 
+  const range = PRICE_RANGES[fuel] ?? PRICE_RANGES.gasoline95;
+  const presets = alertPresets(fuel);
+
   const submit = () => {
     const tp = parseInt(target, 10);
-    if (!tp || tp < 100 || tp > 5000) {
-      toast.error("Ingresa un precio válido (100–5000)");
+    if (!tp) {
+      toast.error("Ingresa un precio válido");
+      return;
+    }
+    if (tp < range.min) {
+      toast.error(`El valor mínimo de mercado actualmente es $${range.min}/L`);
+      return;
+    }
+    if (tp > range.max) {
+      toast.error(`El valor máximo razonable es $${range.max}/L`);
       return;
     }
     create(
@@ -115,20 +127,38 @@ export default function PriceAlertDialog({ stationId, prices }: Props) {
           </div>
 
           <div>
-            <Label className="text-xs font-semibold">Precio objetivo (CLP)</Label>
+            <Label className="text-xs font-semibold">
+              Precio objetivo (CLP) — entre ${range.min} y ${range.max}
+            </Label>
             <Input
               type="number"
               inputMode="numeric"
-              placeholder={currentPrice ? `Ej: ${Math.max(100, currentPrice - 50)}` : "Ej: 1050"}
+              min={range.min}
+              max={range.max}
+              placeholder={`Ej: ${range.avg - 50}`}
               value={target}
               onChange={(e) => setTarget(e.target.value)}
               className="mt-2 h-11 rounded-xl text-lg font-bold tabular-nums"
             />
-            {currentPrice > 0 && (
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Precio actual: <span className="font-semibold text-foreground">${currentPrice}</span>
-              </p>
-            )}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {presets.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setTarget(String(p))}
+                  className="px-2.5 py-1 rounded-full text-xs font-semibold bg-muted hover:bg-primary/10 hover:text-primary border border-border transition-colors"
+                >
+                  ${p}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              El precio actual de la {FUEL_OPTIONS.find((f) => f.key === fuel)?.label} ronda los $
+              {range.avg}/L
+              {currentPrice > 0 && (
+                <> · esta estación: <span className="font-semibold text-foreground">${currentPrice}</span></>
+              )}
+            </p>
           </div>
         </div>
 

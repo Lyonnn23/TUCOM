@@ -20,6 +20,7 @@ import { formatPrice, formatDistance } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DEFAULT_PRICES } from "@/lib/priceRanges";
 
 const LOADING_MSGS = [
   "Buscando precios CNE...",
@@ -87,9 +88,9 @@ const Calculadora = () => {
 
   const referencePrice = useMemo(() => {
     if (!vehicle) return 0;
-    if (vehicle.fuel_type === "electric") return 250; // CLP/kWh promedio público
+    if (vehicle.fuel_type === "electric") return DEFAULT_PRICES.electric;
     const row = fuelPrices.data?.find((r) => r.type === fuelKey);
-    return row?.price ?? 1200;
+    return row?.price ?? DEFAULT_PRICES[fuelKey] ?? DEFAULT_PRICES.gasoline95;
   }, [vehicle, fuelKey, fuelPrices.data]);
 
   const cheapestStation = cheapestRPC.data?.[0] ?? null;
@@ -465,8 +466,8 @@ const Calculadora = () => {
           {/* TAB 2 */}
           <TabsContent value="compare" className="mt-4">
             <CompareCarsTab
-              defaultFuelPrice={fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? 1200}
-              defaultElectricPrice={250}
+              defaultFuelPrice={fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? DEFAULT_PRICES.gasoline95}
+              defaultElectricPrice={DEFAULT_PRICES.electric}
             />
           </TabsContent>
         </Tabs>

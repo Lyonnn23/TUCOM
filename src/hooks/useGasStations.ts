@@ -26,13 +26,7 @@ export interface GasStation {
   placeId: string | null;
 }
 
-const PRICE_RANGES: Record<string, { min: number; max: number }> = {
-  gasoline93: { min: 1000, max: 3000 },
-  gasoline95: { min: 1000, max: 3000 },
-  gasoline97: { min: 1000, max: 3000 },
-  diesel: { min: 800, max: 3000 },
-  electric: { min: 50, max: 1000 },
-};
+import { PRICE_RANGES } from "@/lib/priceRanges";
 
 // Stations whose latest price is older than this are considered stale
 // and their prices are hidden across the app (Top 5, list, map averages).
