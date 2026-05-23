@@ -87,9 +87,9 @@ const Calculadora = () => {
 
   const referencePrice = useMemo(() => {
     if (!vehicle) return 0;
-    if (vehicle.fuel_type === "electric") return 250; // CLP/kWh promedio público
+    if (vehicle.fuel_type === "electric") return DEFAULT_PRICES.electric;
     const row = fuelPrices.data?.find((r) => r.type === fuelKey);
-    return row?.price ?? 1200;
+    return row?.price ?? DEFAULT_PRICES[fuelKey] ?? DEFAULT_PRICES.gasoline95;
   }, [vehicle, fuelKey, fuelPrices.data]);
 
   const cheapestStation = cheapestRPC.data?.[0] ?? null;
