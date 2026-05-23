@@ -120,15 +120,18 @@ export default function FxWidget() {
               </p>
             )}
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-1.5">
-              Por qué el dólar afecta la bencina
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-foreground">
+              Información de referencia
             </h4>
             {explainerLoading || !explainer ? (
               <Skeleton className="h-16 rounded" />
             ) : (
               <p className="text-sm text-muted-foreground leading-relaxed">{explainer}</p>
             )}
+            <p className="text-[11px] text-muted-foreground pt-1">
+              Fuente: Banco Central de Chile (valor referencial).
+            </p>
           </div>
         </div>
       )}
