@@ -13,6 +13,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import ThemeToggle from "@/components/ThemeToggle";
+import PaymentMethodsPicker from "@/components/PaymentMethodsPicker";
+import { CreditCard } from "lucide-react";
 import BadgeChip from "@/components/BadgeChip";
 import { ProBadge } from "@/components/ProBadge";
 import { useAuth } from "@/hooks/useAuth";
@@ -189,6 +191,28 @@ const Profile = () => {
 
         <PointsAndBadges />
 
+
+
+        {/* Métodos de pago */}
+        <section className="bg-card rounded-2xl border border-border shadow-soft p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground">Mis métodos de pago</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Te mostraremos el precio real con tu mejor descuento disponible.
+          </p>
+          <PaymentMethodsPicker
+            value={preferences?.payment_methods ?? []}
+            onChange={async (next) => {
+              try {
+                await save({ payment_methods: next });
+              } catch {
+                toast.error("No se pudo guardar");
+              }
+            }}
+          />
+        </section>
 
 
         {/* Fuel preferences */}
