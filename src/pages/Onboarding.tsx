@@ -95,7 +95,7 @@ const Onboarding = () => {
     await finish(granted);
   };
 
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = 5;
   const next = () => setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1));
   const skip = () => {
     if (step < TOTAL_STEPS - 1) next();
@@ -117,6 +117,11 @@ const Onboarding = () => {
       icon: Car,
       title: "¿Cuál es tu auto?",
       subtitle: "Lo usaremos para calcular el costo de tus viajes.",
+    },
+    {
+      icon: CreditCard,
+      title: "¿Qué tarjetas o apps usas?",
+      subtitle: "Te mostraremos el precio real con tu mejor descuento.",
     },
     {
       icon: Bell,
