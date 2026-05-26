@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Fuel, Flag, Users, BarChart3, Sparkles, Settings, LogOut, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Fuel, Flag, Users, BarChart3, Sparkles, Settings, LogOut, ArrowLeft, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ const navItems = [
   { to: "/admin/users", label: "Usuarios", icon: Users },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/admin/insights", label: "IA Insights", icon: Sparkles },
+  { to: "/admin/discounts", label: "Descuentos", icon: Tag },
   { to: "/admin/config", label: "Configuración", icon: Settings },
 ];
 
