@@ -1,4 +1,4 @@
-import { MapPin, Navigation, Star, Zap, Clock } from "lucide-react";
+import { MapPin, Navigation, Star, Zap, Clock, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
@@ -7,6 +7,9 @@ import FavoriteButton from "./FavoriteButton";
 import CommunityReportBadge from "./CommunityReportBadge";
 import { analytics } from "@/lib/analytics";
 import { formatPrice, formatKm, formatRelativeTime } from "@/lib/format";
+import { useStationDiscounts } from "@/hooks/useStationDiscounts";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { getBestDiscount, DISCOUNT_DISCLAIMER } from "@/lib/discounts";
 
 interface StationCardProps {
   station: GasStation;
