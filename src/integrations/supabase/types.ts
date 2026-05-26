@@ -726,6 +726,66 @@ export type Database = {
         }
         Relationships: []
       }
+      station_discounts: {
+        Row: {
+          brand: string
+          created_at: string
+          day_of_week: string[] | null
+          description: string | null
+          discount_clp: number
+          fuel_types: string[]
+          id: string
+          is_active: boolean
+          max_liters: number | null
+          max_per_day: number | null
+          payment_method: string
+          source_url: string | null
+          time_end: string | null
+          time_start: string | null
+          updated_at: string
+          valid_from: string
+          valid_to: string | null
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          day_of_week?: string[] | null
+          description?: string | null
+          discount_clp: number
+          fuel_types?: string[]
+          id?: string
+          is_active?: boolean
+          max_liters?: number | null
+          max_per_day?: number | null
+          payment_method: string
+          source_url?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          day_of_week?: string[] | null
+          description?: string | null
+          discount_clp?: number
+          fuel_types?: string[]
+          id?: string
+          is_active?: boolean
+          max_liters?: number | null
+          max_per_day?: number | null
+          payment_method?: string
+          source_url?: string | null
+          time_end?: string | null
+          time_start?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Relationships: []
+      }
       station_price_history: {
         Row: {
           fuel_type: string
@@ -961,6 +1021,7 @@ export type Database = {
           ai_chat_count: number
           ai_chat_count_date: string
           created_at: string
+          discount_alerts_enabled: boolean
           fuel_log_email_optin: boolean
           fx_spike_alert_enabled: boolean
           id: string
@@ -969,6 +1030,7 @@ export type Database = {
           mepco_alert_enabled: boolean
           notifications_enabled: boolean
           onboarding_completed: boolean
+          payment_methods: string[]
           preferred_fuel: string
           search_radius_km: number
           updated_at: string
@@ -979,6 +1041,7 @@ export type Database = {
           ai_chat_count?: number
           ai_chat_count_date?: string
           created_at?: string
+          discount_alerts_enabled?: boolean
           fuel_log_email_optin?: boolean
           fx_spike_alert_enabled?: boolean
           id?: string
@@ -987,6 +1050,7 @@ export type Database = {
           mepco_alert_enabled?: boolean
           notifications_enabled?: boolean
           onboarding_completed?: boolean
+          payment_methods?: string[]
           preferred_fuel?: string
           search_radius_km?: number
           updated_at?: string
@@ -997,6 +1061,7 @@ export type Database = {
           ai_chat_count?: number
           ai_chat_count_date?: string
           created_at?: string
+          discount_alerts_enabled?: boolean
           fuel_log_email_optin?: boolean
           fx_spike_alert_enabled?: boolean
           id?: string
@@ -1005,6 +1070,7 @@ export type Database = {
           mepco_alert_enabled?: boolean
           notifications_enabled?: boolean
           onboarding_completed?: boolean
+          payment_methods?: string[]
           preferred_fuel?: string
           search_radius_km?: number
           updated_at?: string
