@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Fuel, MapPin, Bell, Check, Car } from "lucide-react";
+import { Fuel, MapPin, Bell, Check, Car, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -12,6 +12,7 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
 import { cn } from "@/lib/utils";
+import PaymentMethodsPicker from "@/components/PaymentMethodsPicker";
 
 const FUELS = [
   { key: "gasoline93", label: "93", desc: "Bencina 93" },
@@ -30,6 +31,7 @@ const Onboarding = () => {
   const [fuel, setFuel] = useState(defaults.preferred_fuel);
   const [radius, setRadius] = useState(defaults.search_radius_km);
   const [vehiclePresetIdx, setVehiclePresetIdx] = useState<string>("skip");
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -71,6 +73,7 @@ const Onboarding = () => {
         search_radius_km: radius,
         notifications_enabled: notificationsEnabled,
         onboarding_completed: true,
+        payment_methods: paymentMethods,
       });
       navigate("/", { replace: true });
     } catch {

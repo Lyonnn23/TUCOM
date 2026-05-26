@@ -125,15 +125,44 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
             <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">
               {headline.label}
             </p>
-            <p
-              className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent"
-              aria-live="polite"
-              aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
-            >
-              {headline.price ? formatPrice(headline.price) : "—"}
-            </p>
+            {best ? (
+              <>
+                <p className="text-[11px] text-muted-foreground line-through tabular-nums leading-none">
+                  {formatPrice(headline.price)}
+                </p>
+                <p
+                  className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-fuel-green"
+                  title={DISCOUNT_DISCLAIMER}
+                  aria-label={`Precio con descuento: ${formatPrice(best.finalPrice)} por litro`}
+                >
+                  ~{formatPrice(best.finalPrice)}
+                </p>
+                <span className="inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-fuel-green/15 text-fuel-green">
+                  −${best.discount.discount_clp} con {best.discount.payment_method.split(" ")[0]}
+                </span>
+              </>
+            ) : (
+              <>
+                <p
+                  className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent"
+                  aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
+                >
+                  {headline.price ? formatPrice(headline.price) : "—"}
+                </p>
+                {userMethods.length === 0 && headline.price > 0 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate("/profile"); }}
+                    className="inline-flex items-center gap-1 mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+                  >
+                    <CreditCard className="w-2.5 h-2.5" /> Ver descuentos
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
+
+
 
         {/* Badges */}
         <div className="flex items-center gap-1.5 flex-wrap mt-2">
