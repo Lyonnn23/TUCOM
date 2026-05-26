@@ -231,6 +231,15 @@ const Onboarding = () => {
         )}
 
         {step === 3 && (
+          <div className="w-full space-y-3">
+            <PaymentMethodsPicker value={paymentMethods} onChange={setPaymentMethods} />
+            <p className="text-xs text-muted-foreground text-center">
+              Puedes cambiar esto en tu perfil cuando quieras.
+            </p>
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="w-full rounded-2xl border border-border bg-card p-5 text-center">
             <p className="text-sm text-muted-foreground">
               Te enviaremos alertas cuando alguna estación cercana baje de tu precio objetivo.
