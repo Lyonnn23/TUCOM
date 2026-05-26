@@ -43,6 +43,9 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
   const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
+  const { data: discounts } = useStationDiscounts();
+  const { preferences } = useUserPreferences();
+  const userMethods = preferences?.payment_methods ?? [];
 
   const fuelItems: { label: string; price: number; estimated?: boolean }[] = [
     { label: "93", price: station.prices.gasoline93 },
@@ -55,10 +58,15 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
     fuelItems.push({ label: "⚡ kWh", price: station.prices.electric, estimated: station.electricEstimated });
   }
 
-  // Headline price for the card hero (93 if present, else cheapest non-zero)
   const headline = station.prices.gasoline93
-    ? { label: "93", price: station.prices.gasoline93 }
-    : fuelItems.find((f) => f.price > 0) || fuelItems[0];
+    ? { label: "93", price: station.prices.gasoline93, fuelType: "gasoline93" }
+    : (() => {
+        const f = fuelItems.find((x) => x.price > 0) || fuelItems[0];
+        const map: Record<string, string> = { "93": "gasoline93", "95": "gasoline95", "97": "gasoline97", "Diésel": "diesel" };
+        return { label: f.label, price: f.price, fuelType: map[f.label] ?? "gasoline95" };
+      })();
+
+  const best = getBestDiscount(discounts, station.brand, userMethods, headline.fuelType, headline.price);
 
   return (
     <div
