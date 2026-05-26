@@ -1,4 +1,4 @@
-import { MapPin, Navigation, Star, Zap, Clock } from "lucide-react";
+import { MapPin, Navigation, Star, Zap, Clock, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
@@ -7,6 +7,9 @@ import FavoriteButton from "./FavoriteButton";
 import CommunityReportBadge from "./CommunityReportBadge";
 import { analytics } from "@/lib/analytics";
 import { formatPrice, formatKm, formatRelativeTime } from "@/lib/format";
+import { useStationDiscounts } from "@/hooks/useStationDiscounts";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { getBestDiscount, DISCOUNT_DISCLAIMER } from "@/lib/discounts";
 
 interface StationCardProps {
   station: GasStation;
@@ -40,6 +43,9 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
   const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
+  const { data: discounts } = useStationDiscounts();
+  const { preferences } = useUserPreferences();
+  const userMethods = preferences?.payment_methods ?? [];
 
   const fuelItems: { label: string; price: number; estimated?: boolean }[] = [
     { label: "93", price: station.prices.gasoline93 },
@@ -52,10 +58,15 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
     fuelItems.push({ label: "⚡ kWh", price: station.prices.electric, estimated: station.electricEstimated });
   }
 
-  // Headline price for the card hero (93 if present, else cheapest non-zero)
   const headline = station.prices.gasoline93
-    ? { label: "93", price: station.prices.gasoline93 }
-    : fuelItems.find((f) => f.price > 0) || fuelItems[0];
+    ? { label: "93", price: station.prices.gasoline93, fuelType: "gasoline93" }
+    : (() => {
+        const f = fuelItems.find((x) => x.price > 0) || fuelItems[0];
+        const map: Record<string, string> = { "93": "gasoline93", "95": "gasoline95", "97": "gasoline97", "Diésel": "diesel" };
+        return { label: f.label, price: f.price, fuelType: map[f.label] ?? "gasoline95" };
+      })();
+
+  const best = getBestDiscount(discounts, station.brand, userMethods, headline.fuelType, headline.price);
 
   return (
     <div
@@ -114,15 +125,44 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
             <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">
               {headline.label}
             </p>
-            <p
-              className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent"
-              aria-live="polite"
-              aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
-            >
-              {headline.price ? formatPrice(headline.price) : "—"}
-            </p>
+            {best ? (
+              <>
+                <p className="text-[11px] text-muted-foreground line-through tabular-nums leading-none">
+                  {formatPrice(headline.price)}
+                </p>
+                <p
+                  className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-fuel-green"
+                  title={DISCOUNT_DISCLAIMER}
+                  aria-label={`Precio con descuento: ${formatPrice(best.finalPrice)} por litro`}
+                >
+                  ~{formatPrice(best.finalPrice)}
+                </p>
+                <span className="inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-fuel-green/15 text-fuel-green">
+                  −${best.discount.discount_clp} con {best.discount.payment_method.split(" ")[0]}
+                </span>
+              </>
+            ) : (
+              <>
+                <p
+                  className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent"
+                  aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
+                >
+                  {headline.price ? formatPrice(headline.price) : "—"}
+                </p>
+                {userMethods.length === 0 && headline.price > 0 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate("/profile"); }}
+                    className="inline-flex items-center gap-1 mt-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20"
+                  >
+                    <CreditCard className="w-2.5 h-2.5" /> Ver descuentos
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
+
+
 
         {/* Badges */}
         <div className="flex items-center gap-1.5 flex-wrap mt-2">

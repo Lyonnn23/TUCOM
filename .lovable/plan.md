@@ -1,56 +1,78 @@
-# MEPCO Prediction & Macro Tracking
 
-Build a price-prediction system that surfaces the weekly MEPCO adjustment, USD/CLP, and WTI oil prices, with push alerts and per-station projections.
+# Motor de Descuentos TÜcom — Plan de implementación
 
-## 1. Database (migration)
+Feature crítico: mostrar el precio real que paga el usuario tras aplicar el mejor descuento disponible según sus tarjetas/apps. Se aplica de una sola pasada.
 
-New tables:
-- `mepco_adjustments` — `week_of` (date, Thu), `published_at`, `direction` (up/down/neutral), `fuel_changes` (jsonb: `{gasoline93: 28, gasoline95: 28, gasoline97: 30, diesel: -5}`), `source_url`, `notes`. Public read; admin write.
-- `fx_rates` — `currency` (text, 'USD'), `rate_clp` (numeric), `change_pct` (numeric), `recorded_at` (timestamptz). Public read; service-role write.
-- `commodity_prices` — `symbol` (text, 'WTI'), `price_usd` (numeric), `change_pct_week` (numeric), `recorded_at`. Public read; service-role write.
-- `macro_explainers` — `topic` (text unique: 'fx_fuel', 'wti_fuel'), `body_es` (text), `updated_at`. Cached Claude output. Public read.
+## Notas de adaptación al schema real
+- No existe tabla `profiles` — los métodos de pago del usuario se guardan en `user_preferences.payment_methods text[]` (ya tiene RLS por usuario).
+- Ya existe `fuel_benefits` (similar conceptualmente pero con otra estructura). Se mantiene intacta y se crea `station_discounts` según lo pedido (es la fuente de verdad del nuevo motor).
+- Días de la semana en español como pide la spec (`'viernes'`, `'martes'`...).
+- Floor prices (pisos absolutos): 93=$1.150, 95=$1.200, 97=$1.250, diésel=$1.100. Se centralizan en `src/lib/priceRanges.ts`.
 
-Add to `user_preferences`:
-- `mepco_alert_enabled` boolean default true
-- `fx_spike_alert_enabled` boolean default false
-- `weekly_price_summary_enabled` boolean default true
+## 1. Base de datos (migración)
+- `CREATE TABLE public.station_discounts` exactamente como en la spec + índices + RLS lectura pública + política admin para escritura.
+- `ALTER TABLE public.user_preferences ADD COLUMN payment_methods text[] DEFAULT '{}'` (en lugar de `profiles`).
+- `ALTER TABLE public.user_preferences ADD COLUMN discount_alerts_enabled bool DEFAULT true`.
+- Trigger `updated_at` en `station_discounts`.
+- Seed con los 9 descuentos reales de la spec.
 
-## 2. Edge functions
+## 2. Lógica compartida (frontend)
+- `src/lib/discounts.ts`:
+  - `PAYMENT_METHODS` (catálogo con label, logo/emoji, marca compatible).
+  - `getBestDiscount(stationBrand, userMethods, fuelType, today)` → mejor `discount_clp` aplicable hoy.
+  - `applyDiscount(cnePrice, discountClp, fuelType)` → respeta piso absoluto.
+  - `FLOOR_PRICES` y disclaimer estándar.
+- Hook `useStationDiscounts()` (React Query, cache 10min) que carga `station_discounts` activos vigentes.
+- Hook `useUserPaymentMethods()` (lee/escribe `user_preferences.payment_methods`).
 
-- `sync-mepco` (cron: Tue 18:00 CL / 21:00 UTC) — fetch CNE MEPCO publication, upsert next Thursday row, then call internal push for opted-in users using existing push subscription stack. Notification copy varies by direction (up/down/neutral) and lists affected fuels.
-- `sync-fx-rates` (cron: every 30 min) — exchangerate-api.com free endpoint, insert latest USD/CLP, compute daily delta. If `fx_spike_alert_enabled` and |Δday| > 2%, send push.
-- `sync-wti` (cron: every 6h) — Alpha Vantage `WTI` or fallback `OIL_PRICE`. Requires `ALPHA_VANTAGE_API_KEY` secret.
-- `macro-explainer` — on-demand; if cached row >7 days old or missing, calls Lovable AI (`google/gemini-2.5-flash`) to regenerate the FX→fuel or WTI→fuel paragraph in Chilean Spanish and stores it.
+## 3. Onboarding y perfil
+- Nuevo paso en `Onboarding.tsx`: grid multi-select de métodos de pago con badge "Hasta $X/L" calculado del max descuento disponible para ese método. Guarda en `user_preferences.payment_methods`.
+- Sección "Mis métodos de pago" en `Profile.tsx` (mismo componente reutilizado).
 
-## 3. Frontend widgets (home, below station list, collapsible)
+## 4. Tarjetas de estación
+- `StationCard.tsx` y vistas relacionadas (`Drive.tsx`, favoritos):
+  - Si hay descuento aplicable: precio CNE tachado pequeño gris + finalPrice grande verde con `~` y pill verde "−$X con [método]".
+  - Si no hay métodos configurados: precio normal + chip "💳 Ver descuentos" → `/profile`.
+  - Tooltip al tap: disclaimer "Precio estimado…".
+- `StationMap.tsx`: los markers usan `finalPrice` para color cheap/expensive y para la label.
 
-- `MepcoWidget.tsx` — current week adjustment, traffic-light dot, big delta, fuel badges, "¿Qué es el MEPCO?" opens a `Sheet` with explainer. Empty state for unpublished weeks.
-- `FxWidget.tsx` — compact row with 7-day sparkline (recharts, 80px). Tap expands to 30-day chart + Claude explainer fetched from `macro-explainer`.
-- `WtiWidget.tsx` — compact row, tap shows explainer sheet.
-- Wrap in a single `MacroWidgets` section on `Index.tsx` with `Collapsible` cards.
+## 5. Home: "Descuentos activos hoy"
+- Nuevo componente `DiscountsToday.tsx` con scroll horizontal de chips (logo marca + "$X↓"). Tap → navega a `/?brand=X`. Empty state cuando no hay. Link "Ver todos →" a `/descuentos`.
 
-Hooks: `useMepco`, `useFxRates`, `useWti`, `useMacroExplainer(topic)`.
+## 6. Página `/descuentos`
+- Calendario semanal horizontal (lun–dom, hoy resaltado en violeta primario).
+- Lista de tarjetas de descuento con todos los campos descritos.
+- Filtros: Hoy | Esta semana | Por marca | Por tarjeta.
+- Aviso superior con fecha de última actualización (`max(updated_at)`).
+- Ruta agregada en `App.tsx` + entrada en `BottomNav.tsx`.
 
-## 4. Station detail projection
+## 7. Calculadora
+- En `Calculadora.tsx` result screen: bloque "Con tus descuentos disponibles" con comparación Sin/Con descuento, ahorro, y CTA de descarga si el usuario no tiene esa tarjeta.
 
-In `StationDetail` add a `PriceTrendChart`:
-- Pull last 30 days from `station_price_history` for that station/fuel.
-- Linear regression on last 14 days → extrapolate 7 days, then offset day-of-Thursday by next MEPCO delta.
-- Recharts LineChart: solid violet for actual, dashed violet for projection.
-- 3 scenarios row computed from FX sensitivity (~0.7 CLP/L per 1% USD move as heuristic): `dólar +2% / igual / -2%`.
-- Disclaimer text.
+## 8. Push notifications
+- Edge function `send-discount-alerts` (verify_jwt = false).
+  - Jueves 20:00: alerta para descuentos del viernes que el usuario tenga.
+  - Domingo 20:00: preview semanal.
+  - Usa `user_preferences.payment_methods` + `discount_alerts_enabled` + `push_subscriptions`.
+  - Calcula estación más cercana con coords del push_subscription.
+  - Registra en `notification_log` con `kind='discount'` para evitar duplicados.
+- Cron jobs vía `pg_cron`/`pg_net` (insert tool, no migration, ya que contiene URLs/keys del proyecto).
+- Toggle "Alertas de descuentos" en preferencias de notificaciones.
 
-## 5. `/mepco-info` page
+## 9. Admin `/admin/discounts`
+- Nueva ruta dentro de `Admin.tsx`.
+- Tabla CRUD: brand, método, monto, días, vigencia, estado.
+- Toggle activar/desactivar, "Marcar todos los expirados como inactivos", aviso amber para los que expiran en ≤7 días.
+- Quick-add form (drawer).
+- Métrica "Descuento más consultado esta semana" (registramos clicks de chip en `station_views` con tag, o tabla nueva `discount_clicks` — simple).
+- Entrada en `AdminLayout.tsx` sidebar.
 
-Standalone page with the full explainer + history table of last 8 weeks, linked from push deep-link.
+## 10. Verificación
+- TypeScript compila.
+- Manualmente: onboarding muestra el paso, tarjetas muestran finalPrice, /descuentos carga calendario y lista, calculadora muestra comparación, admin permite CRUD.
 
-## 6. Settings
+---
 
-Add three toggles to existing notification preferences UI bound to the new `user_preferences` columns.
+**Orden de ejecución**: migración primero (requiere aprobación del usuario), después todo el código en paralelo, después edge function + cron.
 
-## Technical notes
-- Secrets needed: `ALPHA_VANTAGE_API_KEY`. `exchangerate-api.com` free endpoint requires no key (using `open.er-api.com/v6/latest/USD`).
-- Cron jobs registered via `supabase--insert` calling `pg_cron.schedule` + `pg_net.http_post` (per project convention).
-- Push reuses existing web-push infra and `notification_log` for dedupe (`kind='mepco'`, `ref_key=week_of`).
-- All copy in Spanish chileno; tokens via design system (violet primary, traffic-light using `--success`, `--warning`, `--destructive`).
-- CNE doesn't expose a clean MEPCO JSON — initial sync will scrape the weekly bulletin PDF/HTML; if parsing fails, the widget shows the "no publicado" state and admin can insert manually.
+¿Apruebas el plan para arrancar con la migración?

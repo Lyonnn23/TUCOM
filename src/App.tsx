@@ -50,6 +50,7 @@ const EmpresaReportes = lazy(() => import("./pages/empresa/EmpresaReportes.tsx")
 const EmpresaMiVehiculo = lazy(() => import("./pages/empresa/EmpresaMiVehiculo.tsx"));
 const VehicleDetail = lazy(() => import("./pages/VehicleDetail.tsx"));
 const MepcoInfo = lazy(() => import("./pages/MepcoInfo.tsx"));
+const Descuentos = lazy(() => import("./pages/Descuentos.tsx"));
 
 import RequireAdmin from "@/components/RequireAdmin";
 
@@ -177,6 +178,8 @@ const App = () => {
                 <Route path="/historial" element={<PriceHistory />} />
                 <Route path="/mepco-info" element={<MepcoInfo />} />
                 <Route path="/mepco" element={<Navigate to="/mepco-info" replace />} />
+                <Route path="/descuentos" element={<RequireAuth><Descuentos /></RequireAuth>} />
+                <Route path="/discounts" element={<Navigate to="/descuentos" replace />} />
 
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />

@@ -13,6 +13,8 @@ export interface UserPreferences {
   mepco_alert_enabled: boolean;
   fx_spike_alert_enabled: boolean;
   weekly_price_summary_enabled: boolean;
+  payment_methods: string[];
+  discount_alerts_enabled: boolean;
 }
 
 const DEFAULTS: UserPreferences = {
@@ -26,6 +28,8 @@ const DEFAULTS: UserPreferences = {
   mepco_alert_enabled: true,
   fx_spike_alert_enabled: false,
   weekly_price_summary_enabled: true,
+  payment_methods: [],
+  discount_alerts_enabled: true,
 };
 
 export function useUserPreferences() {
@@ -39,7 +43,7 @@ export function useUserPreferences() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("user_preferences")
-        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed,leaderboard_opt_in,low_fuel_threshold_km,fuel_log_email_optin,mepco_alert_enabled,fx_spike_alert_enabled,weekly_price_summary_enabled")
+        .select("preferred_fuel,search_radius_km,notifications_enabled,onboarding_completed,leaderboard_opt_in,low_fuel_threshold_km,fuel_log_email_optin,mepco_alert_enabled,fx_spike_alert_enabled,weekly_price_summary_enabled,payment_methods,discount_alerts_enabled")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;

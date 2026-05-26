@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Fuel, MapPin, Bell, Check, Car } from "lucide-react";
+import { Fuel, MapPin, Bell, Check, Car, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -12,6 +12,7 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
 import { cn } from "@/lib/utils";
+import PaymentMethodsPicker from "@/components/PaymentMethodsPicker";
 
 const FUELS = [
   { key: "gasoline93", label: "93", desc: "Bencina 93" },
@@ -30,6 +31,7 @@ const Onboarding = () => {
   const [fuel, setFuel] = useState(defaults.preferred_fuel);
   const [radius, setRadius] = useState(defaults.search_radius_km);
   const [vehiclePresetIdx, setVehiclePresetIdx] = useState<string>("skip");
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -71,6 +73,7 @@ const Onboarding = () => {
         search_radius_km: radius,
         notifications_enabled: notificationsEnabled,
         onboarding_completed: true,
+        payment_methods: paymentMethods,
       });
       navigate("/", { replace: true });
     } catch {
@@ -92,7 +95,7 @@ const Onboarding = () => {
     await finish(granted);
   };
 
-  const TOTAL_STEPS = 4;
+  const TOTAL_STEPS = 5;
   const next = () => setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1));
   const skip = () => {
     if (step < TOTAL_STEPS - 1) next();
@@ -114,6 +117,11 @@ const Onboarding = () => {
       icon: Car,
       title: "¿Cuál es tu auto?",
       subtitle: "Lo usaremos para calcular el costo de tus viajes.",
+    },
+    {
+      icon: CreditCard,
+      title: "¿Qué tarjetas o apps usas?",
+      subtitle: "Te mostraremos el precio real con tu mejor descuento.",
     },
     {
       icon: Bell,
@@ -223,6 +231,15 @@ const Onboarding = () => {
         )}
 
         {step === 3 && (
+          <div className="w-full space-y-3">
+            <PaymentMethodsPicker value={paymentMethods} onChange={setPaymentMethods} />
+            <p className="text-xs text-muted-foreground text-center">
+              Puedes cambiar esto en tu perfil cuando quieras.
+            </p>
+          </div>
+        )}
+
+        {step === 4 && (
           <div className="w-full rounded-2xl border border-border bg-card p-5 text-center">
             <p className="text-sm text-muted-foreground">
               Te enviaremos alertas cuando alguna estación cercana baje de tu precio objetivo.
