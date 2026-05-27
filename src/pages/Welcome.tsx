@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, MapPin, Bell, TrendingDown } from "lucide-react";
+import { Zap, MapPin, CreditCard, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,10 +68,32 @@ const Welcome = () => {
   };
 
   const features = [
-    { icon: TrendingDown, label: "Precios en tiempo real" },
-    { icon: MapPin, label: "Estaciones cercanas" },
-    { icon: Bell, label: "Alertas personalizadas" },
+    {
+      icon: MapPin,
+      title: "Precios reales CNE",
+      desc: "Todas las bencineras de Chile con precios actualizados al instante.",
+    },
+    {
+      icon: CreditCard,
+      title: "El precio real que pagas",
+      desc: "Incluye descuentos de tus tarjetas y apps de pago.",
+    },
+    {
+      icon: Car,
+      title: "Tu copiloto de ruta",
+      desc: "Calcula cuánto gastará tu vehículo en cualquier viaje.",
+    },
   ];
+
+  const [slide, setSlide] = useState(0);
+  const slideRef = useRef(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      slideRef.current = (slideRef.current + 1) % features.length;
+      setSlide(slideRef.current);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [features.length]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-animated-gradient flex flex-col items-center justify-center px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
@@ -102,18 +124,42 @@ const Welcome = () => {
           </div>
         </div>
 
-        {/* Features */}
-        <div className="grid grid-cols-3 gap-3 w-full mb-8">
-          {features.map(({ icon: Icon, label }) => (
-            <div
-              key={label}
-              className="flex flex-col items-center gap-2 bg-white/10 rounded-2xl p-3 backdrop-blur-sm ring-1 ring-white/15"
-            >
-              <Icon className="w-5 h-5 text-white" />
-              <span className="text-[10px] font-medium leading-tight">{label}</span>
-            </div>
-          ))}
+        {/* Auto-scrolling feature cards */}
+        <div className="w-full mb-4 overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${slide * 100}%)` }}
+          >
+            {features.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="min-w-full px-1">
+                <div className="rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-5 text-left">
+                  <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center mb-3">
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-base mb-1">{title}</h3>
+                  <p className="text-xs text-white/80 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center gap-1.5 mt-3">
+            {features.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  slideRef.current = i;
+                  setSlide(i);
+                }}
+                aria-label={`Ver tarjeta ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === slide ? "w-6 bg-white" : "w-1.5 bg-white/40"
+                }`}
+              />
+            ))}
+          </div>
         </div>
+
+        <div className="h-4" />
 
         {/* Google sign-in (Google brand guidelines) */}
         <Button
