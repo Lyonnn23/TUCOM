@@ -75,6 +75,7 @@ const Onboarding = () => {
         onboarding_completed: true,
         payment_methods: paymentMethods,
       });
+      toast.success("¡Listo! Mostrándote las más baratas cerca tuyo");
       navigate("/", { replace: true });
     } catch {
       toast.error("No se pudieron guardar tus preferencias");
@@ -163,7 +164,11 @@ const Onboarding = () => {
               return (
                 <button
                   key={f.key}
-                  onClick={() => setFuel(f.key)}
+                  onClick={() => {
+                    setFuel(f.key);
+                    // Auto-advance after a brief beat so the user sees their pick
+                    setTimeout(() => next(), 250);
+                  }}
                   className={cn(
                     "relative rounded-2xl border-2 p-4 text-left transition-all press-scale",
                     active
