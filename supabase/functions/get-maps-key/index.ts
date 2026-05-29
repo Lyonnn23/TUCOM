@@ -27,6 +27,8 @@ function checkRateLimit(key: string): boolean {
 const ALLOWED_ORIGIN_HOSTS = [
   "lovable.app",
   "lovableproject.com",
+  "tucombustible.cl",
+  "www.tucombustible.cl",
   "localhost",
   "127.0.0.1",
 ];
