@@ -8,6 +8,8 @@ export interface GasStation {
   lat: number;
   lng: number;
   address: string;
+  commune: string | null;
+  region: string | null;
   prices: {
     gasoline93: number;
     gasoline95: number;
@@ -28,9 +30,10 @@ export interface GasStation {
 
 import { PRICE_RANGES } from "@/lib/priceRanges";
 
-// Stations whose latest price is older than this are considered stale
-// and their prices are hidden across the app (Top 5, list, map averages).
-const MAX_PRICE_AGE_DAYS = 14;
+// Stations whose latest price is older than this are considered stale.
+// Keep the window generous because CNE updates can be intermittent during
+// holidays/outages, and hiding prices completely makes filters look broken.
+const MAX_PRICE_AGE_DAYS = 45;
 const MAX_PRICE_AGE_MS = MAX_PRICE_AGE_DAYS * 24 * 60 * 60 * 1000;
 
 function sanitizePrice(type: string, value: number | null | undefined) {
@@ -106,6 +109,8 @@ export function useGasStations() {
           lat: s.lat,
           lng: s.lng,
           address: s.address,
+          commune: s.commune ?? null,
+          region: s.region ?? null,
           isOpen: s.is_open,
           hasEvCharging: s.has_ev_charging ?? false,
           evConnectorTypes: s.ev_connector_types ?? [],

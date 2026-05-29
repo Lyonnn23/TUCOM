@@ -178,7 +178,8 @@ Deno.serve(async (req) => {
       if (!matchedStations || matchedStations.length === 0) continue;
 
       const placeIdToId = new Map(matchedStations.map((s) => [s.place_id, s.id]));
-      const upsertMap = new Map<string, { station_id: string; fuel_type: string; price: number }>();
+      const syncedAt = new Date().toISOString();
+      const upsertMap = new Map<string, { station_id: string; fuel_type: string; price: number; created_at: string }>();
 
       for (const station of batch) {
         const stationId = placeIdToId.get(`cne_${station.codigo}`);
@@ -187,7 +188,7 @@ Deno.serve(async (req) => {
         const prices = extractPrices(station);
         for (const [fuelType, price] of Object.entries(prices)) {
           if (!isReasonablePrice(fuelType, price)) continue;
-          upsertMap.set(`${stationId}_${fuelType}`, { station_id: stationId, fuel_type: fuelType, price });
+          upsertMap.set(`${stationId}_${fuelType}`, { station_id: stationId, fuel_type: fuelType, price, created_at: syncedAt });
         }
       }
 
