@@ -130,10 +130,11 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
   );
 };
 
-function getMarkerIcon(color: string, scale: number): google.maps.Symbol | undefined {
-  if (typeof google === "undefined" || !google.maps?.SymbolPath) return undefined;
+function getMarkerIcon(color: string, scale: number) {
+  const maps = (globalThis as any).google?.maps;
+  if (!maps?.SymbolPath) return undefined;
   return {
-    path: google.maps.SymbolPath.CIRCLE,
+    path: maps.SymbolPath.CIRCLE,
     scale,
     fillColor: color,
     fillOpacity: 1,
