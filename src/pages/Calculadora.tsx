@@ -121,7 +121,7 @@ const Calculadora = () => {
         total: c.total,
         station: station ? `${station.brand} ${station.name}` : null,
       };
-      const prompt = `Analiza este viaje en Chile y entrega exactamente:\n1) Una oración con el costo y si el vehículo es eficiente para esta ruta.\n2) Si hay ahorro vs promedio: cuánto y dónde cargar.\n3) Si conviene cargar ahora o esperar al MEPCO del jueves.\n4) Un tip de conducción para esta ruta.\nResponde en español chileno informal, máximo 4 oraciones, sin bullet points.\n\nDatos: ${JSON.stringify(ctx)}`;
+      const prompt = `Analiza este viaje en Chile y entrega exactamente:\n1) Una oración con el costo y si el vehículo es eficiente para esta ruta.\n2) Si hay ahorro vs promedio: cuánto y dónde cargar.\n3) Si conviene cargar ahora o esperar al MEPCO del jueves.\n4) Una recomendación breve de conducción eficiente para esta ruta.\nResponde en español formal, claro y cercano, máximo 4 oraciones, sin bullet points.\n\nDatos: ${JSON.stringify(ctx)}`;
       const { data, error } = await (await import("@/integrations/supabase/client")).supabase.functions.invoke("tucom-assistant", {
         body: { messages: [{ role: "user", content: prompt }] },
       });

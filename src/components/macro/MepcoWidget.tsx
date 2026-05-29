@@ -61,7 +61,7 @@ export default function MepcoWidget() {
                   El ajuste depende del precio internacional del petróleo, el tipo
                   de cambio del dólar y un fondo público que amortigua los cambios
                   bruscos. Con MEPCO no desaparecen las variaciones, pero llegan
-                  más graduales a la bomba.
+                  de forma más gradual al precio final informado en estaciones.
                 </p>
               </SheetDescription>
             </SheetHeader>

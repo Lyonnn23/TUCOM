@@ -12,9 +12,9 @@ const corsHeaders = {
 
 const PROMPTS: Record<string, string> = {
   fx_fuel:
-    "Explica en UN solo párrafo, en español chileno informal y simple, por qué el tipo de cambio dólar/peso afecta el precio de la bencina en Chile. Menciona la cadena: petróleo WTI cotiza en dólares, las refinerías importan combustible, y el MEPCO suaviza pero no elimina el impacto. Máximo 90 palabras. Sin listas, sin títulos.",
+    "Explica en UN solo párrafo, en español formal, claro y orientado a usuarios de Chile, por qué el tipo de cambio dólar/peso afecta el precio de los combustibles. Menciona la cadena: petróleo WTI cotiza en dólares, importación/refinación, costos mayoristas y MEPCO como mecanismo de suavización parcial. Máximo 90 palabras. Sin listas, sin títulos.",
   wti_fuel:
-    "Explica en UN solo párrafo, en español chileno informal y simple, cómo el precio internacional del petróleo WTI impacta lo que pagas en la bomba en Chile. Menciona refinación, importación, dólar y MEPCO. Máximo 90 palabras. Sin listas, sin títulos.",
+    "Explica en UN solo párrafo, en español formal, claro y orientado a usuarios de Chile, cómo el precio internacional del petróleo WTI incide en el precio final de los combustibles. Menciona refinación, importación, tipo de cambio y MEPCO. Máximo 90 palabras. Sin listas, sin títulos.",
 };
 
 const MAX_AGE_DAYS = 7;
