@@ -8,6 +8,8 @@ export interface GasStation {
   lat: number;
   lng: number;
   address: string;
+  commune: string | null;
+  region: string | null;
   prices: {
     gasoline93: number;
     gasoline95: number;
@@ -106,6 +108,8 @@ export function useGasStations() {
           lat: s.lat,
           lng: s.lng,
           address: s.address,
+          commune: s.commune ?? null,
+          region: s.region ?? null,
           isOpen: s.is_open,
           hasEvCharging: s.has_ev_charging ?? false,
           evConnectorTypes: s.ev_connector_types ?? [],
