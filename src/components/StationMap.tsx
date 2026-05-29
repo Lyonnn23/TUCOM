@@ -1,4 +1,4 @@
-import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, Marker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { LocateFixed } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,41 +73,28 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           defaultZoom={13}
           gestureHandling="greedy"
           disableDefaultUI={false}
-          mapId="tucom-map"
           style={{ width: "100%", height: "100%" }}
         >
           {userLocation && (
-            <AdvancedMarker position={userLocation}>
-              <div className="w-4 h-4 bg-primary rounded-full border-2 border-white shadow-lg animate-pulse" />
-            </AdvancedMarker>
+            <Marker
+              position={userLocation}
+              title="Tu ubicación"
+              icon={getMarkerIcon("hsl(var(--primary))", 10)}
+            />
           )}
 
           {stations.map((station) => {
             const color = brandColor(station.brand);
             const initials = brandInitials(station.brand);
             return (
-              <AdvancedMarker
+              <Marker
                 key={station.id}
                 position={{ lat: station.lat, lng: station.lng }}
                 onClick={() => setSelected(station)}
-              >
-                <div
-                  aria-label={`${station.brand} ${station.name}`}
-                  className="grid place-items-center rounded-full shadow-md"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    backgroundColor: color,
-                    border: "2px solid #fff",
-                    color: "#fff",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: 0.3,
-                  }}
-                >
-                  {initials}
-                </div>
-              </AdvancedMarker>
+                title={`${station.brand} · ${station.name}`}
+                label={{ text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }}
+                icon={getMarkerIcon(color, 16)}
+              />
             );
           })}
 
@@ -142,6 +129,18 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
     </APIProvider>
   );
 };
+
+function getMarkerIcon(color: string, scale: number): google.maps.Symbol | undefined {
+  if (typeof google === "undefined" || !google.maps?.SymbolPath) return undefined;
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale,
+    fillColor: color,
+    fillOpacity: 1,
+    strokeColor: "#fff",
+    strokeWeight: 2,
+  };
+}
 
 const CenterOnMeButton = ({ location }: { location: { lat: number; lng: number } }) => {
   const map = useMap();
