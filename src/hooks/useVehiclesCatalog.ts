@@ -28,7 +28,8 @@ export function useCatalogBrands() {
       const { data, error } = await supabase
         .from("vehicles_catalog")
         .select("brand")
-        .order("brand");
+        .order("brand")
+        .limit(20000);
       if (error) throw error;
       return Array.from(new Set((data ?? []).map((r: any) => r.brand))).sort();
     },
@@ -45,7 +46,8 @@ export function useCatalogModels(brand: string | null) {
         .from("vehicles_catalog")
         .select("model, body_type")
         .eq("brand", brand!)
-        .order("model");
+        .order("model")
+        .limit(20000);
       if (error) throw error;
       const map = new Map<string, string | null>();
       for (const r of data ?? []) map.set((r as any).model, (r as any).body_type);
@@ -65,7 +67,8 @@ export function useCatalogYears(brand: string | null, model: string | null) {
         .select("year")
         .eq("brand", brand!)
         .eq("model", model!)
-        .order("year", { ascending: false });
+        .order("year", { ascending: false })
+        .limit(5000);
       if (error) throw error;
       return Array.from(new Set((data ?? []).map((r: any) => r.year as number)));
     },
