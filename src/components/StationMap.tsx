@@ -57,10 +57,15 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   if (!apiKey) {
     return (
-      <div className="h-full flex items-center justify-center bg-muted rounded-2xl">
-        <p className="text-sm text-muted-foreground text-center px-4">
-          No se pudo cargar Google Maps. Verifica la configuración.
-        </p>
+      <div className="h-full flex items-center justify-center bg-muted rounded-2xl px-4">
+        <div className="text-center max-w-xs">
+          <p className="text-sm font-semibold text-foreground">
+            El mapa no está disponible.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Verifica tu conexión a internet e intenta nuevamente.
+          </p>
+        </div>
       </div>
     );
   }
