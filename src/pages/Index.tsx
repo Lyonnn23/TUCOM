@@ -813,6 +813,10 @@ const Index = () => {
                   </div>
                 );
               }
+              const anyWithPrices = filtered.some((s) =>
+                (s.prices.gasoline93 || s.prices.gasoline95 || s.prices.gasoline97 || s.prices.diesel || s.prices.electric) > 0,
+              );
+              const showSyncBanner = filtered.length > 0 && !anyWithPrices;
               if (stationKind === "glp" || stationKind === "gnc") {
                 return (
                   <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
