@@ -854,10 +854,21 @@ const Index = () => {
                 );
               }
               return (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 animate-fade-in">
-                  {filtered.map((station) => (
-                    <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
-                  ))}
+                <div className="animate-fade-in">
+                  {showSyncBanner && (
+                    <div className="mb-3 rounded-2xl bg-primary/10 border border-primary/20 px-4 py-3 flex items-center gap-3">
+                      <RefreshCw className="w-4 h-4 text-primary animate-spin shrink-0" aria-hidden="true" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground">Actualizando precios desde CNE…</p>
+                        <p className="text-xs text-muted-foreground">Los precios se cargarán en breve. Mientras tanto te mostramos las estaciones disponibles.</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {filtered.map((station) => (
+                      <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
+                    ))}
+                  </div>
                 </div>
               );
             })()}
