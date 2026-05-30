@@ -127,11 +127,11 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
             </p>
             {best ? (
               <>
-                <p className="text-[11px] text-muted-foreground line-through tabular-nums leading-none">
+                <p className="text-[10px] text-muted-foreground line-through tabular-nums leading-none">
                   {formatPrice(headline.price)}
                 </p>
                 <p
-                  className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-fuel-green"
+                  className="font-heading tabular-nums font-extrabold text-xl leading-tight text-fuel-green"
                   title={DISCOUNT_DISCLAIMER}
                   aria-label={`Precio con descuento: ${formatPrice(best.finalPrice)} por litro`}
                 >
@@ -144,7 +144,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
             ) : (
               <>
                 <p
-                  className="font-heading tabular-nums font-extrabold text-[2.5rem] leading-none text-accent"
+                  className="font-heading tabular-nums font-extrabold text-xl leading-tight text-accent"
                   aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
                 >
                   {headline.price ? formatPrice(headline.price) : "—"}
