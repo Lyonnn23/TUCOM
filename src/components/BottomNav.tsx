@@ -21,7 +21,8 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
   return (
     <nav
       aria-label="Navegación principal"
-      className="fixed bottom-0 left-0 right-0 bg-card/85 backdrop-blur-xl border-t border-border px-2 pb-[env(safe-area-inset-bottom)] z-50"
+      style={{ isolation: "isolate" }}
+      className="fixed bottom-0 left-0 right-0 bg-card/85 backdrop-blur-xl border-t border-border px-2 pb-[env(safe-area-inset-bottom)] z-[9999]"
     >
       <div className="flex items-center justify-around max-w-md mx-auto">
         {tabs.map((tab) => {

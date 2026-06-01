@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StationCard from "@/components/StationCard";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,11 @@ interface Props {
   stations: GasStation[];
   onNavigate?: (s: GasStation) => void;
   onNavigateGoogle?: (s: GasStation) => void;
+  onBack?: () => void;
 }
 
-const FavoritesTab = ({ stations, onNavigate, onNavigateGoogle }: Props) => {
+const FavoritesTab = ({ stations, onNavigate, onNavigateGoogle, onBack }: Props) => {
+
   const { user } = useAuth();
   const { favoriteIds, loading } = useFavorites();
   const navigate = useNavigate();
@@ -39,8 +41,18 @@ const FavoritesTab = ({ stations, onNavigate, onNavigateGoogle }: Props) => {
 
   return (
     <div className="space-y-3 animate-fade-in">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+      <div className="flex items-start gap-2">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Volver"
+            className="shrink-0 mt-0.5 w-9 h-9 rounded-xl bg-muted hover:bg-muted/80 flex items-center justify-center press-scale focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ArrowLeft className="w-4 h-4 text-foreground" />
+          </button>
+        )}
+        <div className="min-w-0 flex-1">
           <h2 className="font-heading font-bold text-foreground text-lg leading-tight tracking-tight">
             Mis favoritos
           </h2>
@@ -51,6 +63,7 @@ const FavoritesTab = ({ stations, onNavigate, onNavigateGoogle }: Props) => {
           </p>
         </div>
       </div>
+
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
