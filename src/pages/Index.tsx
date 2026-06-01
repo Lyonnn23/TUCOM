@@ -881,7 +881,9 @@ const Index = () => {
             stations={stationsWithDistance}
             onNavigate={handleNavigate}
             onNavigateGoogle={handleNavigateGoogle}
+            onBack={() => setActiveTab("prices")}
           />
+
         )}
 
         {/* Benefits Tab */}
