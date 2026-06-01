@@ -1,4 +1,4 @@
-import { Heart } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StationCard from "@/components/StationCard";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,11 @@ interface Props {
   stations: GasStation[];
   onNavigate?: (s: GasStation) => void;
   onNavigateGoogle?: (s: GasStation) => void;
+  onBack?: () => void;
 }
 
-const FavoritesTab = ({ stations, onNavigate, onNavigateGoogle }: Props) => {
+const FavoritesTab = ({ stations, onNavigate, onNavigateGoogle, onBack }: Props) => {
+
   const { user } = useAuth();
   const { favoriteIds, loading } = useFavorites();
   const navigate = useNavigate();
