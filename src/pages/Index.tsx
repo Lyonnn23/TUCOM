@@ -606,7 +606,7 @@ const Index = () => {
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] inline-block" /> Cerradas</span>
               </div>
             </div>
-            <div className="h-[calc(100vh-300px)] rounded-2xl overflow-hidden border border-border shadow-md">
+            <div className="h-[calc(100dvh-320px)] min-h-[320px] max-h-[calc(100dvh-220px)] rounded-2xl overflow-hidden border border-border shadow-md isolate">
               <StationMap
                 stations={mapStations}
                 userLocation={userLocation}
