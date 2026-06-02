@@ -145,7 +145,12 @@ export default function ChatBubble() {
       }
       if (!resp.ok || !resp.body) {
         const j = await resp.json().catch(() => ({}));
-        toast.error(j.error ?? "Error del asistente");
+        const errMsg = j.error ?? j.detail ?? `Error del asistente (${resp.status})`;
+        toast.error(errMsg);
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: `⚠️ **No pude responder.** ${errMsg}\n\nIntenta de nuevo en unos segundos. Si persiste, avísanos.`,
+        }]);
         setStreaming(false);
         return;
       }
