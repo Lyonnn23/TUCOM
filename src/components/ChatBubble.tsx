@@ -145,7 +145,12 @@ export default function ChatBubble() {
       }
       if (!resp.ok || !resp.body) {
         const j = await resp.json().catch(() => ({}));
-        toast.error(j.error ?? "Error del asistente");
+        const errMsg = j.error ?? j.detail ?? `Error del asistente (${resp.status})`;
+        toast.error(errMsg);
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: `⚠️ **No pude responder.** ${errMsg}\n\nIntenta de nuevo en unos segundos. Si persiste, avísanos.`,
+        }]);
         setStreaming(false);
         return;
       }
@@ -187,7 +192,12 @@ export default function ChatBubble() {
       }
       haptic("double");
     } catch (e: any) {
-      toast.error(e?.message ?? "Error de red");
+      const errMsg = e?.message ?? "Error de red";
+      toast.error(errMsg);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: `⚠️ **Error de conexión.** ${errMsg}\n\nRevisa tu internet e intenta de nuevo.`,
+      }]);
     } finally {
       setStreaming(false);
     }
