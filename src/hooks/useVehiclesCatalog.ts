@@ -120,3 +120,28 @@ export function useCatalogTop(limit = 12) {
     },
   });
 }
+
+/** Search vehicles by free text (brand/model/version) with optional year filter. */
+export function useCatalogSearch(query: string, yearFilter: number | null) {
+  const q = query.trim();
+  return useQuery<CatalogVehicle[]>({
+    queryKey: ["catalog-search", q, yearFilter],
+    enabled: q.length >= 2 || yearFilter !== null,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      let req = supabase.from("vehicles_catalog").select("*");
+      if (q.length >= 2) {
+        req = req.or(`brand.ilike.%${q}%,model.ilike.%${q}%,version.ilike.%${q}%`);
+      }
+      if (yearFilter !== null) req = req.eq("year", yearFilter);
+      const { data, error } = await req
+        .order("popularity_rank", { ascending: true, nullsFirst: false })
+        .order("brand")
+        .order("model")
+        .order("year", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as CatalogVehicle[];
+    },
+  });
+}
