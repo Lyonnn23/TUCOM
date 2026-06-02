@@ -192,7 +192,12 @@ export default function ChatBubble() {
       }
       haptic("double");
     } catch (e: any) {
-      toast.error(e?.message ?? "Error de red");
+      const errMsg = e?.message ?? "Error de red";
+      toast.error(errMsg);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: `⚠️ **Error de conexión.** ${errMsg}\n\nRevisa tu internet e intenta de nuevo.`,
+      }]);
     } finally {
       setStreaming(false);
     }
