@@ -213,7 +213,7 @@ const BenefitsTab = () => {
           <p className="text-sm text-muted-foreground">No hay descuentos para este día y marca.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map((benefit) => {
             const hasEV = benefit.fuel_types.includes("electric");
             const brandStyle = BRAND_STYLES[benefit.brand];
@@ -226,60 +226,58 @@ const BenefitsTab = () => {
                 : "bg-card border border-border";
             const todayRing = activeToday ? "ring-2 ring-primary/40 ring-offset-1 ring-offset-background" : "";
             return (
-              <div key={benefit.id} className={`relative rounded-2xl p-4 shadow-sm ${cardClass} ${todayRing}`}>
+              <div key={benefit.id} className={`relative rounded-2xl p-4 shadow-sm flex flex-col ${cardClass} ${todayRing}`}>
                 {activeToday && (
                   <span className="absolute -top-2 right-3 text-[10px] font-bold uppercase tracking-wide bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow">
                     Vigente hoy
                   </span>
                 )}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                      <BrandLogo brand={benefit.brand} size={26} />
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 truncate max-w-[140px] ${
-                        featured ? brandStyle.badge : "bg-primary/10 text-primary"
-                      }`}>
-                        {benefit.brand}
-                      </span>
-                      {hasEV && (
-                        <span className="text-xs font-bold bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)] px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0">
-                          <Zap className="w-3 h-3" />
-                          EV
-                        </span>
-                      )}
-                      {benefit.discount_fixed && (
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                          featured ? brandStyle.chip : "text-primary bg-primary/10"
-                        }`}>
-                          -${benefit.discount_fixed}/L
-                        </span>
-                      )}
-                      {benefit.discount_percent && (
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                          featured ? brandStyle.chip : "text-primary bg-primary/10"
-                        }`}>
-                          -{benefit.discount_percent}%
-                        </span>
-                      )}
-                    </div>
-                    <p className={`font-heading font-semibold text-sm leading-snug line-clamp-2 ${
-                      featured ? brandStyle.accent : "text-foreground"
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                    <BrandLogo brand={benefit.brand} size={26} />
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 truncate max-w-[140px] ${
+                      featured ? brandStyle.badge : "bg-primary/10 text-primary"
                     }`}>
-                      {benefit.discount_description}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                      <CreditCard className="w-3 h-3 text-muted-foreground shrink-0" />
-                      <p className="text-xs text-muted-foreground">{benefit.payment_method}</p>
-                    </div>
-                    {benefit.conditions && (
-                      <p className="text-[11px] text-muted-foreground/80 mt-1.5 leading-relaxed">
-                        {benefit.conditions}
-                      </p>
+                      {benefit.brand}
+                    </span>
+                    {hasEV && (
+                      <span className="text-xs font-bold bg-[hsl(142,70%,45%)]/10 text-[hsl(142,70%,45%)] px-2 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0">
+                        <Zap className="w-3 h-3" />
+                        EV
+                      </span>
+                    )}
+                    {benefit.discount_fixed && (
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                        featured ? brandStyle.chip : "text-primary bg-primary/10"
+                      }`}>
+                        -${benefit.discount_fixed}/L
+                      </span>
+                    )}
+                    {benefit.discount_percent && (
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                        featured ? brandStyle.chip : "text-primary bg-primary/10"
+                      }`}>
+                        -{benefit.discount_percent}%
+                      </span>
                     )}
                   </div>
+                  <p className={`font-heading font-semibold text-sm leading-snug line-clamp-2 ${
+                    featured ? brandStyle.accent : "text-foreground"
+                  }`}>
+                    {benefit.discount_description}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <CreditCard className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <p className="text-xs text-muted-foreground truncate">{benefit.payment_method}</p>
+                  </div>
+                  {benefit.conditions && (
+                    <p className="text-[11px] text-muted-foreground/80 mt-1.5 leading-relaxed line-clamp-3">
+                      {benefit.conditions}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
-                  <Calendar className="w-3 h-3 text-muted-foreground" />
+                  <Calendar className="w-3 h-3 text-muted-foreground shrink-0" />
                   <div className="flex gap-1 flex-wrap">
                     {benefit.day_of_week.map((d) => {
                       const dn = Number(d);
@@ -312,6 +310,14 @@ const BenefitsTab = () => {
                     ))}
                   </div>
                 </div>
+                <a
+                  href="/profile"
+                  className={`mt-3 inline-flex items-center justify-center gap-1 text-xs font-semibold px-3 py-2 rounded-xl transition-colors ${
+                    featured ? brandStyle.badge : "bg-primary text-primary-foreground"
+                  } hover:opacity-90`}
+                >
+                  Activar descuento
+                </a>
               </div>
             );
           })}
