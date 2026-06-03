@@ -601,9 +601,9 @@ const Index = () => {
             <div className="flex items-center justify-between flex-wrap gap-2">
               <p className="text-xs text-muted-foreground">{mapStations.length} estaciones en el mapa</p>
               <div className="flex items-center gap-2.5 text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-blue inline-block" /> Más cercanas</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-green inline-block" /> Abiertas ahora</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-red inline-block" /> Cerradas ahora</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-blue inline-block" /> Más cercana</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-green inline-block" /> Abiertas</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-red inline-block" /> Cerradas</span>
               </div>
             </div>
             <div className="h-[calc(100dvh-320px)] min-h-[320px] max-h-[calc(100dvh-220px)] rounded-2xl overflow-hidden border border-border shadow-md isolate">
