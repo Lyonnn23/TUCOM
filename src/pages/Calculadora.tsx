@@ -71,7 +71,7 @@ const Calculadora = () => {
   }, []);
 
   const fuelKey = vehicle?.fuel_type === "hybrid" ? "gasoline95" : (vehicle?.fuel_type ?? "gasoline95");
-  const cheapestRPC = useCheapestStations(loc?.lat ?? null, loc?.lng ?? null, 15000, fuelKey === "electric" ? "electric" : (fuelKey as any), 3);
+  const cheapestRPC = useCheapestStations(loc?.lat ?? null, loc?.lng ?? null, 10000, fuelKey === "electric" ? "electric" : (fuelKey as any), 3);
   const fuelPrices = useFuelPrices();
 
   // Loading / step state

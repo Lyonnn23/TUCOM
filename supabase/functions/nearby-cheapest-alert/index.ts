@@ -176,17 +176,17 @@ Deno.serve(async (req) => {
     const prices = pricesRes.data || [];
     const fuelPrefs: string[] = sub.fuel_types || ["gasoline93", "gasoline95", "gasoline97", "diesel"];
 
-    // Filter stations within 15km
+    // Filter stations within 10km
     const nearby = stations
       .map((s) => ({
         ...s,
         distance: haversine(sub.lat, sub.lng, s.lat, s.lng),
       }))
-      .filter((s) => s.distance <= 15);
+      .filter((s) => s.distance <= 10);
 
     if (nearby.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, sent: false, message: "No stations within 15km" }),
+        JSON.stringify({ success: true, sent: false, message: "No stations within 10km" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

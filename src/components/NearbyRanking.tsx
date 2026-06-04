@@ -66,7 +66,7 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
           <div className="text-left">
             <p className="font-heading font-bold text-sm text-foreground">Top 5 Más Baratas</p>
             <p className="text-[10px] text-muted-foreground">
-              Estaciones en 15 km · {fuelInfo.label}
+              Estaciones en 10 km · {fuelInfo.label}
             </p>
           </div>
         </div>
