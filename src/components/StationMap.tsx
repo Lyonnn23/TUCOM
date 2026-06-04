@@ -72,7 +72,10 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="relative w-full h-full">
+      <div
+        className="relative w-full h-full"
+        style={{ willChange: "transform", WebkitOverflowScrolling: "touch" }}
+      >
         <Map
           defaultCenter={center}
           defaultZoom={13}
@@ -99,6 +102,7 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
                 title={`${station.brand} · ${station.name}`}
                 label={{ text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }}
                 icon={getMarkerIcon(color, 16)}
+                animation={(globalThis as any).google?.maps?.Animation?.DROP}
               />
             );
           })}
