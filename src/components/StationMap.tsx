@@ -72,7 +72,10 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div className="relative w-full h-full">
+      <div
+        className="relative w-full h-full"
+        style={{ willChange: "transform", WebkitOverflowScrolling: "touch" }}
+      >
         <Map
           defaultCenter={center}
           defaultZoom={13}
