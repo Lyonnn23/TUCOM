@@ -102,6 +102,7 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
                 title={`${station.brand} · ${station.name}`}
                 label={{ text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }}
                 icon={getMarkerIcon(color, 16)}
+                animation={(globalThis as any).google?.maps?.Animation?.DROP}
               />
             );
           })}
