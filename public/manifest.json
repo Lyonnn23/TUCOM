@@ -3,7 +3,7 @@
   "name": "TÜcom — Precios de Bencina Chile",
   "short_name": "TÜcom",
   "description": "App independiente para comparar precios referenciales de bencina, encontrar estaciones cercanas, revisar beneficios y planificar tu próxima carga en Chile.",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
