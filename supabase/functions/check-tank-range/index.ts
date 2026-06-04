@@ -13,7 +13,7 @@ const FUEL_LABELS: Record<string, string> = {
 };
 
 const REMINDER_COOLDOWN_HOURS = 12;
-const SEARCH_RADIUS_KM = 15;
+const SEARCH_RADIUS_KM = 10;
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371;

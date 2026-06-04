@@ -56,7 +56,7 @@ export default function ChatBubble() {
   }, []);
 
   const { data: cheapest } = useCheapestStations(
-    loc?.lat ?? null, loc?.lng ?? null, 15000,
+    loc?.lat ?? null, loc?.lng ?? null, 10000,
     (primary?.fuel_type as any) ?? "gasoline95", 3,
   );
 

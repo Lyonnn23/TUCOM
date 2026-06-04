@@ -27,7 +27,7 @@ export interface NearbyStationRow {
 export function useNearbyStations(
   lat: number | null,
   lng: number | null,
-  radiusMeters = 15000,
+  radiusMeters = 10000,
   fuelType: FuelTypeKey = "gasoline95",
   limit = 50,
   staleTime = 5 * 60 * 1000
@@ -58,7 +58,7 @@ export function useNearbyStations(
 export function useCheapestStations(
   lat: number | null,
   lng: number | null,
-  radiusMeters = 15000,
+  radiusMeters = 10000,
   fuelType: FuelTypeKey = "gasoline95",
   limit = 10
 ) {

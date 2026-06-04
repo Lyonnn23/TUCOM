@@ -76,7 +76,7 @@ const Index = () => {
     stations,
     userLocation,
     nationalPrices: fuelPrices,
-    radiusKm: 15,
+    radiusKm: 10,
   });
   const { data: recentReports } = useRecentReports();
   const { data: stationRatings } = useStationRatings();
@@ -450,7 +450,7 @@ const Index = () => {
                 <h2 className="font-heading font-bold text-foreground text-lg leading-tight truncate">Precio promedio actual</h2>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
                   {isLocalAvg
-                    ? `Promedio en 15 km · ${sampleSize} estaciones`
+                    ? `Promedio en 10 km · ${sampleSize} estaciones`
                     : "Promedio nacional · Actualizado hoy"}
                 </p>
               </div>

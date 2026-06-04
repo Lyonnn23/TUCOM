@@ -25,7 +25,7 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
     [stations],
   );
 
-  // IDs of the 5 closest stations to the user (within 15 km)
+  // IDs of the 5 closest stations to the user (within 10 km)
   const nearbyIds = useMemo(() => {
     if (!userLocation) return new Set<string>();
     const withDist = stations
