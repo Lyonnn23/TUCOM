@@ -30,7 +30,7 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
     if (!userLocation) return new Set<string>();
     const withDist = stations
       .map((s) => ({ id: s.id, d: (s as any).distance ?? Infinity }))
-      .filter((s) => s.d <= 15)
+      .filter((s) => s.d <= 10)
       .sort((a, b) => a.d - b.d)
       .slice(0, 5);
     return new Set(withDist.map((s) => s.id));
