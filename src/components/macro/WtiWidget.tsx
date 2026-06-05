@@ -29,8 +29,12 @@ export default function WtiWidget() {
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
               Precio del petróleo WTI
             </p>
-            {isLoading || !wti ? (
+            {isLoading ? (
               <Skeleton className="h-5 w-36 mt-1" />
+            ) : !wti ? (
+              <p className="font-heading font-bold text-muted-foreground text-base mt-0.5">
+                No disponible
+              </p>
             ) : (
               <>
                 <p className="font-heading font-bold text-foreground text-base mt-0.5">
