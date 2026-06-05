@@ -393,7 +393,7 @@ const Index = () => {
         {/* Hero: lowest local price */}
         {activeTab === "prices" && (() => {
           const cheapest = stationsWithDistance
-            .filter((s) => userLocation && (s.distance ?? 999) <= 15 && (s.prices.gasoline93 ?? 0) > 0)
+            .filter((s) => userLocation && (s.distance ?? 999) <= 10 && (s.prices.gasoline93 ?? 0) > 0)
             .sort((a, b) => (a.prices.gasoline93 ?? 99999) - (b.prices.gasoline93 ?? 99999))[0];
           if (!cheapest) return null;
           return (
