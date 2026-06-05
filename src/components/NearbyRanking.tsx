@@ -39,7 +39,7 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
   const ranking = useMemo(() => {
     if (!userLocation) return [];
     return stations
-      .filter((s) => s.distance !== undefined && s.distance <= 15)
+      .filter((s) => s.distance !== undefined && s.distance <= 10)
       .filter((s) => {
         if (activeFuel === "electric") return s.hasEvCharging && (s.prices.electric ?? 0) > 0;
         return (s.prices[activeFuel] ?? 0) > 0;
