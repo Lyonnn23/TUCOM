@@ -235,3 +235,8 @@
   height: 100%;
   z-index: 0;
 }
+
+/* Mobile tap responsiveness — eliminate 300ms delay on all buttons & links */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}

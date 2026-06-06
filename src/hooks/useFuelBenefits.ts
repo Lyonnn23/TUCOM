@@ -17,6 +17,10 @@ export interface FuelBenefit {
 export function useFuelBenefits() {
   return useQuery({
     queryKey: ["fuel-benefits"],
+    staleTime: 60 * 60 * 1000, // 1h: benefits change rarely
+    gcTime: 6 * 60 * 60 * 1000,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
     queryFn: async (): Promise<FuelBenefit[]> => {
       const { data, error } = await supabase
         .from("fuel_benefits")

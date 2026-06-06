@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown, Heart, Bell, Calculator } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown, Heart, Bell, Calculator, WifiOff } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import AlertsBell from "@/components/AlertsBell";
 import NearbyRanking from "@/components/NearbyRanking";
@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import StationCard from "@/components/StationCard";
 import EVChargerCard from "@/components/EVChargerCard";
-import StationMap from "@/components/StationMap";
+import LocalErrorBoundary from "@/components/LocalErrorBoundary";
+const StationMap = lazy(() => import("@/components/StationMap"));
 import BenefitsTab from "@/components/BenefitsTab";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
@@ -62,6 +63,19 @@ const Index = () => {
   const [lastLocationUpdate, setLastLocationUpdate] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [stationsLimit, setStationsLimit] = useState(20);
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
+
+  useEffect(() => {
+    const on = () => setIsOnline(true);
+    const off = () => setIsOnline(false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => {
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", off);
+    };
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -211,15 +225,21 @@ const Index = () => {
     });
   }, [stationsWithDistance, mapFuelFilter]);
 
-  const handleNavigate = (station: GasStation) => {
+  const handleNavigate = useCallback((station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
     window.open(wazeUrl, "_blank");
-  };
+  }, []);
 
-  const handleNavigateGoogle = (station: GasStation) => {
+  // Reset pagination when filters change
+  useEffect(() => {
+    setStationsLimit(20);
+  }, [selectedBrand, debouncedSearch, radiusKm, sortByFuel, stationKind]);
+
+
+  const handleNavigateGoogle = useCallback((station: GasStation) => {
     const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`;
     window.open(gmapsUrl, "_blank");
-  };
+  }, []);
 
   const titleByTab: Record<string, { title: string; description: string }> = {
     prices: {
@@ -390,6 +410,15 @@ const Index = () => {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-5 animate-fade-in">
+        {!isOnline && (
+          <div
+            role="status"
+            className="mb-3 rounded-2xl bg-accent/15 border border-accent/30 px-3 py-2 flex items-center gap-2 text-xs text-foreground"
+          >
+            <WifiOff className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />
+            <span>Sin conexión · mostrando últimas estaciones guardadas</span>
+          </div>
+        )}
         {/* Hero: lowest local price */}
         {activeTab === "prices" && (() => {
           const cheapest = stationsWithDistance
@@ -607,11 +636,15 @@ const Index = () => {
               </div>
             </div>
             <div className="h-[calc(100dvh-320px)] min-h-[320px] max-h-[calc(100dvh-220px)] rounded-2xl overflow-hidden border border-border shadow-md isolate">
-              <StationMap
-                stations={mapStations}
-                userLocation={userLocation}
-                onStationClick={(s) => handleNavigate(s)}
-              />
+              <LocalErrorBoundary label="Mapa">
+                <Suspense fallback={<Skeleton className="w-full h-full rounded-2xl" />}>
+                  <StationMap
+                    stations={mapStations}
+                    userLocation={userLocation}
+                    onStationClick={handleNavigate}
+                  />
+                </Suspense>
+              </LocalErrorBoundary>
             </div>
           </div>
         )}
@@ -853,6 +886,8 @@ const Index = () => {
                   </div>
                 );
               }
+              const visible = filtered.slice(0, stationsLimit);
+              const hasMore = filtered.length > visible.length;
               return (
                 <div className="animate-fade-in">
                   {showSyncBanner && (
@@ -865,10 +900,21 @@ const Index = () => {
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {filtered.map((station) => (
+                    {visible.map((station) => (
                       <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
                     ))}
                   </div>
+                  {hasMore && (
+                    <div className="mt-4 flex justify-center">
+                      <button
+                        onClick={() => setStationsLimit((n) => n + 20)}
+                        className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity min-h-11"
+                        style={{ touchAction: "manipulation" }}
+                      >
+                        Cargar más ({filtered.length - visible.length} restantes)
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -887,7 +933,11 @@ const Index = () => {
         )}
 
         {/* Benefits Tab */}
-        {activeTab === "benefits" && <BenefitsTab />}
+        {activeTab === "benefits" && (
+          <LocalErrorBoundary label="Beneficios">
+            <BenefitsTab />
+          </LocalErrorBoundary>
+        )}
       </main>
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
