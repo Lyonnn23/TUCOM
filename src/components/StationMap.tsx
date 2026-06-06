@@ -22,10 +22,19 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
 
   const center = userLocation || { lat: -33.45, lng: -70.65 };
 
-  // Unique brands present in the current station set — drives the legend.
+  // Sort by distance (if available) and cap to MAX_VISIBLE_PINS to keep
+  // marker rendering smooth on low-end devices regardless of zoom.
+  const visibleStations = useMemo(() => {
+    const sorted = [...stations].sort(
+      (a: any, b: any) => (a.distance ?? Infinity) - (b.distance ?? Infinity),
+    );
+    return sorted.slice(0, MAX_VISIBLE_PINS);
+  }, [stations]);
+
+  // Unique brands present in the visible station set — drives the legend.
   const visibleBrands = useMemo(
-    () => Array.from(new Set(stations.map((s) => (s.brand ?? "").toUpperCase()).filter(Boolean))),
-    [stations],
+    () => Array.from(new Set(visibleStations.map((s) => (s.brand ?? "").toUpperCase()).filter(Boolean))),
+    [visibleStations],
   );
 
   // IDs of the 5 closest stations to the user (within 10 km)
