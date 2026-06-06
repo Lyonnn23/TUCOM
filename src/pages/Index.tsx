@@ -621,11 +621,15 @@ const Index = () => {
               </div>
             </div>
             <div className="h-[calc(100dvh-320px)] min-h-[320px] max-h-[calc(100dvh-220px)] rounded-2xl overflow-hidden border border-border shadow-md isolate">
-              <StationMap
-                stations={mapStations}
-                userLocation={userLocation}
-                onStationClick={(s) => handleNavigate(s)}
-              />
+              <LocalErrorBoundary label="Mapa">
+                <Suspense fallback={<Skeleton className="w-full h-full rounded-2xl" />}>
+                  <StationMap
+                    stations={mapStations}
+                    userLocation={userLocation}
+                    onStationClick={handleNavigate}
+                  />
+                </Suspense>
+              </LocalErrorBoundary>
             </div>
           </div>
         )}
