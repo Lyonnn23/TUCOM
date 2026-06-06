@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { MapPin, Navigation, Star, Zap, Clock, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
@@ -248,4 +249,4 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
   );
 };
 
-export default StationCard;
+export default memo(StationCard);

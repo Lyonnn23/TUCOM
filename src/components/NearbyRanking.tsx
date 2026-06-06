@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { Trophy, MapPin, Navigation, Fuel, ChevronDown, ChevronUp, Zap, Clock } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
 import { formatRelativeTime } from "@/hooks/useGasStations";
@@ -181,4 +181,4 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
   );
 };
 
-export default NearbyRanking;
+export default memo(NearbyRanking);

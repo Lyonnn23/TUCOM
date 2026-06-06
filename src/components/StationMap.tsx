@@ -1,6 +1,9 @@
 import { APIProvider, Map, Marker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { LocateFixed } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { memo, useState, useEffect, useMemo } from "react";
+
+// Cap visible markers to keep map render time bounded on low-end devices.
+const MAX_VISIBLE_PINS = 50;
 import { supabase } from "@/integrations/supabase/client";
 import type { GasStation } from "@/hooks/useGasStations";
 import { brandColor, brandInitials } from "@/lib/brandColors";
@@ -170,4 +173,4 @@ const CenterOnMeButton = ({ location }: { location: { lat: number; lng: number }
   );
 };
 
-export default StationMap;
+export default memo(StationMap);
