@@ -230,6 +230,17 @@ const Index = () => {
     window.open(wazeUrl, "_blank");
   }, []);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setStationsLimit(20);
+  }, [selectedBrand, debouncedSearch, radiusKm, sortByFuel, stationKind]);
+
+  // (handleNavigate re-declared above intentionally — keep only one)
+  void 0;
+    const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
+    window.open(wazeUrl, "_blank");
+  }, []);
+
   const handleNavigateGoogle = useCallback((station: GasStation) => {
     const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`;
     window.open(gmapsUrl, "_blank");
