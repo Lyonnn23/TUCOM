@@ -871,6 +871,8 @@ const Index = () => {
                   </div>
                 );
               }
+              const visible = filtered.slice(0, stationsLimit);
+              const hasMore = filtered.length > visible.length;
               return (
                 <div className="animate-fade-in">
                   {showSyncBanner && (
@@ -883,10 +885,21 @@ const Index = () => {
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {filtered.map((station) => (
+                    {visible.map((station) => (
                       <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
                     ))}
                   </div>
+                  {hasMore && (
+                    <div className="mt-4 flex justify-center">
+                      <button
+                        onClick={() => setStationsLimit((n) => n + 20)}
+                        className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity min-h-11"
+                        style={{ touchAction: "manipulation" }}
+                      >
+                        Cargar más ({filtered.length - visible.length} restantes)
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -905,7 +918,11 @@ const Index = () => {
         )}
 
         {/* Benefits Tab */}
-        {activeTab === "benefits" && <BenefitsTab />}
+        {activeTab === "benefits" && (
+          <LocalErrorBoundary label="Beneficios">
+            <BenefitsTab />
+          </LocalErrorBoundary>
+        )}
       </main>
 
       <BottomNav active={activeTab} onChange={setActiveTab} />
