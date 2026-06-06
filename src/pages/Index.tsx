@@ -410,6 +410,15 @@ const Index = () => {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-5 animate-fade-in">
+        {!isOnline && (
+          <div
+            role="status"
+            className="mb-3 rounded-2xl bg-accent/15 border border-accent/30 px-3 py-2 flex items-center gap-2 text-xs text-foreground"
+          >
+            <WifiOff className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />
+            <span>Sin conexión · mostrando últimas estaciones guardadas</span>
+          </div>
+        )}
         {/* Hero: lowest local price */}
         {activeTab === "prices" && (() => {
           const cheapest = stationsWithDistance
