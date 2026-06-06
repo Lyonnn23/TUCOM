@@ -103,7 +103,7 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
             />
           )}
 
-          {stations.map((station) => {
+          {visibleStations.map((station) => {
             const color = brandColor(station.brand);
             const initials = brandInitials(station.brand);
             return (
