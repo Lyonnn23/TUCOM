@@ -13,6 +13,7 @@ import StationCard from "@/components/StationCard";
 import EVChargerCard from "@/components/EVChargerCard";
 import LocalErrorBoundary from "@/components/LocalErrorBoundary";
 const StationMap = lazy(() => import("@/components/StationMap"));
+import RouteModePanel, { type RouteCorridor } from "@/components/RouteModePanel";
 import BenefitsTab from "@/components/BenefitsTab";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
