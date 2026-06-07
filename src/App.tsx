@@ -12,6 +12,7 @@ import ShareTargetHandler from "@/components/ShareTargetHandler";
 import SkipLink from "@/components/SkipLink";
 import SplashScreen from "@/components/SplashScreen";
 import ChatBubble from "@/components/ChatBubble";
+import FirstRunOnboarding from "@/components/FirstRunOnboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
@@ -202,6 +203,7 @@ const App = () => {
             </main>
             <InstallBanner />
             <ChatBubble />
+            <FirstRunOnboarding />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
