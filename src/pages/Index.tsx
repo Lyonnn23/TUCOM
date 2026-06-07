@@ -498,6 +498,9 @@ const Index = () => {
             {/* Disclaimer oficial: requisito Google Play (afirmaciones engañosas) — cerrable */}
             <UnofficialBanner variant="full" storageKey="tucom_unofficial_banner_full_dismissed" />
 
+            <MepcoThursdayBanner />
+
+
             {pricesLoading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
