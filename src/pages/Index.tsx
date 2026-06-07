@@ -635,7 +635,14 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <p className="text-xs text-muted-foreground">{mapStations.length} estaciones en el mapa</p>
+              <RouteModePanel
+                userLocation={userLocation}
+                stations={mapStations}
+                onChange={handleRouteChange}
+              />
+              <p className="text-xs text-muted-foreground">
+                {(routeCorridor ? routeCorridor.stationIds.size : mapStations.length)} estaciones en el mapa
+              </p>
               <div className="flex items-center gap-2.5 text-[10px] text-muted-foreground">
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-blue inline-block" /> Más cercana</span>
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-green inline-block" /> Abiertas</span>
@@ -646,15 +653,18 @@ const Index = () => {
               <LocalErrorBoundary label="Mapa">
                 <Suspense fallback={<Skeleton className="w-full h-full rounded-2xl" />}>
                   <StationMap
-                    stations={mapStations}
+                    stations={routeCorridor ? mapStations.filter((s) => routeCorridor.stationIds.has(s.id)) : mapStations}
                     userLocation={userLocation}
                     onStationClick={handleNavigate}
+                    routePath={routeCorridor?.path}
+                    highlightStationId={routeCorridor?.cheapestStationId ?? undefined}
                   />
                 </Suspense>
               </LocalErrorBoundary>
             </div>
           </div>
         )}
+
 
         {/* Stations List Tab */}
         {activeTab === "stations" && (
