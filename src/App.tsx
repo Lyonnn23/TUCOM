@@ -203,6 +203,7 @@ const App = () => {
             </main>
             <InstallBanner />
             <ChatBubble />
+            <FirstRunOnboarding />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
