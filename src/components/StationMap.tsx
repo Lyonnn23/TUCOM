@@ -13,7 +13,10 @@ interface StationMapProps {
   stations: GasStation[];
   userLocation: { lat: number; lng: number } | null;
   onStationClick?: (station: GasStation) => void;
+  routePath?: { lat: number; lng: number }[];
+  highlightStationId?: string;
 }
+
 
 const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps) => {
   const [selected, setSelected] = useState<GasStation | null>(null);
