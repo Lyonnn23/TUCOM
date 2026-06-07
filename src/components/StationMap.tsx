@@ -18,7 +18,7 @@ interface StationMapProps {
 }
 
 
-const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps) => {
+const StationMap = ({ stations, userLocation, onStationClick, routePath, highlightStationId }: StationMapProps) => {
   const [selected, setSelected] = useState<GasStation | null>(null);
   const [apiKey, setApiKey] = useState<string>("");
   const [loading, setLoading] = useState(true);
