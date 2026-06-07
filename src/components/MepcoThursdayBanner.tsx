@@ -25,8 +25,7 @@ const MepcoThursdayBanner = () => {
 
   const avgChange =
     prices && prices.length
-      ? prices.reduce((sum, p) => sum + Math.abs(p.price - (p.previous_price ?? p.price)), 0) /
-        prices.length
+      ? prices.reduce((sum, p) => sum + Math.abs(p.change ?? 0), 0) / prices.length
       : 0;
 
   const dismiss = () => {
