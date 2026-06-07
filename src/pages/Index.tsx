@@ -8,6 +8,7 @@ import LocationPermissionGuide from "@/components/LocationPermissionGuide";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
+import MepcoThursdayBanner from "@/components/MepcoThursdayBanner";
 import StationCard from "@/components/StationCard";
 import EVChargerCard from "@/components/EVChargerCard";
 import LocalErrorBoundary from "@/components/LocalErrorBoundary";
