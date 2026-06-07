@@ -194,4 +194,28 @@ const CenterOnMeButton = ({ location }: { location: { lat: number; lng: number }
   );
 };
 
+const RoutePolyline = ({ path }: { path: { lat: number; lng: number }[] }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!map) return;
+    const maps = (globalThis as any).google?.maps;
+    if (!maps?.Polyline) return;
+    const polyline = new maps.Polyline({
+      path,
+      geodesic: true,
+      strokeColor: "#2563eb",
+      strokeOpacity: 0.9,
+      strokeWeight: 5,
+      map,
+    });
+    try {
+      const bounds = new maps.LatLngBounds();
+      path.forEach((p) => bounds.extend(p));
+      map.fitBounds(bounds, 60);
+    } catch {}
+    return () => polyline.setMap(null);
+  }, [map, path]);
+  return null;
+};
+
 export default memo(StationMap);
