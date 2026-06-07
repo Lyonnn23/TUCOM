@@ -109,18 +109,27 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
           {visibleStations.map((station) => {
             const color = brandColor(station.brand);
             const initials = brandInitials(station.brand);
+            const isCheapest = highlightStationId === station.id;
             return (
               <Marker
                 key={station.id}
                 position={{ lat: station.lat, lng: station.lng }}
                 onClick={() => setSelected(station)}
-                title={`${station.brand} · ${station.name}`}
-                label={{ text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }}
-                icon={getMarkerIcon(color, 16)}
+                title={`${station.brand} · ${station.name}${isCheapest ? " · La más barata del trayecto" : ""}`}
+                label={
+                  isCheapest
+                    ? { text: "★", color: "#1a1a1a", fontSize: "16px", fontWeight: "900" }
+                    : { text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }
+                }
+                icon={getMarkerIcon(isCheapest ? "#F5B301" : color, isCheapest ? 20 : 16)}
+                zIndex={isCheapest ? 999 : undefined}
                 animation={(globalThis as any).google?.maps?.Animation?.DROP}
               />
             );
           })}
+
+          {routePath && routePath.length > 1 && <RoutePolyline path={routePath} />}
+
 
           {selected && (
             <InfoWindow
