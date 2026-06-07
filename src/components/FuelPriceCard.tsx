@@ -1,6 +1,28 @@
-import { TrendingDown, TrendingUp, Minus, Zap } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { TrendingDown, TrendingUp, Minus, Zap, ArrowDown, ArrowUp } from "lucide-react";
 import type { FuelPrice } from "@/hooks/useFuelPrices";
 import { formatPrice } from "@/lib/format";
+
+const LAST_WEEK_KEY = "mepco_last_week";
+
+const isoWeek = (d = new Date()) => {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((+t - +yearStart) / 86400000 + 1) / 7);
+  return `${t.getUTCFullYear()}-W${week}`;
+};
+
+type Store = { week: string; prices: Record<string, number> };
+
+const readStore = (): Store | null => {
+  try {
+    const raw = localStorage.getItem(LAST_WEEK_KEY);
+    return raw ? (JSON.parse(raw) as Store) : null;
+  } catch { return null; }
+};
+
 
 interface FuelPriceCardProps {
   fuel: FuelPrice;
