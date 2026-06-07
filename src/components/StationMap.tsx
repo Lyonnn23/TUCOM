@@ -13,9 +13,12 @@ interface StationMapProps {
   stations: GasStation[];
   userLocation: { lat: number; lng: number } | null;
   onStationClick?: (station: GasStation) => void;
+  routePath?: { lat: number; lng: number }[];
+  highlightStationId?: string;
 }
 
-const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps) => {
+
+const StationMap = ({ stations, userLocation, onStationClick, routePath, highlightStationId }: StationMapProps) => {
   const [selected, setSelected] = useState<GasStation | null>(null);
   const [apiKey, setApiKey] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -106,18 +109,27 @@ const StationMap = ({ stations, userLocation, onStationClick }: StationMapProps)
           {visibleStations.map((station) => {
             const color = brandColor(station.brand);
             const initials = brandInitials(station.brand);
+            const isCheapest = highlightStationId === station.id;
             return (
               <Marker
                 key={station.id}
                 position={{ lat: station.lat, lng: station.lng }}
                 onClick={() => setSelected(station)}
-                title={`${station.brand} · ${station.name}`}
-                label={{ text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }}
-                icon={getMarkerIcon(color, 16)}
+                title={`${station.brand} · ${station.name}${isCheapest ? " · La más barata del trayecto" : ""}`}
+                label={
+                  isCheapest
+                    ? { text: "★", color: "#1a1a1a", fontSize: "16px", fontWeight: "900" }
+                    : { text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }
+                }
+                icon={getMarkerIcon(isCheapest ? "#F5B301" : color, isCheapest ? 20 : 16)}
+                zIndex={isCheapest ? 999 : undefined}
                 animation={(globalThis as any).google?.maps?.Animation?.DROP}
               />
             );
           })}
+
+          {routePath && routePath.length > 1 && <RoutePolyline path={routePath} />}
+
 
           {selected && (
             <InfoWindow
@@ -180,6 +192,30 @@ const CenterOnMeButton = ({ location }: { location: { lat: number; lng: number }
       <LocateFixed className="w-5 h-5 text-primary" />
     </button>
   );
+};
+
+const RoutePolyline = ({ path }: { path: { lat: number; lng: number }[] }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!map) return;
+    const maps = (globalThis as any).google?.maps;
+    if (!maps?.Polyline) return;
+    const polyline = new maps.Polyline({
+      path,
+      geodesic: true,
+      strokeColor: "#2563eb",
+      strokeOpacity: 0.9,
+      strokeWeight: 5,
+      map,
+    });
+    try {
+      const bounds = new maps.LatLngBounds();
+      path.forEach((p) => bounds.extend(p));
+      map.fitBounds(bounds, 60);
+    } catch {}
+    return () => polyline.setMap(null);
+  }, [map, path]);
+  return null;
 };
 
 export default memo(StationMap);
