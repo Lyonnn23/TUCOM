@@ -64,6 +64,8 @@ const Index = () => {
   const [locationLoading, setLocationLoading] = useState(false);
   const [lastLocationUpdate, setLastLocationUpdate] = useState<number | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [routeCorridor, setRouteCorridor] = useState<RouteCorridor | null>(null);
+  const handleRouteChange = useCallback((c: RouteCorridor | null) => setRouteCorridor(c), []);
   const [scrolled, setScrolled] = useState(false);
   const [stationsLimit, setStationsLimit] = useState(20);
   const [isOnline, setIsOnline] = useState(() => (typeof navigator !== "undefined" ? navigator.onLine : true));
