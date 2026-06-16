@@ -145,10 +145,22 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
               position={{ lat: selected.lat, lng: selected.lng }}
               onCloseClick={() => setSelected(null)}
             >
-              <div className="p-1 min-w-[160px]">
-                <h3 className="font-bold text-sm">{selected.name}</h3>
+              <div className="p-1 min-w-[180px]">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-bold text-sm">{selected.name}</h3>
+                  {highlightStationId === selected.id && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#F5B301] text-[#1a1a1a] whitespace-nowrap">
+                      ★ Más barata
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-gray-500">{selected.brand}</p>
                 <p className="text-xs mt-1">{selected.address}</p>
+                {selectedFuel && selectedFuel !== "all" && (selected.prices as any)[selectedFuel] > 0 && (
+                  <p className="text-xs font-semibold mt-1" style={{ color: "#7C3AED" }}>
+                    ${Math.round((selected.prices as any)[selectedFuel])}/L
+                  </p>
+                )}
                 {selected.distance !== undefined && (
                   <p className="text-xs font-medium mt-1" style={{ color: "#7C3AED" }}>
                     {selected.distance} km
@@ -159,7 +171,7 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
                   className="mt-2 w-full text-xs py-1.5 rounded-md font-semibold"
                   style={{ background: "#7C3AED", color: "#fff" }}
                 >
-                  Ir con Waze
+                  Cómo llegar
                 </button>
               </div>
             </InfoWindow>
