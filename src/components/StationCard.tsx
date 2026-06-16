@@ -78,7 +78,10 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
     fuelItems.push({ label: "⚡ kWh", price: station.prices.electric, estimated: station.electricEstimated });
   }
 
-  const headline = station.prices.gasoline93
+const headline =
+  selectedFuel && selectedFuel !== "all" && (station.prices[selectedFuel] ?? 0) > 0
+    ? { label: FUEL_LABEL[selectedFuel], price: station.prices[selectedFuel], fuelType: selectedFuel }
+    : station.prices.gasoline93
     ? { label: "93", price: station.prices.gasoline93, fuelType: "gasoline93" }
     : (() => {
         const f = fuelItems.find((x) => x.price > 0) || fuelItems[0];
@@ -87,6 +90,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
       })();
 
   const best = getBestDiscount(discounts, station.brand, userMethods, headline.fuelType, headline.price);
+  const tierClass = priceTier ? TIER_CLASS[priceTier] : "text-accent";
 
   return (
     <div
