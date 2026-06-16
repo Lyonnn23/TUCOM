@@ -108,6 +108,33 @@ const Index = () => {
     };
   }, []);
 
+  // PWA App Shortcuts: handle ?shortcut= param from manifest shortcuts
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shortcut = params.get("shortcut");
+    if (!shortcut) return;
+    if (shortcut === "map") {
+      setActiveTab("map");
+    } else if (shortcut === "calculator") {
+      navigate("/calculadora", { replace: true });
+      return;
+    } else if (shortcut === "favorite") {
+      setActiveTab("favorites");
+    } else if (shortcut === "cheapest") {
+      setActiveTab("prices");
+      setTimeout(() => {
+        const el = document.getElementById("cheapest-station") || document.querySelector('[data-cheapest="true"]');
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 400);
+    }
+    // Clean URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete("shortcut");
+    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   // Analytics: page_view per tab + open_map + user properties
   useEffect(() => {
     import("@/lib/analytics").then(({ analytics, pageView, setUserProperties }) => {
@@ -496,7 +523,7 @@ const Index = () => {
             .sort((a, b) => (a.prices[heroFuel] ?? 99999) - (b.prices[heroFuel] ?? 99999))[0];
           if (!cheapest) return null;
           return (
-            <div className="mb-5 rounded-3xl bg-gradient-hero p-5 shadow-glow text-white relative overflow-hidden animate-scale-in">
+            <div id="cheapest-station" data-cheapest="true" className="mb-5 rounded-3xl bg-gradient-hero p-5 shadow-glow text-white relative overflow-hidden animate-scale-in scroll-mt-20">
               <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
               <div className="absolute right-10 bottom-0 w-24 h-24 rounded-full bg-accent/30 blur-2xl" />
               <div className="relative">
