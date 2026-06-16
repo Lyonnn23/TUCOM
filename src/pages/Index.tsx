@@ -719,6 +719,7 @@ const Index = () => {
                 className="pl-9 bg-card border-border rounded-2xl text-sm"
               />
             </div>
+            <FuelFilterPills value={preferredFuel} onChange={setPreferredFuel} />
             {availableBrands.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                 <button
