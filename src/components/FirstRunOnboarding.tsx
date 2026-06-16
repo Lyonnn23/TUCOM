@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Fuel, Map as MapIcon, Wallet, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const STORAGE_KEY = "onboarding_complete";
 
