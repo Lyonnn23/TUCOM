@@ -157,10 +157,13 @@ const StationDetail = () => {
     });
   };
 
+  const [navOpen, setNavOpen] = useState(false);
+
   const handleGoogleMapsDirections = () => {
     if (!station) return;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}${station.placeId ? `&destination_place_id=${station.placeId}` : ""}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    const pref = getPreferredNavApp();
+    if (pref) openNavApp(pref, station.lat, station.lng);
+    else setNavOpen(true);
   };
 
   const handleViewOnGoogleMaps = () => {
