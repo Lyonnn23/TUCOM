@@ -120,7 +120,7 @@ const StationDetail = () => {
     setReviewsLoading(true);
     const { data } = await supabase
       .from("station_reviews")
-      .select("*")
+      .select("id, station_id, rating, comment, created_at")
       .eq("station_id", id)
       .order("created_at", { ascending: false })
       .limit(20);
