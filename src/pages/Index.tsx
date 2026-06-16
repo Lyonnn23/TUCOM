@@ -15,6 +15,8 @@ import LocalErrorBoundary from "@/components/LocalErrorBoundary";
 const StationMap = lazy(() => import("@/components/StationMap"));
 import RouteModePanel, { type RouteCorridor } from "@/components/RouteModePanel";
 import BenefitsTab from "@/components/BenefitsTab";
+import FuelFilterPills, { type FuelFilterKey } from "@/components/FuelFilterPills";
+import { useUserVehicles } from "@/hooks/useUserVehicles";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
@@ -57,7 +59,30 @@ const Index = () => {
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
-  const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
+  const [preferredFuel, setPreferredFuelState] = useState<FuelFilterKey>(() => {
+    if (typeof window === "undefined") return "all";
+    const v = window.localStorage.getItem("preferred_fuel") as FuelFilterKey | null;
+    return v && ["all", "gasoline93", "gasoline95", "gasoline97", "diesel", "electric"].includes(v) ? v : "all";
+  });
+  const setPreferredFuel = useCallback((v: FuelFilterKey) => {
+    setPreferredFuelState(v);
+    try { window.localStorage.setItem("preferred_fuel", v); } catch {}
+  }, []);
+  const { primary: primaryVehicle } = useUserVehicles();
+  useEffect(() => {
+    if (!primaryVehicle) return;
+    const hasStored = (() => { try { return !!window.localStorage.getItem("preferred_fuel"); } catch { return false; } })();
+    if (hasStored) return;
+    const map: Record<string, FuelFilterKey> = {
+      gasoline93: "gasoline93",
+      gasoline95: "gasoline95",
+      gasoline97: "gasoline97",
+      diesel: "diesel",
+      electric: "electric",
+    };
+    const next = map[primaryVehicle.fuel_type];
+    if (next) setPreferredFuelState(next);
+  }, [primaryVehicle]);
   const [stationKind, setStationKind] = useState<"all" | "fuel" | "ev" | "glp" | "gnc">("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [locationErrorType, setLocationErrorType] = useState<"denied" | "unavailable" | "timeout" | "unsupported" | null>(null);
@@ -221,13 +246,16 @@ const Index = () => {
   }, [stations, userLocation, debouncedSearch, selectedBrand, sortByFuel, radiusKm]);
 
   const mapStations = useMemo(() => {
-    return stationsWithDistance.filter((s) => {
-      if (mapFuelFilter === "all") return true;
-      if (mapFuelFilter === "electric") return s.hasEvCharging && (s.prices.electric ?? 0) > 0;
-      const fuelKey = mapFuelFilter as keyof typeof s.prices;
+    const filtered = stationsWithDistance.filter((s) => {
+      if (preferredFuel === "all") return true;
+      if (preferredFuel === "electric") return s.hasEvCharging && (s.prices.electric ?? 0) > 0;
+      const fuelKey = preferredFuel as keyof typeof s.prices;
       return (s.prices[fuelKey] ?? 0) > 0;
     });
-  }, [stationsWithDistance, mapFuelFilter]);
+    if (preferredFuel === "all") return filtered;
+    const key = preferredFuel as keyof (typeof filtered)[number]["prices"];
+    return [...filtered].sort((a, b) => (a.prices[key] ?? 99999) - (b.prices[key] ?? 99999));
+  }, [stationsWithDistance, preferredFuel]);
 
   const handleNavigate = useCallback((station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
@@ -237,7 +265,7 @@ const Index = () => {
   // Reset pagination when filters change
   useEffect(() => {
     setStationsLimit(20);
-  }, [selectedBrand, debouncedSearch, radiusKm, sortByFuel, stationKind]);
+  }, [selectedBrand, debouncedSearch, radiusKm, sortByFuel, stationKind, preferredFuel]);
 
 
   const handleNavigateGoogle = useCallback((station: GasStation) => {
@@ -425,9 +453,18 @@ const Index = () => {
         )}
         {/* Hero: lowest local price */}
         {activeTab === "prices" && (() => {
+          const heroFuel: "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric" =
+            preferredFuel === "all" ? "gasoline93" : preferredFuel;
+          const heroLabel: Record<typeof heroFuel, string> = {
+            gasoline93: "93",
+            gasoline95: "95",
+            gasoline97: "97",
+            diesel: "Diésel",
+            electric: "⚡ kWh",
+          };
           const cheapest = stationsWithDistance
-            .filter((s) => userLocation && (s.distance ?? 999) <= 10 && (s.prices.gasoline93 ?? 0) > 0)
-            .sort((a, b) => (a.prices.gasoline93 ?? 99999) - (b.prices.gasoline93 ?? 99999))[0];
+            .filter((s) => userLocation && (s.distance ?? 999) <= 10 && (s.prices[heroFuel] ?? 0) > 0)
+            .sort((a, b) => (a.prices[heroFuel] ?? 99999) - (b.prices[heroFuel] ?? 99999))[0];
           if (!cheapest) return null;
           return (
             <div className="mb-5 rounded-3xl bg-gradient-hero p-5 shadow-glow text-white relative overflow-hidden animate-scale-in">
@@ -446,9 +483,9 @@ const Index = () => {
                     <p className="text-[11px] text-white/80 truncate">{cheapest.brand} · {cheapest.address}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[10px] text-white/75 uppercase tracking-wider">93</p>
+                    <p className="text-[10px] text-white/75 uppercase tracking-wider">{heroLabel[heroFuel]}</p>
                     <p className="font-heading tabular-nums font-extrabold text-4xl leading-none">
-                      ${cheapest.prices.gasoline93}
+                      ${cheapest.prices[heroFuel]}
                     </p>
                     <p className="text-[10px] text-white/70 mt-0.5">por litro</p>
                   </div>
@@ -608,31 +645,8 @@ const Index = () => {
             </div>
             {/* Fuel type filter */}
             <div className="flex items-center gap-2">
-              <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <div className="flex gap-1.5">
-                {[
-                  { key: "all", label: "Todos" },
-                  { key: "gasoline93", label: "93" },
-                  { key: "gasoline95", label: "95" },
-                  { key: "gasoline97", label: "97" },
-                  { key: "diesel", label: "Diésel" },
-                  { key: "electric", label: "⚡ EV" },
-                ].map((opt) => (
-                  <button
-                    key={opt.key}
-                    onClick={() => { setMapFuelFilter(opt.key); analytics.filterFuel(opt.key); }}
-                    className={`shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors ${
-                      mapFuelFilter === opt.key
-                        ? opt.key === "electric"
-                          ? "bg-[hsl(142,70%,45%)] text-white"
-                          : "bg-secondary text-secondary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              <Fuel className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
+              <FuelFilterPills value={preferredFuel} onChange={setPreferredFuel} className="flex-1" />
             </div>
             <div className="flex items-center justify-between flex-wrap gap-2">
               <RouteModePanel
@@ -658,6 +672,7 @@ const Index = () => {
                     onStationClick={handleNavigate}
                     routePath={routeCorridor?.path}
                     highlightStationId={routeCorridor?.cheapestStationId ?? undefined}
+                    selectedFuel={preferredFuel}
                   />
                 </Suspense>
               </LocalErrorBoundary>
@@ -704,6 +719,7 @@ const Index = () => {
                 className="pl-9 bg-card border-border rounded-2xl text-sm"
               />
             </div>
+            <FuelFilterPills value={preferredFuel} onChange={setPreferredFuel} />
             {availableBrands.length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                 <button
@@ -850,12 +866,33 @@ const Index = () => {
               </button>
             )}
             {(() => {
-              const filtered = stationsWithDistance.filter((s) => {
+              let filtered = stationsWithDistance.filter((s) => {
                 if (stationKind === "all" || stationKind === "fuel") return stationKind === "all" ? true : !s.hasEvCharging || (s.prices.gasoline93 || s.prices.gasoline95 || s.prices.gasoline97 || s.prices.diesel) > 0;
                 if (stationKind === "ev") return s.hasEvCharging || (s.prices.electric ?? 0) > 0;
                 // GLP / GNC not yet sourced in DB
                 return false;
               });
+              // Apply preferred fuel filter + sort cheapest first
+              if (preferredFuel !== "all") {
+                const fk = preferredFuel as keyof typeof filtered[number]["prices"];
+                filtered = filtered.filter((s) => (s.prices[fk] ?? 0) > 0);
+                filtered = [...filtered].sort((a, b) => (a.prices[fk] ?? 99999) - (b.prices[fk] ?? 99999));
+              }
+              // Compute price tier thresholds for selected fuel (terciles)
+              const tierFor = (() => {
+                if (preferredFuel === "all") return (_p: number): undefined => undefined;
+                const fk = preferredFuel as keyof typeof filtered[number]["prices"];
+                const prices = filtered.map((s) => s.prices[fk] ?? 0).filter((p) => p > 0).sort((a, b) => a - b);
+                if (prices.length < 3) return (_p: number): undefined => undefined;
+                const t1 = prices[Math.floor(prices.length / 3)];
+                const t2 = prices[Math.floor((prices.length * 2) / 3)];
+                return (p: number): "low" | "mid" | "high" | undefined => {
+                  if (!p) return undefined;
+                  if (p <= t1) return "low";
+                  if (p <= t2) return "mid";
+                  return "high";
+                };
+              })();
               if (stationsLoading) {
                 return (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -917,9 +954,22 @@ const Index = () => {
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {visible.map((station) => (
-                      <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
-                    ))}
+                    {visible.map((station) => {
+                      const fk = preferredFuel !== "all" ? (preferredFuel as keyof typeof station.prices) : null;
+                      const tier = fk ? tierFor(station.prices[fk] ?? 0) : undefined;
+                      return (
+                        <StationCard
+                          key={station.id}
+                          station={station}
+                          onNavigate={handleNavigate}
+                          onNavigateGoogle={handleNavigateGoogle}
+                          lastCommunityReport={recentReports?.get(station.id) ?? null}
+                          rating={stationRatings?.get(station.id) ?? null}
+                          selectedFuel={preferredFuel}
+                          priceTier={tier}
+                        />
+                      );
+                    })}
                   </div>
                   {hasMore && (
                     <div className="mt-4 flex justify-center">

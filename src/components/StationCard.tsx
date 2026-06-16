@@ -12,13 +12,32 @@ import { useStationDiscounts } from "@/hooks/useStationDiscounts";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { getBestDiscount, DISCOUNT_DISCLAIMER } from "@/lib/discounts";
 
+export type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
+export type PriceTier = "low" | "mid" | "high";
+
 interface StationCardProps {
   station: GasStation;
   onNavigate?: (station: GasStation) => void;
   onNavigateGoogle?: (station: GasStation) => void;
   lastCommunityReport?: string | null;
   rating?: { avg: number; count: number } | null;
+  selectedFuel?: FuelKey | "all";
+  priceTier?: PriceTier;
 }
+
+const FUEL_LABEL: Record<FuelKey, string> = {
+  gasoline93: "93",
+  gasoline95: "95",
+  gasoline97: "97",
+  diesel: "Diésel",
+  electric: "⚡ kWh",
+};
+
+const TIER_CLASS: Record<PriceTier, string> = {
+  low: "text-fuel-green",
+  mid: "text-fuel-amber",
+  high: "text-fuel-red",
+};
 
 const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string }> = {
   Copec: {
@@ -40,7 +59,7 @@ const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string
 
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
-const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport, rating }: StationCardProps) => {
+const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport, rating, selectedFuel, priceTier }: StationCardProps) => {
   const navigate = useNavigate();
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
@@ -59,7 +78,10 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
     fuelItems.push({ label: "⚡ kWh", price: station.prices.electric, estimated: station.electricEstimated });
   }
 
-  const headline = station.prices.gasoline93
+const headline =
+  selectedFuel && selectedFuel !== "all" && (station.prices[selectedFuel] ?? 0) > 0
+    ? { label: FUEL_LABEL[selectedFuel], price: station.prices[selectedFuel], fuelType: selectedFuel }
+    : station.prices.gasoline93
     ? { label: "93", price: station.prices.gasoline93, fuelType: "gasoline93" }
     : (() => {
         const f = fuelItems.find((x) => x.price > 0) || fuelItems[0];
@@ -68,6 +90,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
       })();
 
   const best = getBestDiscount(discounts, station.brand, userMethods, headline.fuelType, headline.price);
+  const tierClass = priceTier ? TIER_CLASS[priceTier] : "text-accent";
 
   return (
     <div
@@ -145,7 +168,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
             ) : (
               <>
                 <p
-                  className="font-heading tabular-nums font-extrabold text-xl leading-tight text-accent"
+                  className={`font-heading tabular-nums font-extrabold leading-tight ${priceTier ? "text-2xl" : "text-xl"} ${tierClass}`}
                   aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
                 >
                   {headline.price ? formatPrice(headline.price) : "—"}
