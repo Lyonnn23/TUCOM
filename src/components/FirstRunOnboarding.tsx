@@ -19,6 +19,7 @@ const SLIDES: Slide[] = [
 ];
 
 const FirstRunOnboarding = () => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
