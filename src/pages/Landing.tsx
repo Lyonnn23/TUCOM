@@ -43,7 +43,7 @@ const Landing = () => {
 
   const updatedAt =
     prices && prices.length
-      ? formatDateCL(new Date())
+      ? formatLongDate(new Date())
       : "—";
 
   const fuels: Array<{ key: string; label: string }> = [
@@ -179,7 +179,7 @@ const Landing = () => {
                       {f.label}
                     </div>
                     <div className="mt-1 text-2xl font-extrabold text-primary">
-                      {p ? formatCLP(p) : "—"}
+                      {p ? formatPrice(p) : "—"}
                     </div>
                     <div className="text-[10px] text-muted-foreground mt-1">CLP/L</div>
                   </Card>
