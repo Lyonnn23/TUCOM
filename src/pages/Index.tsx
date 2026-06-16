@@ -68,6 +68,21 @@ const Index = () => {
     setPreferredFuelState(v);
     try { window.localStorage.setItem("preferred_fuel", v); } catch {}
   }, []);
+  const { primary: primaryVehicle } = useUserVehicles();
+  useEffect(() => {
+    if (!primaryVehicle) return;
+    const hasStored = (() => { try { return !!window.localStorage.getItem("preferred_fuel"); } catch { return false; } })();
+    if (hasStored) return;
+    const map: Record<string, FuelFilterKey> = {
+      gasoline93: "gasoline93",
+      gasoline95: "gasoline95",
+      gasoline97: "gasoline97",
+      diesel: "diesel",
+      electric: "electric",
+    };
+    const next = map[primaryVehicle.fuel_type];
+    if (next) setPreferredFuelState(next);
+  }, [primaryVehicle]);
   const [stationKind, setStationKind] = useState<"all" | "fuel" | "ev" | "glp" | "gnc">("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [locationErrorType, setLocationErrorType] = useState<"denied" | "unavailable" | "timeout" | "unsupported" | null>(null);
