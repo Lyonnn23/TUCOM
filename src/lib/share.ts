@@ -51,6 +51,10 @@ async function logShare(p: ShareStationPayload, channel: string) {
   } catch {
     /* non-blocking */
   }
+  try {
+    const { analytics } = await import("@/lib/analytics");
+    analytics.sharePrice(p.fuelType, channel);
+  } catch { /* noop */ }
 }
 
 /** Render a 1080x1080 PNG share card. */

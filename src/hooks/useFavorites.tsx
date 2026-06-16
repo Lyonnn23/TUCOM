@@ -45,6 +45,9 @@ export function useFavorites() {
     onSuccess: (res) => {
       toast.success(res.added ? "Añadido a favoritos ❤️" : "Eliminado de favoritos");
       qc.invalidateQueries({ queryKey: FAVORITES_KEY });
+      if (res.added) {
+        import("@/lib/analytics").then((m) => m.analytics.addFavorite(res.stationId)).catch(() => {});
+      }
     },
     onError: (err: any) => {
       if (err?.message === "not-authenticated") {

@@ -204,6 +204,7 @@ const App = () => {
             </Suspense>
             </main>
             <InstallBanner />
+            <ConsentBanner />
             <Suspense fallback={null}>
               <ChatBubble />
             </Suspense>
