@@ -188,7 +188,25 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Marca</Label>
-                <Input value={brand} onChange={(e) => setBrand(e.target.value)} className="mt-1" />
+                {(() => {
+                  const BRANDS = ["Toyota","Hyundai","Kia","Chevrolet","Suzuki","Nissan","Mazda","Honda","Ford","Subaru","Volkswagen","Mitsubishi","Mercedes","BMW","Audi"];
+                  const isOther = brand !== "" && !BRANDS.includes(brand);
+                  const selectVal = brand === "" ? "" : isOther ? "Otra" : brand;
+                  return (
+                    <>
+                      <Select value={selectVal} onValueChange={(v) => setBrand(v === "Otra" ? "" : v)}>
+                        <SelectTrigger className="mt-1"><SelectValue placeholder="Elige marca" /></SelectTrigger>
+                        <SelectContent>
+                          {BRANDS.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
+                          <SelectItem value="Otra">Otra…</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {(selectVal === "Otra" || isOther) && (
+                        <Input value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="Escribe marca" className="mt-2" />
+                      )}
+                    </>
+                  );
+                })()}
               </div>
               <div>
                 <Label className="text-xs">Modelo</Label>
@@ -199,14 +217,14 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Año</Label>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  placeholder="2020"
-                  className="mt-1"
-                />
+                <Select value={year} onValueChange={setYear}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Año" /></SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {Array.from({ length: 2026 - 2000 + 1 }, (_, i) => 2026 - i).map((y) => (
+                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-xs">Combustible</Label>
@@ -242,6 +260,11 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                   onChange={(e) => setCons(e.target.value)}
                   className="mt-1"
                 />
+                {fuelType !== "electric" && (
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
+                    Referencia: autos pequeños 12–17 km/L · medianos 10–12 · SUV 7–10 · camionetas 6–8.
+                  </p>
+                )}
               </div>
             </div>
 
