@@ -5,6 +5,7 @@ import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
 import BrandLogo from "./BrandLogo";
 import FavoriteButton from "./FavoriteButton";
+import ShareStationButton from "./ShareStationButton";
 import CommunityReportBadge from "./CommunityReportBadge";
 import { analytics } from "@/lib/analytics";
 import { formatPrice, formatKm, formatRelativeTime } from "@/lib/format";
@@ -111,8 +112,18 @@ const headline =
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
-      {/* Favorite (top right floating) */}
-      <div className="absolute top-2.5 right-2.5 z-10">
+      {/* Favorite + Share (top right floating) */}
+      <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
+        <ShareStationButton
+          payload={{
+            stationId: station.id,
+            stationName: station.name,
+            brand: station.brand,
+            fuelType: headline.fuelType as any,
+            price: headline.price,
+            distanceKm: station.distance,
+          }}
+        />
         <FavoriteButton stationId={station.id} size="sm" variant="surface" />
       </div>
 
