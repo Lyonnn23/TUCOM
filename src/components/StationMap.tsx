@@ -15,10 +15,11 @@ interface StationMapProps {
   onStationClick?: (station: GasStation) => void;
   routePath?: { lat: number; lng: number }[];
   highlightStationId?: string;
+  selectedFuel?: "all" | "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
 }
 
 
-const StationMap = ({ stations, userLocation, onStationClick, routePath, highlightStationId }: StationMapProps) => {
+const StationMap = ({ stations, userLocation, onStationClick, routePath, highlightStationId, selectedFuel }: StationMapProps) => {
   const [selected, setSelected] = useState<GasStation | null>(null);
   const [apiKey, setApiKey] = useState<string>("");
   const [loading, setLoading] = useState(true);
