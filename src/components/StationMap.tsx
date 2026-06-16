@@ -6,7 +6,7 @@ import { memo, useState, useEffect, useMemo } from "react";
 const MAX_VISIBLE_PINS = 50;
 import { supabase } from "@/integrations/supabase/client";
 import type { GasStation } from "@/hooks/useGasStations";
-import { brandColor, brandInitials } from "@/lib/brandColors";
+
 import MapLegend from "@/components/MapLegend";
 
 interface StationMapProps {
