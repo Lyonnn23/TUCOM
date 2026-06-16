@@ -12,13 +12,32 @@ import { useStationDiscounts } from "@/hooks/useStationDiscounts";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { getBestDiscount, DISCOUNT_DISCLAIMER } from "@/lib/discounts";
 
+export type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
+export type PriceTier = "low" | "mid" | "high";
+
 interface StationCardProps {
   station: GasStation;
   onNavigate?: (station: GasStation) => void;
   onNavigateGoogle?: (station: GasStation) => void;
   lastCommunityReport?: string | null;
   rating?: { avg: number; count: number } | null;
+  selectedFuel?: FuelKey | "all";
+  priceTier?: PriceTier;
 }
+
+const FUEL_LABEL: Record<FuelKey, string> = {
+  gasoline93: "93",
+  gasoline95: "95",
+  gasoline97: "97",
+  diesel: "Diésel",
+  electric: "⚡ kWh",
+};
+
+const TIER_CLASS: Record<PriceTier, string> = {
+  low: "text-fuel-green",
+  mid: "text-fuel-amber",
+  high: "text-fuel-red",
+};
 
 const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string }> = {
   Copec: {
