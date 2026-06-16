@@ -71,7 +71,12 @@ const RouteFallback = () => (
 );
 
 const isGuest = () => {
-  try { return sessionStorage.getItem("tucom_guest_mode") === "1"; } catch { return false; }
+  try {
+    return (
+      localStorage.getItem("guest_mode") === "true" ||
+      sessionStorage.getItem("tucom_guest_mode") === "1"
+    );
+  } catch { return false; }
 };
 
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -191,6 +196,7 @@ const App = () => {
                   <Route path="mi-vehiculo" element={<EmpresaMiVehiculo />} />
                 </Route>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Navigate to="/auth" replace />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />
