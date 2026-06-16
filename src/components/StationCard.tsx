@@ -10,6 +10,7 @@ import { analytics } from "@/lib/analytics";
 import { formatPrice, formatKm, formatRelativeTime } from "@/lib/format";
 import { useStationDiscounts } from "@/hooks/useStationDiscounts";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
+import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { getBestDiscount, DISCOUNT_DISCLAIMER } from "@/lib/discounts";
 
 export type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
@@ -65,6 +66,7 @@ const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityRepor
   const style = BRAND_STYLES[station.brand];
   const { data: discounts } = useStationDiscounts();
   const { preferences } = useUserPreferences();
+  const { primary: primaryVehicle } = useUserVehicles();
   const userMethods = preferences?.payment_methods ?? [];
 
   const fuelItems: { label: string; price: number; estimated?: boolean }[] = [
@@ -183,6 +185,14 @@ const headline =
                 )}
               </>
             )}
+            {primaryVehicle &&
+              primaryVehicle.fuel_type === headline.fuelType &&
+              headline.price > 0 &&
+              primaryVehicle.tank_size_l > 0 && (
+                <p className="text-[10px] text-muted-foreground tabular-nums mt-0.5" title={`Estimación basada en estanque de ${primaryVehicle.tank_size_l}${primaryVehicle.fuel_type === "electric" ? "kWh" : "L"}`}>
+                  Llenar: ~{formatPrice(Math.round((primaryVehicle.tank_size_l * (best?.finalPrice ?? headline.price)) / 100) * 100)}
+                </p>
+              )}
           </div>
         </div>
 
