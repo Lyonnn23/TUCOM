@@ -191,6 +191,7 @@ const App = () => {
                   <Route path="mi-vehiculo" element={<EmpresaMiVehiculo />} />
                 </Route>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/reporte" element={<FuelReport />} />
                 <Route path="/historial" element={<PriceHistory />} />
                 <Route path="/mepco-info" element={<MepcoInfo />} />
