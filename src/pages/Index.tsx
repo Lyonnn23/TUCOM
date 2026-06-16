@@ -27,6 +27,7 @@ import UpcomingDeadlinesCard from "@/components/UpcomingDeadlinesCard";
 import WhereToGoWidget from "@/components/WhereToGoWidget";
 import MacroWidgets from "@/components/macro/MacroWidgets";
 import VehicleMiniWidget from "@/components/VehicleMiniWidget";
+import ShareStationButton from "@/components/ShareStationButton";
 
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
@@ -472,7 +473,20 @@ const Index = () => {
               <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
               <div className="absolute right-10 bottom-0 w-24 h-24 rounded-full bg-accent/30 blur-2xl" />
               <div className="relative">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="absolute top-0 right-0">
+                  <ShareStationButton
+                    payload={{
+                      stationId: cheapest.id,
+                      stationName: cheapest.name,
+                      brand: cheapest.brand,
+                      fuelType: heroFuel as any,
+                      price: cheapest.prices[heroFuel],
+                      distanceKm: cheapest.distance,
+                    }}
+                    className="!bg-white/20 !text-white hover:!bg-white/30"
+                  />
+                </div>
+                <div className="flex items-center gap-2 mb-2 pr-10">
                   <div className="px-2 py-0.5 rounded-full bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
                     <TrendingDown className="w-3 h-3" /> Más barato cerca
                   </div>
