@@ -19,7 +19,15 @@ Para calcular costo de viaje: precio_litro × (km_ruta / rendimiento_km_L).
 Para rutas: asume 1.25× la distancia en línea recta como estimado de ruta real.
 Si no tienes datos precisos, da un rango y recomienda verificar en el mapa de TÜcom.`;
 
-const FREE_DAILY_LIMIT = 10;
+const FREE_DAILY_LIMIT = 20;
+const MAX_MESSAGE_CHARS = 500;
+
+// Today's date in Chile time (UTC-3), formatted YYYY-MM-DD
+function chileToday(): string {
+  const now = new Date();
+  const cl = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  return cl.toISOString().slice(0, 10);
+}
 
 function isPro(sub: any): boolean {
   if (!sub) return false;
@@ -68,6 +76,15 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Input validation: cap each message at 500 chars and strip control chars
+    for (const m of messages) {
+      if (typeof m.content !== "string") {
+        return new Response(JSON.stringify({ error: "Mensaje inválido" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      m.content = m.content.replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, "").slice(0, MAX_MESSAGE_CHARS);
+    }
 
     // Check subscription
     const { data: sub } = await admin
@@ -77,7 +94,7 @@ Deno.serve(async (req) => {
     // Usage check / increment
     let usedToday = 0;
     if (!pro) {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = chileToday();
       const { data: pref } = await admin
         .from("user_preferences")
         .select("ai_chat_count, ai_chat_count_date")
@@ -85,7 +102,12 @@ Deno.serve(async (req) => {
       const sameDay = pref?.ai_chat_count_date === today;
       usedToday = sameDay ? (pref?.ai_chat_count ?? 0) : 0;
       if (usedToday >= FREE_DAILY_LIMIT) {
-        return new Response(JSON.stringify({ error: "limit_reached", used: usedToday, limit: FREE_DAILY_LIMIT }), {
+        return new Response(JSON.stringify({
+          error: "limit_reached",
+          message: "Has alcanzado el límite diario de 20 consultas. Se reinicia mañana. Gracias por usar TÜcom.",
+          used: usedToday,
+          limit: FREE_DAILY_LIMIT,
+        }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }

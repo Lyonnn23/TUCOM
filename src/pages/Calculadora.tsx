@@ -134,8 +134,9 @@ const Calculadora = () => {
       toast.error("Indica origen y destino");
       return;
     }
-    if (consumption <= 0) {
-      toast.error("Consumo inválido");
+    // Input validation: consumption 3.3–33.3 km/L (≈ 3–30 L/100km)
+    if (!Number.isFinite(consumption) || consumption < 3.3 || consumption > 33.3) {
+      toast.error("Rendimiento inválido (debe ser 3,3 a 33,3 km/L)");
       return;
     }
     setLoadingTrip(true);
@@ -151,6 +152,11 @@ const Calculadora = () => {
       const r0 = (data as any)?.routes?.[0];
       if (!r0) throw new Error("no_route");
       const distanceKm = Number(r0.distance_km) || 0;
+      if (distanceKm <= 0) {
+        toast.error("Distancia inválida");
+        setLoadingTrip(false);
+        return;
+      }
       const units = distanceKm / Math.max(consumption, 0.1);
       const costCheap = Math.round(units * cheapestPrice);
       const costAvg = Math.round(units * avgPrice);
@@ -334,8 +340,8 @@ const Calculadora = () => {
                     id="consumption"
                     type="number"
                     inputMode="decimal"
-                    min={2}
-                    max={40}
+                    min={3.3}
+                    max={33.3}
                     step={0.1}
                     value={consumption || ""}
                     onChange={(e) => setConsumption(Number(e.target.value) || 0)}
@@ -449,10 +455,13 @@ const Calculadora = () => {
                     id="tank"
                     type="number"
                     inputMode="numeric"
-                    min={5}
+                    min={10}
                     max={200}
                     value={tankSize || ""}
-                    onChange={(e) => setTankSize(Number(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const v = Number(e.target.value) || 0;
+                      setTankSize(v);
+                    }}
                     className="h-11 mt-1 rounded-xl"
                   />
                 </div>
@@ -462,8 +471,8 @@ const Calculadora = () => {
                     id="tank-cons"
                     type="number"
                     inputMode="decimal"
-                    min={2}
-                    max={40}
+                    min={3.3}
+                    max={33.3}
                     step={0.1}
                     value={consumption || ""}
                     onChange={(e) => setConsumption(Number(e.target.value) || 0)}
