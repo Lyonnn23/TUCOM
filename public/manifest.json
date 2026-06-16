@@ -1,8 +1,8 @@
 {
   "id": "tucombustible-app",
-  "name": "TÜcom — Precios de Bencina Chile",
+  "name": "TÜcom",
   "short_name": "TÜcom",
-  "description": "App independiente para comparar precios referenciales de bencina, encontrar estaciones cercanas, revisar beneficios y planificar tu próxima carga en Chile.",
+  "description": "Precios de bencina en tiempo real en Chile",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -13,7 +13,7 @@
     "browser"
   ],
   "orientation": "portrait",
-  "background_color": "#7C3AED",
+  "background_color": "#0F0F1A",
   "theme_color": "#7C3AED",
   "lang": "es-CL",
   "dir": "ltr",
