@@ -11,7 +11,7 @@ import InstallBanner from "@/components/InstallBanner";
 import ShareTargetHandler from "@/components/ShareTargetHandler";
 import SkipLink from "@/components/SkipLink";
 import SplashScreen from "@/components/SplashScreen";
-import ChatBubble from "@/components/ChatBubble";
+const ChatBubble = lazy(() => import("@/components/ChatBubble"));
 import FirstRunOnboarding from "@/components/FirstRunOnboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
@@ -92,10 +92,11 @@ const RequireOnboarded = ({ children }: { children: JSX.Element }) => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 min default
+      staleTime: 5 * 60 * 1000, // 5 min default (station data, etc.)
       gcTime: 30 * 60 * 1000,
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: 3,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000), // 1s, 2s, 4s
     },
   },
 });
@@ -203,7 +204,9 @@ const App = () => {
             </Suspense>
             </main>
             <InstallBanner />
-            <ChatBubble />
+            <Suspense fallback={null}>
+              <ChatBubble />
+            </Suspense>
             <FirstRunOnboarding />
           </AuthProvider>
         </BrowserRouter>

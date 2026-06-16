@@ -75,4 +75,4 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
   );
 };
 
-export default BottomNav;
+export default memo(BottomNav);
