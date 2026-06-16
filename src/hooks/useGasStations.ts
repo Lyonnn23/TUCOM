@@ -43,12 +43,12 @@ function sanitizePrice(type: string, value: number | null | undefined) {
   return price;
 }
 
-async function fetchAllRows(table: "gas_stations" | "station_prices", select = "*"): Promise<any[]> {
+async function fetchAllRows(table: "gas_stations" | "station_prices_public", select = "*"): Promise<any[]> {
   const PAGE = 1000;
   const all: any[] = [];
   let from = 0;
   while (true) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(table)
       .select(select)
       .range(from, from + PAGE - 1);
@@ -99,7 +99,7 @@ export function useGasStations() {
       try {
         const [stations, prices] = await Promise.all([
           fetchAllRows("gas_stations"),
-          fetchAllRows("station_prices", "id, station_id, fuel_type, price, created_at"),
+          fetchAllRows("station_prices_public", "id, station_id, fuel_type, price, created_at"),
         ]);
 
         const priceMap = new Map<string, any[]>();

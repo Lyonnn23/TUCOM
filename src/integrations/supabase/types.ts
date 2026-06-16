@@ -1385,6 +1385,62 @@ export type Database = {
         }
         Relationships: []
       }
+      station_prices_public: {
+        Row: {
+          created_at: string | null
+          fuel_type: string | null
+          id: string | null
+          price: number | null
+          station_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fuel_type?: string | null
+          id?: string | null
+          price?: number | null
+          station_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fuel_type?: string | null
+          id?: string | null
+          price?: number | null
+          station_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_prices_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "gas_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      station_reviews_public: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string | null
+          rating: number | null
+          station_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          station_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          station_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _postgis_deprecate: {

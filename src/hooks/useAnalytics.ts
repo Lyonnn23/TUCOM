@@ -1,9 +1,10 @@
 declare global {
   interface Window {
     dataLayer?: unknown[];
-    gtag?: (command: "event" | "config" | "js", eventName: string | Date, params?: Record<string, unknown>) => void;
+    gtag?: (...args: unknown[]) => void;
   }
 }
+
 
 const APP_PARAMS = { app_name: "TUcom", app_version: "1.0.0", country: "CL" };
 
