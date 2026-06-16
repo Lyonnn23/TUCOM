@@ -6,68 +6,188 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "portrait",
   "background_color": "#0F0F1A",
   "theme_color": "#7c3aed",
   "lang": "es-CL",
   "dir": "ltr",
-  "categories": ["navigation", "travel", "utilities", "maps"],
+  "categories": [
+    "navigation",
+    "travel",
+    "utilities",
+    "maps"
+  ],
   "prefer_related_applications": false,
   "launch_handler": {
-    "client_mode": ["navigate-existing", "auto"]
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
   },
   "handle_links": "preferred",
   "edge_side_panel": {
     "preferred_width": 480
   },
   "icons": [
-    { "src": "/icons/icon-72x72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "/icons/icon-1024x1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-1024x1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
   ],
   "screenshots": [
-    { "src": "/screenshots/screenshot-mobile-1.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Pantalla principal con precios de bencina" },
-    { "src": "/screenshots/screenshot-mobile-2.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Estaciones de servicio cercanas" },
-    { "src": "/screenshots/screenshot-mobile-3.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Beneficios y descuentos por tarjeta" },
-    { "src": "/screenshots/screenshot-wide-1.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "TÜcom — Precios de bencina en Chile" }
+    {
+      "src": "/screenshots/screenshot-mobile-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Pantalla principal con precios de bencina"
+    },
+    {
+      "src": "/screenshots/screenshot-mobile-2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Estaciones de servicio cercanas"
+    },
+    {
+      "src": "/screenshots/screenshot-mobile-3.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Beneficios y descuentos por tarjeta"
+    },
+    {
+      "src": "/screenshots/screenshot-wide-1.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "TÜcom — Precios de bencina en Chile"
+    }
   ],
   "shortcuts": [
     {
-      "name": "Buscar más barata",
+      "name": "Mapa de precios",
+      "short_name": "Mapa",
+      "description": "Ver mapa de bencineras cercanas",
+      "url": "/?shortcut=map",
+      "icons": [
+        {
+          "src": "/icons/shortcut-map.png",
+          "sizes": "96x96",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "Calcular viaje",
+      "short_name": "Calcular",
+      "description": "Calcula el costo de tu viaje",
+      "url": "/?shortcut=calculator",
+      "icons": [
+        {
+          "src": "/icons/shortcut-calc.png",
+          "sizes": "96x96",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
+    },
+    {
+      "name": "Más barata cerca",
       "short_name": "Más barata",
-      "description": "Ordena las estaciones cercanas por el precio más bajo",
-      "url": "/?tab=estaciones&sort=price",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
+      "description": "Ver la bencinera más barata ahora",
+      "url": "/?shortcut=cheapest",
+      "icons": [
+        {
+          "src": "/icons/shortcut-star.png",
+          "sizes": "96x96",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
     },
     {
-      "name": "Mis favoritos",
-      "short_name": "Favoritos",
-      "description": "Accede a tus estaciones favoritas",
-      "url": "/?tab=favoritos",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
-    },
-    {
-      "name": "Reportar precio",
-      "short_name": "Reportar",
-      "description": "Informa un precio que viste en una estación",
-      "url": "/?tab=estaciones&action=report",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
-    },
-    {
-      "name": "Alertas activas",
-      "short_name": "Alertas",
-      "description": "Revisa y administra tus alertas de precio",
-      "url": "/alertas",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" }]
+      "name": "Mi estación favorita",
+      "short_name": "Favorita",
+      "description": "Ir directo a mi bencinera favorita",
+      "url": "/?shortcut=favorite",
+      "icons": [
+        {
+          "src": "/icons/shortcut-heart.png",
+          "sizes": "96x96",
+          "type": "image/png",
+          "purpose": "any"
+        }
+      ]
     }
   ],
   "share_target": {
@@ -84,7 +204,9 @@
     {
       "action": "/",
       "accept": {
-        "text/csv": [".csv"]
+        "text/csv": [
+          ".csv"
+        ]
       }
     }
   ],
@@ -98,10 +220,18 @@
       "data": "/widgets/prices-data.json",
       "type": "application/json",
       "screenshots": [
-        { "src": "/screenshots/screenshot-mobile-1.png", "sizes": "1080x1920", "label": "Widget de precios de bencina" }
+        {
+          "src": "/screenshots/screenshot-mobile-1.png",
+          "sizes": "1080x1920",
+          "label": "Widget de precios de bencina"
+        }
       ],
       "icons": [
-        { "src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
       ],
       "auth": false,
       "update": 21600
