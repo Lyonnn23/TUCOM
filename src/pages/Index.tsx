@@ -265,7 +265,7 @@ const Index = () => {
   // Reset pagination when filters change
   useEffect(() => {
     setStationsLimit(20);
-  }, [selectedBrand, debouncedSearch, radiusKm, sortByFuel, stationKind]);
+  }, [selectedBrand, debouncedSearch, radiusKm, sortByFuel, stationKind, preferredFuel]);
 
 
   const handleNavigateGoogle = useCallback((station: GasStation) => {
