@@ -866,12 +866,33 @@ const Index = () => {
               </button>
             )}
             {(() => {
-              const filtered = stationsWithDistance.filter((s) => {
+              let filtered = stationsWithDistance.filter((s) => {
                 if (stationKind === "all" || stationKind === "fuel") return stationKind === "all" ? true : !s.hasEvCharging || (s.prices.gasoline93 || s.prices.gasoline95 || s.prices.gasoline97 || s.prices.diesel) > 0;
                 if (stationKind === "ev") return s.hasEvCharging || (s.prices.electric ?? 0) > 0;
                 // GLP / GNC not yet sourced in DB
                 return false;
               });
+              // Apply preferred fuel filter + sort cheapest first
+              if (preferredFuel !== "all") {
+                const fk = preferredFuel as keyof typeof filtered[number]["prices"];
+                filtered = filtered.filter((s) => (s.prices[fk] ?? 0) > 0);
+                filtered = [...filtered].sort((a, b) => (a.prices[fk] ?? 99999) - (b.prices[fk] ?? 99999));
+              }
+              // Compute price tier thresholds for selected fuel (terciles)
+              const tierFor = (() => {
+                if (preferredFuel === "all") return (_p: number): undefined => undefined;
+                const fk = preferredFuel as keyof typeof filtered[number]["prices"];
+                const prices = filtered.map((s) => s.prices[fk] ?? 0).filter((p) => p > 0).sort((a, b) => a - b);
+                if (prices.length < 3) return (_p: number): undefined => undefined;
+                const t1 = prices[Math.floor(prices.length / 3)];
+                const t2 = prices[Math.floor((prices.length * 2) / 3)];
+                return (p: number): "low" | "mid" | "high" | undefined => {
+                  if (!p) return undefined;
+                  if (p <= t1) return "low";
+                  if (p <= t2) return "mid";
+                  return "high";
+                };
+              })();
               if (stationsLoading) {
                 return (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
