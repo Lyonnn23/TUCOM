@@ -698,6 +698,15 @@ const StationDetail = () => {
           )}
         </section>
       </main>
+      {station && (
+        <NavigateSheet
+          open={navOpen}
+          onOpenChange={setNavOpen}
+          lat={station.lat}
+          lng={station.lng}
+          stationName={station.name}
+        />
+      )}
     </div>
   );
 };
