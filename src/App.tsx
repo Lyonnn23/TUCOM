@@ -80,6 +80,13 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+const HomeRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user && !isGuest()) return <Landing />;
+  return <RequireOnboarded><Index /></RequireOnboarded>;
+};
+
 const RequireOnboarded = ({ children }: { children: JSX.Element }) => {
   const { user } = useAuth();
   const { preferences, isLoading } = useUserPreferences();
