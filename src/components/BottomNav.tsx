@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Calculator, Car, Fuel, Heart, List, Map, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -74,4 +75,4 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
   );
 };
 
-export default BottomNav;
+export default memo(BottomNav);
