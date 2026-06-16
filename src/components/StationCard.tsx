@@ -168,7 +168,7 @@ const headline =
             ) : (
               <>
                 <p
-                  className="font-heading tabular-nums font-extrabold text-xl leading-tight text-accent"
+                  className={`font-heading tabular-nums font-extrabold leading-tight ${priceTier ? "text-2xl" : "text-xl"} ${tierClass}`}
                   aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
                 >
                   {headline.price ? formatPrice(headline.price) : "—"}
