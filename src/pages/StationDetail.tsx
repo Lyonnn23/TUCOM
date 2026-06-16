@@ -18,6 +18,8 @@ import { Helmet } from "react-helmet-async";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import PriceTrendChart from "@/components/macro/PriceTrendChart";
+import NavigateSheet from "@/components/NavigateSheet";
+import { getPreferredNavApp, openNavApp } from "@/lib/navigateApp";
 
 import {
   LineChart,
