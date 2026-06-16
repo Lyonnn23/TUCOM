@@ -59,7 +59,15 @@ const Index = () => {
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
-  const [mapFuelFilter, setMapFuelFilter] = useState<string>("all");
+  const [preferredFuel, setPreferredFuelState] = useState<FuelFilterKey>(() => {
+    if (typeof window === "undefined") return "all";
+    const v = window.localStorage.getItem("preferred_fuel") as FuelFilterKey | null;
+    return v && ["all", "gasoline93", "gasoline95", "gasoline97", "diesel", "electric"].includes(v) ? v : "all";
+  });
+  const setPreferredFuel = useCallback((v: FuelFilterKey) => {
+    setPreferredFuelState(v);
+    try { window.localStorage.setItem("preferred_fuel", v); } catch {}
+  }, []);
   const [stationKind, setStationKind] = useState<"all" | "fuel" | "ev" | "glp" | "gnc">("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [locationErrorType, setLocationErrorType] = useState<"denied" | "unavailable" | "timeout" | "unsupported" | null>(null);
