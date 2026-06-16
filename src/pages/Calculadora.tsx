@@ -97,7 +97,7 @@ const Calculadora = () => {
   const cheapest = useCheapestStations(
     gps?.lat ?? null,
     gps?.lng ?? null,
-    15000,
+    10000,
     fuelType as FuelTypeKey,
     5,
   );

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { ArrowUp, ArrowDown, Droplet, ChevronDown, ChevronUp } from "lucide-react";
 import { useWti } from "@/hooks/useWti";
+import { useFxRates } from "@/hooks/useFxRates";
 import { useMacroExplainer } from "@/hooks/useMacroExplainer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatPrice } from "@/lib/format";
 
 export default function WtiWidget() {
   const { data: wti, isLoading } = useWti();
+  const { data: fx } = useFxRates(2);
   const [expanded, setExpanded] = useState(false);
   const { data: explainer, isLoading: explainerLoading } = useMacroExplainer("wti_fuel", expanded);
 
@@ -13,6 +16,8 @@ export default function WtiWidget() {
   const up = change >= 0;
   const ArrowIcon = up ? ArrowUp : ArrowDown;
   const color = up ? "text-[hsl(0,75%,55%)]" : "text-[hsl(142,70%,45%)]";
+  const usdClp = fx && fx.length > 0 ? fx[fx.length - 1].rate_clp : null;
+  const clp = wti && usdClp ? wti.price_usd * usdClp : null;
 
   return (
     <div className="bg-card border border-border rounded-2xl shadow-soft overflow-hidden">
@@ -39,6 +44,11 @@ export default function WtiWidget() {
               <>
                 <p className="font-heading font-bold text-foreground text-base mt-0.5">
                   US${wti.price_usd.toFixed(2)}/barril
+                  {clp && (
+                    <span className="text-[11px] text-muted-foreground font-medium ml-1.5 tabular-nums">
+                      ≈ {formatPrice(clp)} CLP
+                    </span>
+                  )}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
                   Variación semanal:{" "}
