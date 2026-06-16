@@ -672,6 +672,7 @@ const Index = () => {
                     onStationClick={handleNavigate}
                     routePath={routeCorridor?.path}
                     highlightStationId={routeCorridor?.cheapestStationId ?? undefined}
+                    selectedFuel={preferredFuel}
                   />
                 </Suspense>
               </LocalErrorBoundary>
