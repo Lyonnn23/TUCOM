@@ -68,7 +68,17 @@ export default function ChatBubble() {
   const [messages, setMessages] = useState<Msg[]>(loadHistory);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
-  const [usedToday, setUsedToday] = useState<number | null>(null);
+  const todayKey = () => `tucom_chat_used_${new Date().toISOString().slice(0, 10)}`;
+  const [usedToday, setUsedToday] = useState<number | null>(() => {
+    try {
+      const v = localStorage.getItem(todayKey());
+      return v != null ? Math.max(0, parseInt(v, 10) || 0) : 0;
+    } catch { return 0; }
+  });
+  useEffect(() => {
+    if (usedToday == null) return;
+    try { localStorage.setItem(todayKey(), String(usedToday)); } catch { /* noop */ }
+  }, [usedToday]);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
