@@ -31,7 +31,6 @@ import {
 
 interface Review {
   id: string;
-  user_id: string;
   rating: number;
   comment: string | null;
   created_at: string;
@@ -120,7 +119,7 @@ const StationDetail = () => {
     setReviewsLoading(true);
     const { data } = await supabase
       .from("station_reviews")
-      .select("*")
+      .select("id, station_id, rating, comment, created_at")
       .eq("station_id", id)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -671,7 +670,7 @@ const StationDetail = () => {
                   {r.comment && (
                     <p className="text-sm text-foreground leading-relaxed">{r.comment}</p>
                   )}
-                  {user && r.user_id !== user.id && (
+                  {user && (
                     <button
                       onClick={async () => {
                         const { error } = await supabase

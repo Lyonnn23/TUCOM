@@ -99,7 +99,7 @@ export function useGasStations() {
       try {
         const [stations, prices] = await Promise.all([
           fetchAllRows("gas_stations"),
-          fetchAllRows("station_prices"),
+          fetchAllRows("station_prices", "id, station_id, fuel_type, price, created_at"),
         ]);
 
         const priceMap = new Map<string, any[]>();
