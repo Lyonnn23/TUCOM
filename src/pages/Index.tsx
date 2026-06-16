@@ -28,6 +28,16 @@ import WhereToGoWidget from "@/components/WhereToGoWidget";
 import MacroWidgets from "@/components/macro/MacroWidgets";
 import VehicleMiniWidget from "@/components/VehicleMiniWidget";
 import ShareStationButton from "@/components/ShareStationButton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
