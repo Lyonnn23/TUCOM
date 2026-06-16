@@ -8,7 +8,7 @@ import FavoriteButton from "./FavoriteButton";
 import ShareStationButton from "./ShareStationButton";
 import CommunityReportBadge from "./CommunityReportBadge";
 import { analytics } from "@/lib/analytics";
-import { formatPrice, formatKm, formatRelativeTime } from "@/lib/format";
+import { formatPrice, formatKm } from "@/lib/format";
 import { useStationDiscounts } from "@/hooks/useStationDiscounts";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
