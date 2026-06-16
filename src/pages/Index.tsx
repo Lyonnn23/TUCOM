@@ -954,9 +954,22 @@ const Index = () => {
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {visible.map((station) => (
-                      <StationCard key={station.id} station={station} onNavigate={handleNavigate} onNavigateGoogle={handleNavigateGoogle} lastCommunityReport={recentReports?.get(station.id) ?? null} rating={stationRatings?.get(station.id) ?? null} />
-                    ))}
+                    {visible.map((station) => {
+                      const fk = preferredFuel !== "all" ? (preferredFuel as keyof typeof station.prices) : null;
+                      const tier = fk ? tierFor(station.prices[fk] ?? 0) : undefined;
+                      return (
+                        <StationCard
+                          key={station.id}
+                          station={station}
+                          onNavigate={handleNavigate}
+                          onNavigateGoogle={handleNavigateGoogle}
+                          lastCommunityReport={recentReports?.get(station.id) ?? null}
+                          rating={stationRatings?.get(station.id) ?? null}
+                          selectedFuel={preferredFuel}
+                          priceTier={tier}
+                        />
+                      );
+                    })}
                   </div>
                   {hasMore && (
                     <div className="mt-4 flex justify-center">
