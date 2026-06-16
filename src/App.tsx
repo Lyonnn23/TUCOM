@@ -190,7 +190,7 @@ const App = () => {
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/terms" element={<Legal />} />
-                <Route path="/terminos" element={<Legal />} />
+                <Route path="/terminos" element={<Terminos />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/privacidad" element={<Privacy />} />
                 <Route path="/eliminar-cuenta" element={<DeleteAccount />} />
