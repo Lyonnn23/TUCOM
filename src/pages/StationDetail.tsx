@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock, ExternalLink, Calculator } from "lucide-react";
+import { shareStation } from "@/lib/share";
 import { supabase } from "@/integrations/supabase/client";
 import { useGasStations, formatRelativeTime, type GasStation } from "@/hooks/useGasStations";
 import { useAuth } from "@/hooks/useAuth";
@@ -132,28 +133,22 @@ const StationDetail = () => {
     : 0;
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/station/${id}`;
-    const shareData = {
-      title: station ? `${station.name} · TÜcom` : "TÜcom",
-      text: station
-        ? `Precios de combustible en ${station.name} (${station.brand}) · ${station.address}`
-        : "Mira esta estación en TÜcom",
-      url,
-    };
-    try {
-      if (navigator.share && navigator.canShare?.(shareData)) {
-        await navigator.share(shareData);
-        return;
-      }
-    } catch {
-      /* user cancelled */
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Enlace copiado al portapapeles");
-    } catch {
-      toast.error("No se pudo compartir");
-    }
+    if (!station) return;
+    const fuels: Array<["gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric", number]> = [
+      ["gasoline93", station.prices?.gasoline93 ?? 0],
+      ["gasoline95", station.prices?.gasoline95 ?? 0],
+      ["gasoline97", station.prices?.gasoline97 ?? 0],
+      ["diesel", station.prices?.diesel ?? 0],
+      ["electric", station.prices?.electric ?? 0],
+    ];
+    const best = fuels.find(([, p]) => p > 0);
+    await shareStation({
+      stationId: station.id,
+      stationName: station.name,
+      brand: station.brand,
+      fuelType: best?.[0],
+      price: best?.[1],
+    });
   };
 
   const handleGoogleMapsDirections = () => {
