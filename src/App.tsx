@@ -13,6 +13,7 @@ import SkipLink from "@/components/SkipLink";
 import SplashScreen from "@/components/SplashScreen";
 const ChatBubble = lazy(() => import("@/components/ChatBubble"));
 import FirstRunOnboarding from "@/components/FirstRunOnboarding";
+import ConsentBanner from "@/components/ConsentBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
@@ -204,6 +205,7 @@ const App = () => {
             </Suspense>
             </main>
             <InstallBanner />
+            <ConsentBanner />
             <Suspense fallback={null}>
               <ChatBubble />
             </Suspense>

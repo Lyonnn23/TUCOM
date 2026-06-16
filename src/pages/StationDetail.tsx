@@ -50,6 +50,10 @@ const StationDetail = () => {
   useEffect(() => {
     if (!id) return;
     supabase.from("station_views").insert({ station_id: id }).then(() => {});
+    import("@/lib/analytics").then(({ analytics, pageView }) => {
+      pageView(`/estacion/${id}`);
+      analytics.viewStation(id);
+    }).catch(() => {});
   }, [id]);
   const navigate = useNavigate();
   const { user } = useAuth();
