@@ -111,18 +111,26 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
             const color = brandColor(station.brand);
             const initials = brandInitials(station.brand);
             const isCheapest = highlightStationId === station.id;
+            const fuelPrice =
+              selectedFuel && selectedFuel !== "all"
+                ? (station.prices as any)[selectedFuel] ?? 0
+                : 0;
+            const priceLabel = fuelPrice > 0 ? `$${Math.round(fuelPrice)}` : "";
+            const showPrice = !isCheapest && priceLabel !== "";
             return (
               <Marker
                 key={station.id}
                 position={{ lat: station.lat, lng: station.lng }}
                 onClick={() => setSelected(station)}
-                title={`${station.brand} · ${station.name}${isCheapest ? " · La más barata del trayecto" : ""}`}
+                title={`${station.brand} · ${station.name}${isCheapest ? " · La más barata del trayecto" : ""}${priceLabel ? ` · ${priceLabel}` : ""}`}
                 label={
                   isCheapest
                     ? { text: "★", color: "#1a1a1a", fontSize: "16px", fontWeight: "900" }
-                    : { text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }
+                    : showPrice
+                      ? { text: priceLabel, color: "#fff", fontSize: "10px", fontWeight: "800" }
+                      : { text: initials, color: "#fff", fontSize: "11px", fontWeight: "700" }
                 }
-                icon={getMarkerIcon(isCheapest ? "#F5B301" : color, isCheapest ? 20 : 16)}
+                icon={getMarkerIcon(isCheapest ? "#F5B301" : color, isCheapest ? 20 : showPrice ? 18 : 16)}
                 zIndex={isCheapest ? 999 : undefined}
                 animation={(globalThis as any).google?.maps?.Animation?.DROP}
               />
