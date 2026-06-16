@@ -731,7 +731,8 @@ const Index = () => {
               <Input
                 placeholder="Buscar por nombre, marca o dirección..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                maxLength={100}
+                onChange={(e) => setSearchQuery(e.target.value.replace(/<[^>]*>/g, "").slice(0, 100))}
                 className="pl-9 bg-card border-border rounded-2xl text-sm"
               />
             </div>
