@@ -150,7 +150,8 @@ const App = () => {
             <Suspense fallback={<RouteFallback />}>
               <RouteTransition>
               <Routes>
-                <Route path="/" element={<RequireAuth><RequireOnboarded><Index /></RequireOnboarded></RequireAuth>} />
+                <Route path="/" element={<HomeRoute />} />
+                <Route path="/contacto" element={<Contacto />} />
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
