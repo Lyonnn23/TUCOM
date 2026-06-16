@@ -453,9 +453,18 @@ const Index = () => {
         )}
         {/* Hero: lowest local price */}
         {activeTab === "prices" && (() => {
+          const heroFuel: "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric" =
+            preferredFuel === "all" ? "gasoline93" : preferredFuel;
+          const heroLabel: Record<typeof heroFuel, string> = {
+            gasoline93: "93",
+            gasoline95: "95",
+            gasoline97: "97",
+            diesel: "Diésel",
+            electric: "⚡ kWh",
+          };
           const cheapest = stationsWithDistance
-            .filter((s) => userLocation && (s.distance ?? 999) <= 10 && (s.prices.gasoline93 ?? 0) > 0)
-            .sort((a, b) => (a.prices.gasoline93 ?? 99999) - (b.prices.gasoline93 ?? 99999))[0];
+            .filter((s) => userLocation && (s.distance ?? 999) <= 10 && (s.prices[heroFuel] ?? 0) > 0)
+            .sort((a, b) => (a.prices[heroFuel] ?? 99999) - (b.prices[heroFuel] ?? 99999))[0];
           if (!cheapest) return null;
           return (
             <div className="mb-5 rounded-3xl bg-gradient-hero p-5 shadow-glow text-white relative overflow-hidden animate-scale-in">
@@ -474,9 +483,9 @@ const Index = () => {
                     <p className="text-[11px] text-white/80 truncate">{cheapest.brand} · {cheapest.address}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[10px] text-white/75 uppercase tracking-wider">93</p>
+                    <p className="text-[10px] text-white/75 uppercase tracking-wider">{heroLabel[heroFuel]}</p>
                     <p className="font-heading tabular-nums font-extrabold text-4xl leading-none">
-                      ${cheapest.prices.gasoline93}
+                      ${cheapest.prices[heroFuel]}
                     </p>
                     <p className="text-[10px] text-white/70 mt-0.5">por litro</p>
                   </div>
