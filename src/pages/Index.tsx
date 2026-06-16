@@ -1110,7 +1110,25 @@ const Index = () => {
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <FuelLogFAB />
       <DriverModeFAB />
+
+      <AlertDialog open={showLocationRationale} onOpenChange={(o) => !o && dismissLocationRationale()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Activa tu ubicación</AlertDialogTitle>
+            <AlertDialogDescription>
+              TÜcom usa tu ubicación <strong>solo en tu dispositivo</strong> para mostrarte las
+              estaciones más cercanas, calcular distancias y encontrar la bencina más barata
+              cerca de ti. No guardamos ni compartimos tu ubicación.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={dismissLocationRationale}>Ahora no</AlertDialogCancel>
+            <AlertDialogAction onClick={acceptLocationRationale}>Permitir ubicación</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 };
 
