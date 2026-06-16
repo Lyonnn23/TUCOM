@@ -96,5 +96,25 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+        var h = location.hostname;
+        var inIframe = window.top !== window.self;
+        var isPreview =
+          h.startsWith('id-preview--') ||
+          h.startsWith('preview--') ||
+          h === 'lovableproject.com' ||
+          h.endsWith('.lovableproject.com') ||
+          h === 'lovableproject-dev.com' ||
+          h.endsWith('.lovableproject-dev.com') ||
+          h === 'beta.lovable.dev' ||
+          h.endsWith('.beta.lovable.dev');
+        if (inIframe || isPreview) return;
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {});
+        });
+      })();
+    </script>
   </body>
 </html>
