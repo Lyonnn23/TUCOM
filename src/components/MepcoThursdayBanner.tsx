@@ -9,19 +9,28 @@ const todayKey = () => {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 };
 
+const nextThursday = () => {
+  const d = new Date();
+  const diff = (4 - d.getDay() + 7) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+};
+
+const formatDayMonth = (d: Date) =>
+  `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+
 const MepcoThursdayBanner = () => {
   const [visible, setVisible] = useState(false);
   const { data: prices } = useFuelPrices();
+  const isThursday = new Date().getDay() === 4;
 
   useEffect(() => {
-    if (new Date().getDay() !== 4) return;
+    if (!isThursday) return;
     try {
       if (localStorage.getItem(STORAGE_KEY) === todayKey()) return;
     } catch {}
     setVisible(true);
-  }, []);
-
-  if (!visible) return null;
+  }, [isThursday]);
 
   const avgChange =
     prices && prices.length
@@ -33,6 +42,26 @@ const MepcoThursdayBanner = () => {
     setVisible(false);
   };
 
+  if (!isThursday) {
+    const nt = nextThursday();
+    return (
+      <div
+        role="status"
+        className="rounded-2xl border border-border bg-muted/40 px-4 py-2.5 flex items-center gap-2.5 text-xs"
+      >
+        <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+          <Fuel className="w-3.5 h-3.5 text-primary" />
+        </div>
+        <p className="text-foreground">
+          <span className="font-semibold">Próximo ajuste MEPCO:</span>{" "}
+          <span className="text-muted-foreground">jueves {formatDayMonth(nt)}</span>
+        </p>
+      </div>
+    );
+  }
+
+  if (!visible) return null;
+
   return (
     <div
       role="status"
@@ -42,7 +71,7 @@ const MepcoThursdayBanner = () => {
         <Fuel className="w-5 h-5 text-primary" />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-foreground">Precios actualizados hoy ⛽</p>
+        <p className="text-sm font-semibold text-foreground">⛽ Precios MEPCO actualizados hoy</p>
         <p className="text-xs text-muted-foreground">
           {avgChange > 0
             ? `Variación promedio de $${Math.round(avgChange)} por litro esta semana`
@@ -59,5 +88,6 @@ const MepcoThursdayBanner = () => {
     </div>
   );
 };
+
 
 export default MepcoThursdayBanner;
