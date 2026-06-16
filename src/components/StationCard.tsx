@@ -233,12 +233,27 @@ const headline =
               <span className="opacity-70 ml-0.5">({rating.count})</span>
             </span>
           )}
-          {station.lastUpdated && (
-            <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
-              <Clock className="w-2.5 h-2.5" aria-hidden="true" />
-              <span>Actualizado {formatRelativeTime(station.lastUpdated)}</span>
-            </span>
-          )}
+          {station.lastUpdated && (() => {
+            const ageDays = Math.floor(
+              (Date.now() - new Date(station.lastUpdated).getTime()) / 86_400_000,
+            );
+            const ageClass =
+              ageDays > 14
+                ? "text-fuel-red"
+                : ageDays > 7
+                  ? "text-fuel-amber"
+                  : "text-muted-foreground";
+            const label =
+              ageDays <= 0
+                ? "Actualizado hoy"
+                : `Actualizado: hace ${ageDays} ${ageDays === 1 ? "día" : "días"}`;
+            return (
+              <span className={`inline-flex items-center gap-1 text-[10px] ml-auto ${ageClass}`}>
+                <Clock className="w-2.5 h-2.5" aria-hidden="true" />
+                <span>{label}</span>
+              </span>
+            );
+          })()}
         {lastCommunityReport && (
           <div className="mt-2">
             <CommunityReportBadge reportedAt={lastCommunityReport} />
