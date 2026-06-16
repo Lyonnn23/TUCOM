@@ -27,6 +27,7 @@ import { useCheapestStations, type FuelTypeKey } from "@/hooks/useNearbyStations
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/format";
+import { shareStation } from "@/lib/share";
 import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
 
