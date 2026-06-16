@@ -1,4 +1,6 @@
-import { memo } from "react";
+import { memo, useState } from "react";
+import NavigateSheet from "./NavigateSheet";
+import { getPreferredNavApp, openNavApp } from "@/lib/navigateApp";
 import { MapPin, Navigation, Star, Zap, Clock, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
@@ -63,6 +65,7 @@ const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
 const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport, rating, selectedFuel, priceTier }: StationCardProps) => {
   const navigate = useNavigate();
+  const [navOpen, setNavOpen] = useState(false);
   const featured = isFeaturedBrand(station.brand);
   const style = BRAND_STYLES[station.brand];
   const { data: discounts } = useStationDiscounts();
@@ -296,14 +299,26 @@ const headline =
           Waze
         </button>
         <button
-          onClick={(e) => { e.stopPropagation(); onNavigateGoogle?.(station); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            const pref = getPreferredNavApp();
+            if (pref) openNavApp(pref, station.lat, station.lng);
+            else setNavOpen(true);
+          }}
           className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5 min-h-11"
-          aria-label={`Cómo llegar a ${station.name} con Google Maps`}
+          aria-label={`Cómo llegar a ${station.name}`}
         >
           <Navigation className="w-3.5 h-3.5" aria-hidden="true" />
           Cómo llegar
         </button>
       </div>
+      <NavigateSheet
+        open={navOpen}
+        onOpenChange={setNavOpen}
+        lat={station.lat}
+        lng={station.lng}
+        stationName={station.name}
+      />
     </div>
   );
 };

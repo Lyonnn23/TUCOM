@@ -18,6 +18,8 @@ import { Helmet } from "react-helmet-async";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import PriceTrendChart from "@/components/macro/PriceTrendChart";
+import NavigateSheet from "@/components/NavigateSheet";
+import { getPreferredNavApp, openNavApp } from "@/lib/navigateApp";
 
 import {
   LineChart,
@@ -155,10 +157,13 @@ const StationDetail = () => {
     });
   };
 
+  const [navOpen, setNavOpen] = useState(false);
+
   const handleGoogleMapsDirections = () => {
     if (!station) return;
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}${station.placeId ? `&destination_place_id=${station.placeId}` : ""}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    const pref = getPreferredNavApp();
+    if (pref) openNavApp(pref, station.lat, station.lng);
+    else setNavOpen(true);
   };
 
   const handleViewOnGoogleMaps = () => {
@@ -693,6 +698,15 @@ const StationDetail = () => {
           )}
         </section>
       </main>
+      {station && (
+        <NavigateSheet
+          open={navOpen}
+          onOpenChange={setNavOpen}
+          lat={station.lat}
+          lng={station.lng}
+          stationName={station.name}
+        />
+      )}
     </div>
   );
 };
