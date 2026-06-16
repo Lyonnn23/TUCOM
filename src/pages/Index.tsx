@@ -26,6 +26,7 @@ import TankRangeBanner from "@/components/TankRangeBanner";
 import UpcomingDeadlinesCard from "@/components/UpcomingDeadlinesCard";
 import WhereToGoWidget from "@/components/WhereToGoWidget";
 import MacroWidgets from "@/components/macro/MacroWidgets";
+import VehicleMiniWidget from "@/components/VehicleMiniWidget";
 
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
@@ -506,6 +507,7 @@ const Index = () => {
             </div>
           );
         })()}
+        {activeTab === "prices" && <VehicleMiniWidget />}
         {activeTab === "prices" && <div className="mb-4"><TankRangeBanner /></div>}
         {activeTab === "prices" && <div className="mb-4"><WhereToGoWidget /></div>}
         {activeTab === "prices" && <div className="mb-4"><UpcomingDeadlinesCard /></div>}
