@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
-import { formatCLP, formatDateCL } from "@/lib/format";
+import { formatPrice, formatLongDate } from "@/lib/format";
 
 const Landing = () => {
   const navigate = useNavigate();
