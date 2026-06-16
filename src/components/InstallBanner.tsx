@@ -12,6 +12,7 @@ const DISMISS_KEY = "tucom-install-dismissed-at";
 const DISMISS_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 const IOS_HINT_KEY = "ios_hint_shown";
 const SHOW_DELAY_MS = 30000;
+const IOS_HINT_DELAY_MS = 5000;
 
 function isIOS() {
   if (typeof navigator === "undefined") return false;
@@ -45,7 +46,7 @@ export default function InstallBanner() {
         setIosSheet(true);
         analytics.installPrompt("ios");
       }
-    }, SHOW_DELAY_MS);
+    }, IOS_HINT_DELAY_MS);
 
     // Android install banner
     const dismissedAt = Number(localStorage.getItem(DISMISS_KEY) ?? 0);
