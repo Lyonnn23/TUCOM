@@ -119,13 +119,13 @@ const StationDetail = () => {
   const loadReviews = async () => {
     if (!id) return;
     setReviewsLoading(true);
-    const { data } = await supabase
-      .from("station_reviews_public" as any)
+    const { data } = await (supabase as any)
+      .from("station_reviews_public")
       .select("id, station_id, rating, comment, created_at")
       .eq("station_id", id)
       .order("created_at", { ascending: false })
       .limit(20);
-    setReviews(data ?? []);
+    setReviews((data ?? []) as Review[]);
     setReviewsLoading(false);
   };
 
