@@ -231,13 +231,16 @@ const Index = () => {
   }, [stations, userLocation, debouncedSearch, selectedBrand, sortByFuel, radiusKm]);
 
   const mapStations = useMemo(() => {
-    return stationsWithDistance.filter((s) => {
-      if (mapFuelFilter === "all") return true;
-      if (mapFuelFilter === "electric") return s.hasEvCharging && (s.prices.electric ?? 0) > 0;
-      const fuelKey = mapFuelFilter as keyof typeof s.prices;
+    const filtered = stationsWithDistance.filter((s) => {
+      if (preferredFuel === "all") return true;
+      if (preferredFuel === "electric") return s.hasEvCharging && (s.prices.electric ?? 0) > 0;
+      const fuelKey = preferredFuel as keyof typeof s.prices;
       return (s.prices[fuelKey] ?? 0) > 0;
     });
-  }, [stationsWithDistance, mapFuelFilter]);
+    if (preferredFuel === "all") return filtered;
+    const key = preferredFuel as keyof (typeof filtered)[number]["prices"];
+    return [...filtered].sort((a, b) => (a.prices[key] ?? 99999) - (b.prices[key] ?? 99999));
+  }, [stationsWithDistance, preferredFuel]);
 
   const handleNavigate = useCallback((station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
