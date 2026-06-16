@@ -22,6 +22,7 @@ import { Navigate, useLocation } from "react-router-dom";
 // Lazy-loaded routes (code-split per page)
 const Index = lazy(() => import("./pages/Index.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const FuelReport = lazy(() => import("./pages/FuelReport.tsx"));
 const PriceHistory = lazy(() => import("./pages/PriceHistory.tsx"));
