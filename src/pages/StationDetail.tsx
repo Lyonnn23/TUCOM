@@ -13,6 +13,7 @@ import StationPhotos from "@/components/StationPhotos";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import PriceAlertDialog from "@/components/PriceAlertDialog";
+import StationHistoryChart from "@/components/StationHistoryChart";
 import { Helmet } from "react-helmet-async";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -526,6 +527,31 @@ const StationDetail = () => {
             </div>
           )}
         </section>
+
+        {/* Per-station historial (last 4 Thursdays) */}
+        {station && (() => {
+          const FUELS = ["gasoline93","gasoline95","gasoline97","diesel"] as const;
+          const nearby = (stations ?? []).filter((s) => {
+            if (s.id === station.id) return false;
+            const dLat = (s.lat - station.lat) * Math.PI / 180;
+            const dLng = (s.lng - station.lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(station.lat*Math.PI/180) * Math.cos(s.lat*Math.PI/180) * Math.sin(dLng/2)**2;
+            const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return km <= 10;
+          });
+          const regionalAverages: Partial<Record<typeof FUELS[number], number>> = {};
+          for (const f of FUELS) {
+            const vals = nearby.map((s) => s.prices?.[f] ?? 0).filter((v) => v > 0);
+            if (vals.length) regionalAverages[f] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+          }
+          return (
+            <StationHistoryChart
+              stationId={station.id}
+              currentPrices={station.prices as any}
+              regionalAverages={regionalAverages}
+            />
+          );
+        })()}
 
         {/* Per-station projection with MEPCO + FX scenarios */}
         {station && (
