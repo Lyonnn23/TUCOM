@@ -108,6 +108,33 @@ const Index = () => {
     };
   }, []);
 
+  // PWA App Shortcuts: handle ?shortcut= param from manifest shortcuts
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shortcut = params.get("shortcut");
+    if (!shortcut) return;
+    if (shortcut === "map") {
+      setActiveTab("map");
+    } else if (shortcut === "calculator") {
+      navigate("/calculadora", { replace: true });
+      return;
+    } else if (shortcut === "favorite") {
+      setActiveTab("favorites");
+    } else if (shortcut === "cheapest") {
+      setActiveTab("prices");
+      setTimeout(() => {
+        const el = document.getElementById("cheapest-station") || document.querySelector('[data-cheapest="true"]');
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 400);
+    }
+    // Clean URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete("shortcut");
+    window.history.replaceState({}, "", url.pathname + (url.search ? url.search : "") + url.hash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   // Analytics: page_view per tab + open_map + user properties
   useEffect(() => {
     import("@/lib/analytics").then(({ analytics, pageView, setUserProperties }) => {
