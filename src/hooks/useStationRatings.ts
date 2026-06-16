@@ -10,12 +10,12 @@ export function useStationRatings() {
   return useQuery({
     queryKey: ["station-ratings"],
     queryFn: async (): Promise<Map<string, StationRating>> => {
-      const { data, error } = await supabase
-        .from("station_reviews_public" as any)
+      const { data, error } = await (supabase as any)
+        .from("station_reviews_public")
         .select("station_id, rating");
       if (error) throw error;
       const acc = new Map<string, { sum: number; count: number }>();
-      for (const row of data ?? []) {
+      for (const row of (data ?? []) as Array<{ station_id: string; rating: number }>) {
         const cur = acc.get(row.station_id) ?? { sum: 0, count: 0 };
         cur.sum += row.rating;
         cur.count += 1;
