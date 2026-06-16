@@ -120,7 +120,7 @@ const StationDetail = () => {
     if (!id) return;
     setReviewsLoading(true);
     const { data } = await supabase
-      .from("station_reviews")
+      .from("station_reviews_public" as any)
       .select("id, station_id, rating, comment, created_at")
       .eq("station_id", id)
       .order("created_at", { ascending: false })

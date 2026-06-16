@@ -11,7 +11,7 @@ export function useStationRatings() {
     queryKey: ["station-ratings"],
     queryFn: async (): Promise<Map<string, StationRating>> => {
       const { data, error } = await supabase
-        .from("station_reviews")
+        .from("station_reviews_public" as any)
         .select("station_id, rating");
       if (error) throw error;
       const acc = new Map<string, { sum: number; count: number }>();
