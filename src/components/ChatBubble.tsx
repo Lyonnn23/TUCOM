@@ -18,7 +18,8 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const STORAGE_KEY = "tucom_chat_history";
 const SEEN_KEY = "tucom_chat_seen";
-const FREE_DAILY_LIMIT = 10;
+const FREE_DAILY_LIMIT = 20;
+const MAX_MESSAGE_CHARS = 500;
 
 const STARTERS = [
   "¿Cuánto me cuesta ir a Viña del Mar?",
@@ -113,7 +114,12 @@ export default function ChatBubble() {
   });
 
   const send = async (text: string) => {
-    const trimmed = text.trim();
+    // Strip HTML tags and control chars, cap at 500 chars
+    const sanitized = text
+      .replace(/<[^>]*>/g, "")
+      .replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, "")
+      .slice(0, MAX_MESSAGE_CHARS);
+    const trimmed = sanitized.trim();
     if (!trimmed || streaming) return;
     if (!user) {
       toast.error("Inicia sesión para usar el asistente");
@@ -304,7 +310,7 @@ export default function ChatBubble() {
               <div className="flex gap-2 items-end">
                 <Textarea
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => setInput(e.target.value.slice(0, MAX_MESSAGE_CHARS))}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -313,6 +319,7 @@ export default function ChatBubble() {
                   }}
                   placeholder="Escribe tu pregunta..."
                   rows={1}
+                  maxLength={MAX_MESSAGE_CHARS}
                   className="resize-none min-h-[40px] max-h-32"
                   disabled={streaming}
                 />
@@ -328,13 +335,13 @@ export default function ChatBubble() {
               </div>
               {!isPro && usedToday !== null && (
                 <p className="text-[11px] text-muted-foreground text-center">
-                  {usedToday}/{FREE_DAILY_LIMIT} preguntas hoy ·{" "}
+                  Te quedan {Math.max(0, FREE_DAILY_LIMIT - usedToday)} consultas hoy ·{" "}
                   <Link to="/planes" className="text-primary underline">Pasa a Pro</Link>
                 </p>
               )}
               {!isPro && usedToday === null && (
                 <p className="text-[11px] text-muted-foreground text-center">
-                  Plan gratis: {FREE_DAILY_LIMIT} preguntas al día
+                  Plan gratis: {FREE_DAILY_LIMIT} consultas al día
                 </p>
               )}
             </div>
@@ -354,9 +361,9 @@ function UpgradeCard({ onClose }: { onClose: () => void }) {
           <Lock className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-sm">Llegaste al límite diario</h3>
+          <h3 className="font-semibold text-sm">Has alcanzado el límite diario de 20 consultas</h3>
           <p className="text-xs text-muted-foreground mb-3">
-            Pasa a TÜcom Pro para preguntas ilimitadas al asistente.
+            Se reinicia mañana. Gracias por usar TÜcom. O pasa a Pro para consultas ilimitadas.
           </p>
           <Button
             size="sm"
