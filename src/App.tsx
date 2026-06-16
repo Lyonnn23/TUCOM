@@ -31,6 +31,8 @@ const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const DeleteAccount = lazy(() => import("./pages/DeleteAccount.tsx"));
 const ResponsiveCheck = lazy(() => import("./pages/ResponsiveCheck.tsx"));
 const Welcome = lazy(() => import("./pages/Welcome.tsx"));
+const Landing = lazy(() => import("./pages/Landing.tsx"));
+const Contacto = lazy(() => import("./pages/Contacto.tsx"));
 const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
 const StationDetail = lazy(() => import("./pages/StationDetail.tsx"));
 const Alerts = lazy(() => import("./pages/Alerts.tsx"));
@@ -76,6 +78,13 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
   if (loading) return null;
   if (!user && !isGuest()) return <Welcome />;
   return children;
+};
+
+const HomeRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user && !isGuest()) return <Landing />;
+  return <RequireOnboarded><Index /></RequireOnboarded>;
 };
 
 const RequireOnboarded = ({ children }: { children: JSX.Element }) => {
@@ -141,7 +150,8 @@ const App = () => {
             <Suspense fallback={<RouteFallback />}>
               <RouteTransition>
               <Routes>
-                <Route path="/" element={<RequireAuth><RequireOnboarded><Index /></RequireOnboarded></RequireAuth>} />
+                <Route path="/" element={<HomeRoute />} />
+                <Route path="/contacto" element={<Contacto />} />
                 <Route path="/welcome" element={<Welcome />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/station/:id" element={<RequireAuth><StationDetail /></RequireAuth>} />
