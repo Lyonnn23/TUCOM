@@ -192,9 +192,9 @@ const Welcome = () => {
 
         <p className="mt-6 text-[11px] text-white/70 leading-relaxed">
           Al continuar aceptas los{" "}
-          <button onClick={() => navigate("/legal?tab=terms")} className="underline">Términos</button>{" "}
+          <button onClick={() => navigate("/terminos")} className="underline">Términos</button>{" "}
           y la{" "}
-          <button onClick={() => navigate("/privacy")} className="underline">Política de Privacidad</button>.
+          <button onClick={() => navigate("/privacidad")} className="underline">Política de Privacidad</button>.
         </p>
       </div>
     </div>

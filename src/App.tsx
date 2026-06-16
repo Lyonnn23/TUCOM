@@ -40,6 +40,7 @@ const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Calculadora = lazy(() => import("./pages/Calculadora.tsx"));
 const CalculadoraRutas = lazy(() => import("./pages/CalculadoraRutas.tsx"));
+const Terminos = lazy(() => import("./pages/Terminos.tsx"));
 const CalculadoraEV = lazy(() => import("./pages/CalculadoraEV.tsx"));
 const MisCargas = lazy(() => import("./pages/MisCargas.tsx"));
 const Planes = lazy(() => import("./pages/Planes.tsx"));
@@ -189,7 +190,7 @@ const App = () => {
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/terms" element={<Legal />} />
-                <Route path="/terminos" element={<Legal />} />
+                <Route path="/terminos" element={<Terminos />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/privacidad" element={<Privacy />} />
                 <Route path="/eliminar-cuenta" element={<DeleteAccount />} />

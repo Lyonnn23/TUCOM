@@ -190,14 +190,14 @@ const Auth = () => {
             <p className="text-center text-[11px] text-muted-foreground leading-relaxed">
               Al continuar aceptas nuestros{" "}
               <button
-                onClick={() => navigate("/legal?tab=terms")}
+                onClick={() => navigate("/terminos")}
                 className="text-primary font-medium hover:underline"
               >
                 Términos
               </button>{" "}
               y la{" "}
               <button
-                onClick={() => navigate("/privacy")}
+                onClick={() => navigate("/privacidad")}
                 className="text-primary font-medium hover:underline"
               >
                 Política de Privacidad

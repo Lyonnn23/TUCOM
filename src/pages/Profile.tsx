@@ -510,7 +510,7 @@ const Profile = () => {
             </li>
             <li>
               <Link
-                to="/terms"
+                to="/terminos"
                 className="px-5 py-3 flex items-center justify-between hover:bg-muted/40"
               >
                 <span className="flex items-center gap-2 text-sm text-foreground">
@@ -522,7 +522,7 @@ const Profile = () => {
             </li>
             <li>
               <Link
-                to="/privacy"
+                to="/privacidad"
                 className="px-5 py-3 flex items-center justify-between hover:bg-muted/40"
               >
                 <span className="flex items-center gap-2 text-sm text-foreground">

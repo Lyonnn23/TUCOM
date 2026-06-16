@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Fuel, Map as MapIcon, Wallet, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const STORAGE_KEY = "onboarding_complete";
 
@@ -18,6 +19,7 @@ const SLIDES: Slide[] = [
 ];
 
 const FirstRunOnboarding = () => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
@@ -148,6 +150,12 @@ const FirstRunOnboarding = () => {
             Siguiente
           </Button>
         )}
+
+        <p className="text-center text-[11px] text-white/70 mt-4">
+          <button onClick={() => navigate("/privacidad")} className="underline">Privacidad</button>
+          {" · "}
+          <button onClick={() => navigate("/terminos")} className="underline">Términos</button>
+        </p>
       </div>
     </div>
   );
