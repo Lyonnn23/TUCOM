@@ -1,175 +1,243 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Calculator, Car, Share2, Sparkles, ExternalLink, MapPin, RotateCcw, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  Calculator,
+  Car,
+  Share2,
+  MapPin,
+  Fuel,
+  Gauge,
+  LocateFixed,
+  AlertTriangle,
+  Sparkles,
+  Loader2,
+  Navigation,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import CatalogVehiclePicker from "@/components/calculadora/CatalogVehiclePicker";
-import ConsumptionStrip from "@/components/calculadora/ConsumptionStrip";
-import CompareCarsTab from "@/components/calculadora/CompareCarsTab";
-import RealVsOfficialStrip from "@/components/calculadora/RealVsOfficialStrip";
-import { QUICK_DESTINATIONS, calcTrip, vehicleLabel, type RouteType } from "@/lib/tripCalc";
-import type { CatalogVehicle } from "@/hooks/useVehiclesCatalog";
+import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
-import { useCheapestStations } from "@/hooks/useNearbyStations";
-import { formatPrice, formatDistance } from "@/lib/format";
-import { useAuth } from "@/hooks/useAuth";
+import { useCheapestStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
+import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { formatPrice } from "@/lib/format";
 import { DEFAULT_PRICES } from "@/lib/priceRanges";
+import { toast } from "sonner";
 
-const LOADING_MSGS = [
-  "Buscando precios CNE...",
-  "Calculando rendimiento oficial...",
-  "Consultando estaciones en tu ruta...",
-  "Generando análisis personalizado...",
+type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
+type Place = { lat: number; lng: number; label: string };
+
+const FUEL_OPTIONS: { key: FuelKey; label: string }[] = [
+  { key: "gasoline93", label: "93" },
+  { key: "gasoline95", label: "95" },
+  { key: "gasoline97", label: "97" },
+  { key: "diesel", label: "Diésel" },
+  { key: "electric", label: "⚡ EV" },
 ];
+
+const fuelLabel = (k: FuelKey) => FUEL_OPTIONS.find((f) => f.key === k)?.label ?? k;
+
+const LS_ORIGIN = "calc_last_origin";
+const LS_DEST = "calc_last_dest";
+
+const loadPlace = (k: string): Place | null => {
+  try {
+    const v = window.localStorage.getItem(k);
+    if (!v) return null;
+    const p = JSON.parse(v);
+    if (typeof p?.lat === "number" && typeof p?.lng === "number") return p;
+    return null;
+  } catch {
+    return null;
+  }
+};
+const savePlace = (k: string, p: Place) => {
+  try { window.localStorage.setItem(k, JSON.stringify(p)); } catch { /* noop */ }
+};
 
 const Calculadora = () => {
   const navigate = useNavigate();
-  const [params, setParams] = useSearchParams();
-  const { user } = useAuth();
-  const [savingVehicle, setSavingVehicle] = useState(false);
+  const { primary: primaryVehicle } = useUserVehicles();
+  const fuelPrices = useFuelPrices();
 
-
-  // Vehicle selection state
-  const [brand, setBrand] = useState<string | null>(params.get("brand"));
-  const [model, setModel] = useState<string | null>(params.get("model"));
-  const [year, setYear] = useState<number | null>(params.get("year") ? Number(params.get("year")) : null);
-  const [versionId, setVersionId] = useState<string | null>(null);
-  const [vehicle, setVehicle] = useState<CatalogVehicle | null>(null);
-
-  // Destination
-  const initialKm = params.get("km") ? Number(params.get("km")) : 0;
-  const [destKm, setDestKm] = useState<number>(initialKm);
-  const [destLabel, setDestLabel] = useState<string>(params.get("dest") ?? "");
-  const [route, setRoute] = useState<RouteType>("mixed");
-  const [roundTrip, setRoundTrip] = useState(false);
-
-  // Pre-select destination chip from URL ?dest=
-  useEffect(() => {
-    const slug = params.get("dest");
-    if (slug && !destKm) {
-      const found = QUICK_DESTINATIONS.find((d) => d.id === slug || d.label.toLowerCase().includes(slug.toLowerCase()));
-      if (found) { setDestKm(found.km); setDestLabel(found.label); }
-    }
-  }, [params, destKm]);
-
-  // Geolocation for "cheapest station near you"
-  const [loc, setLoc] = useState<{ lat: number; lng: number } | null>(null);
+  // GPS
+  const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
     navigator.geolocation.getCurrentPosition(
-      (p) => setLoc({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      (p) => setGps({ lat: p.coords.latitude, lng: p.coords.longitude }),
       () => {},
       { enableHighAccuracy: false, timeout: 6000, maximumAge: 5 * 60 * 1000 },
     );
   }, []);
 
-  const fuelKey = vehicle?.fuel_type === "hybrid" ? "gasoline95" : (vehicle?.fuel_type ?? "gasoline95");
-  const cheapestRPC = useCheapestStations(loc?.lat ?? null, loc?.lng ?? null, 10000, fuelKey === "electric" ? "electric" : (fuelKey as any), 3);
-  const fuelPrices = useFuelPrices();
+  // === Shared fuel + consumption (prefilled from vehicle when available) ===
+  const [fuelType, setFuelType] = useState<FuelKey>("gasoline95");
+  const [consumption, setConsumption] = useState<number>(12);
+  const [tankSize, setTankSize] = useState<number>(50);
+  const [vehicleHydrated, setVehicleHydrated] = useState(false);
 
-  // Loading / step state
-  const [calculating, setCalculating] = useState(false);
-  const [msgIdx, setMsgIdx] = useState(0);
-  const [showResult, setShowResult] = useState(false);
   useEffect(() => {
-    if (!calculating) return;
-    const id = setInterval(() => setMsgIdx((i) => (i + 1) % LOADING_MSGS.length), 600);
-    return () => clearInterval(id);
-  }, [calculating]);
+    if (!primaryVehicle || vehicleHydrated) return;
+    const ft = primaryVehicle.fuel_type as FuelKey;
+    if (FUEL_OPTIONS.some((o) => o.key === ft)) setFuelType(ft);
+    if (primaryVehicle.consumption_kml > 0) setConsumption(primaryVehicle.consumption_kml);
+    if (primaryVehicle.tank_size_l > 0) setTankSize(primaryVehicle.tank_size_l);
+    setVehicleHydrated(true);
+  }, [primaryVehicle, vehicleHydrated]);
 
-  const step: 1 | 2 | 3 = showResult ? 3 : !vehicle ? 1 : destKm > 0 ? 2 : 2;
+  // Cheapest nearby station for selected fuel (smart prefill)
+  const cheapest = useCheapestStations(
+    gps?.lat ?? null,
+    gps?.lng ?? null,
+    15000,
+    fuelType as FuelTypeKey,
+    5,
+  );
+  const cheapestStation = cheapest.data?.[0] ?? null;
+  const avgPrice = useMemo(() => {
+    const row = fuelPrices.data?.find((r) => r.type === fuelType);
+    return row?.price ?? DEFAULT_PRICES[fuelType] ?? DEFAULT_PRICES.gasoline95;
+  }, [fuelPrices.data, fuelType]);
+  const cheapestPrice = cheapestStation?.price ?? avgPrice;
 
-  const referencePrice = useMemo(() => {
-    if (!vehicle) return 0;
-    if (vehicle.fuel_type === "electric") return DEFAULT_PRICES.electric;
-    const row = fuelPrices.data?.find((r) => r.type === fuelKey);
-    return row?.price ?? DEFAULT_PRICES[fuelKey] ?? DEFAULT_PRICES.gasoline95;
-  }, [vehicle, fuelKey, fuelPrices.data]);
+  // === MODO VIAJE ===
+  const [origin, setOrigin] = useState<Place | null>(() => loadPlace(LS_ORIGIN));
+  const [dest, setDest] = useState<Place | null>(() => loadPlace(LS_DEST));
+  const [loadingTrip, setLoadingTrip] = useState(false);
+  const [tripResult, setTripResult] = useState<null | {
+    distanceKm: number;
+    liters: number;
+    costCheap: number;
+    costAvg: number;
+    savings: number;
+    isElectric: boolean;
+  }>(null);
 
-  const cheapestStation = cheapestRPC.data?.[0] ?? null;
-  const effectivePrice = cheapestStation?.price ?? referencePrice;
+  const useMyLocation = () => {
+    if (!gps) {
+      toast.error("Activa el GPS primero");
+      return;
+    }
+    setOrigin({ lat: gps.lat, lng: gps.lng, label: "Mi ubicación" });
+  };
 
-  const totalKm = roundTrip ? destKm * 2 : destKm;
-  const calc = vehicle ? calcTrip(vehicle, totalKm, route, effectivePrice) : null;
-  const avgSavings = calc && referencePrice > effectivePrice
-    ? Math.round((referencePrice - effectivePrice) * calc.units)
-    : 0;
-
-  // AI analysis
-  const [analysis, setAnalysis] = useState<string | null>(null);
-  const [analysisLoading, setAnalysisLoading] = useState(false);
-
-  const fetchAnalysis = async (v: CatalogVehicle, c: ReturnType<typeof calcTrip>, station: typeof cheapestStation) => {
-    setAnalysisLoading(true);
-    setAnalysis(null);
+  const calcViaje = async () => {
+    if (!origin || !dest) {
+      toast.error("Indica origen y destino");
+      return;
+    }
+    if (consumption <= 0) {
+      toast.error("Consumo inválido");
+      return;
+    }
+    setLoadingTrip(true);
     try {
-      const ctx = {
-        vehicle: vehicleLabel(v),
-        consumption_kml: c.consumption.toFixed(1),
-        km: c.km,
-        route,
-        fuel: v.fuel_type,
-        price_cne: effectivePrice,
-        avg_price: referencePrice,
-        total: c.total,
-        station: station ? `${station.brand} ${station.name}` : null,
-      };
-      const prompt = `Analiza este viaje en Chile y entrega exactamente:\n1) Una oración con el costo y si el vehículo es eficiente para esta ruta.\n2) Si hay ahorro vs promedio: cuánto y dónde cargar.\n3) Si conviene cargar ahora o esperar al MEPCO del jueves.\n4) Una recomendación breve de conducción eficiente para esta ruta.\nResponde en español formal, claro y cercano, máximo 4 oraciones, sin bullet points.\n\nDatos: ${JSON.stringify(ctx)}`;
-      const { data, error } = await (await import("@/integrations/supabase/client")).supabase.functions.invoke("tucom-assistant", {
-        body: { messages: [{ role: "user", content: prompt }] },
+      const { data, error } = await supabase.functions.invoke("trip-calculator", {
+        body: {
+          origin: { lat: origin.lat, lng: origin.lng },
+          destination: { lat: dest.lat, lng: dest.lng },
+          vehicle: { consumption_kml: consumption, fuel_type: fuelType },
+        },
       });
       if (error) throw error;
-      const text = (data as any)?.message ?? (data as any)?.reply ?? (data as any)?.content ?? null;
-      setAnalysis(typeof text === "string" ? text : null);
-    } catch (e) {
-      console.error("ai analysis failed", e);
+      const r0 = (data as any)?.routes?.[0];
+      if (!r0) throw new Error("no_route");
+      const distanceKm = Number(r0.distance_km) || 0;
+      const units = distanceKm / Math.max(consumption, 0.1);
+      const costCheap = Math.round(units * cheapestPrice);
+      const costAvg = Math.round(units * avgPrice);
+      const savings = Math.max(0, costAvg - costCheap);
+      setTripResult({
+        distanceKm,
+        liters: Math.round(units * 10) / 10,
+        costCheap,
+        costAvg,
+        savings,
+        isElectric: fuelType === "electric",
+      });
+      savePlace(LS_ORIGIN, origin);
+      savePlace(LS_DEST, dest);
+    } catch (err) {
+      console.error("trip calc error", err);
+      toast.error("No se pudo calcular la distancia");
     } finally {
-      setAnalysisLoading(false);
+      setLoadingTrip(false);
     }
   };
 
-  const handleCalculate = async () => {
-    if (!vehicle) { toast.error("Elige un vehículo"); return; }
-    if (!destKm) { toast.error("Indica un destino o km"); return; }
-    setCalculating(true);
-    setMsgIdx(0);
-    setShowResult(false);
-    await new Promise((r) => setTimeout(r, 1800));
-    setCalculating(false);
-    setShowResult(true);
-    if (vehicle && calc) fetchAnalysis(vehicle, calc, cheapestStation);
-  };
-
-  const reset = () => {
-    setShowResult(false);
-    setAnalysis(null);
-    setDestKm(0);
-    setDestLabel("");
-    setRoundTrip(false);
-  };
-
-  const shareCalc = async () => {
-    if (!calc || !vehicle) return;
-    const text = `Mi ${vehicle.brand} ${vehicle.model} ${vehicle.year} gastaría ${formatPrice(calc.total)} para ir ${destLabel || `${totalKm} km`}. Calculado con TÜcom.`;
+  const shareTrip = async () => {
+    if (!tripResult || !origin || !dest) return;
+    const stationTxt = cheapestStation ? ` con ${cheapestStation.brand} ${cheapestStation.name}` : "";
+    const text = `Mi viaje ${origin.label} → ${dest.label} costará ${formatPrice(tripResult.costCheap)} en ${fuelLabel(fuelType)}${stationTxt}. Calculado con TÜcom.`;
     try {
-      if (navigator.share) { await navigator.share({ title: "Costo de viaje · TÜcom", text }); return; }
+      if (navigator.share) {
+        await navigator.share({ title: "Mi viaje · TÜcom", text });
+        return;
+      }
       await navigator.clipboard.writeText(text);
       toast.success("Resumen copiado");
     } catch { /* cancelled */ }
   };
 
+  const goRouteMode = () => {
+    if (!cheapestStation || !origin) return;
+    // Hand off to the in-app Modo Ruta on the map view.
+    try {
+      sessionStorage.setItem(
+        "tucom_route_mode_init",
+        JSON.stringify({
+          origin: { lat: origin.lat, lng: origin.lng, label: origin.label },
+          destination: { lat: cheapestStation.lat, lng: cheapestStation.lng, label: `${cheapestStation.brand} ${cheapestStation.name}` },
+          stationId: cheapestStation.id,
+        }),
+      );
+    } catch { /* noop */ }
+    navigate("/?ruta=1#map");
+  };
+
+  // === MODO ESTANQUE ===
+  const [pct, setPct] = useState<number>(50);
+  const currentL = (tankSize * pct) / 100;
+  const rangeKm = Math.round(currentL * Math.max(consumption, 0.1));
+  const toFillL = Math.max(0, tankSize - currentL);
+  const fillCost = Math.round(toFillL * cheapestPrice);
+  const lowFuel = rangeKm < 50;
+
+  const shareTank = async () => {
+    const text = `Con ${pct}% de estanque me quedan ${rangeKm} km. Llenar el estanque cuesta ${formatPrice(fillCost)} (${fuelLabel(fuelType)}). · TÜcom`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Mi estanque · TÜcom", text });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast.success("Resumen copiado");
+    } catch { /* cancelled */ }
+  };
+
+  // === MODO COMPARAR 93 vs 95 ===
+  const [worthIt, setWorthIt] = useState(false);
+  const price93 = fuelPrices.data?.find((r) => r.type === "gasoline93")?.price ?? DEFAULT_PRICES.gasoline93;
+  const price95 = fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? DEFAULT_PRICES.gasoline95;
+  const diff = price95 - price93;
+  const annualKm = 15000;
+  const annualExtra = Math.round((annualKm / Math.max(consumption, 0.1)) * diff);
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Helmet>
-        <title>Calculadora de viaje | TÜcom</title>
-        <meta name="description" content="Calcula cuánto te cuesta tu viaje en bencina con el catálogo oficial de vehículos del Ministerio de Energía y precios CNE en tiempo real." />
+        <title>Calculadora de combustible | TÜcom</title>
+        <meta
+          name="description"
+          content="Calcula cuánto cuesta tu viaje, la autonomía de tu estanque y si vale la pena usar 95 vs 93. Precios CNE en tiempo real."
+        />
         <link rel="canonical" href="https://tucombustible.lovable.app/calculadora" />
       </Helmet>
 
@@ -177,298 +245,338 @@ const Calculadora = () => {
       <header className="bg-gradient-to-r from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">
         <div className="max-w-3xl mx-auto py-3">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/15 text-white hover:bg-white/25" aria-label="Volver">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl bg-white/15 text-white hover:bg-white/25"
+              aria-label="Volver"
+              style={{ touchAction: "manipulation", minHeight: 44, minWidth: 44 }}
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="font-heading font-extrabold text-white text-lg leading-tight">Calculadora de viaje</h1>
-              <p className="text-[11px] text-white/85">Catálogo oficial · Precios CNE en tiempo real</p>
+              <h1 className="font-heading font-extrabold text-white text-lg leading-tight">Calculadora</h1>
+              <p className="text-[11px] text-white/85">Viaje · Estanque · 93 vs 95</p>
             </div>
-          </div>
-
-          {/* Step indicator */}
-          <div className="flex items-center gap-1 mt-3 text-[10px] text-white/90">
-            {["Vehículo","Destino","Resultado"].map((label, i) => {
-              const n = (i + 1) as 1|2|3;
-              const active = step === n;
-              const done = step > n;
-              return (
-                <div key={label} className="flex items-center gap-1">
-                  <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${done ? "bg-white text-primary" : active ? "bg-white/90 text-primary" : "bg-white/20 text-white/80"}`}>{n}</span>
-                  <span className={active || done ? "text-white font-semibold" : "text-white/70"}>{label}</span>
-                  {n < 3 && <span className="mx-1 opacity-50">→</span>}
-                </div>
-              );
-            })}
           </div>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-5">
-        <Tabs defaultValue="calc" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full rounded-xl h-11">
-            <TabsTrigger value="calc" className="rounded-lg">Calcular</TabsTrigger>
-            <TabsTrigger value="compare" className="rounded-lg">Comparar autos</TabsTrigger>
+        <Tabs defaultValue="viaje" className="w-full">
+          <TabsList className="grid grid-cols-3 w-full rounded-xl h-11">
+            <TabsTrigger value="viaje" className="rounded-lg text-xs sm:text-sm">Modo Viaje</TabsTrigger>
+            <TabsTrigger value="estanque" className="rounded-lg text-xs sm:text-sm">Modo Estanque</TabsTrigger>
+            <TabsTrigger value="comparar" className="rounded-lg text-xs sm:text-sm">93 vs 95</TabsTrigger>
           </TabsList>
 
-          {/* TAB 1 */}
-          <TabsContent value="calc" className="space-y-4 mt-4">
-            {/* Vehicle */}
+          {/* ============== MODO VIAJE ============== */}
+          <TabsContent value="viaje" className="space-y-4 mt-4">
+            <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
+              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" aria-hidden="true" /> Tu viaje
+              </h2>
+
+              <div>
+                <Label className="text-xs">Origen</Label>
+                <div className="mt-1 space-y-2">
+                  <PlacesAutocomplete
+                    placeholder="¿Desde dónde sales?"
+                    initialValue={origin?.label ?? ""}
+                    bias={gps ?? undefined}
+                    onSelect={(p) => setOrigin(p)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={useMyLocation}
+                    className="rounded-xl h-9"
+                    style={{ touchAction: "manipulation" }}
+                  >
+                    <LocateFixed className="w-3.5 h-3.5 mr-1" /> Usar mi ubicación
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">Destino</Label>
+                <div className="mt-1">
+                  <PlacesAutocomplete
+                    placeholder="¿A dónde vas?"
+                    initialValue={dest?.label ?? ""}
+                    bias={origin ?? gps ?? undefined}
+                    onSelect={(p) => setDest(p)}
+                  />
+                </div>
+              </div>
+            </section>
+
             <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
               <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
                 <Car className="w-4 h-4 text-primary" aria-hidden="true" /> Tu vehículo
               </h2>
-              <CatalogVehiclePicker
-                brand={brand}
-                model={model}
-                year={year}
-                versionId={versionId}
-                onChange={(next) => {
-                  setBrand(next.brand);
-                  setModel(next.model);
-                  setYear(next.year);
-                  setVersionId(next.versionId);
-                  setVehicle(next.vehicle);
-                }}
-              />
-              {vehicle && <ConsumptionStrip vehicle={vehicle} />}
-              {vehicle && (
-                <RealVsOfficialStrip officialKml={vehicle.consumption_mixed ?? vehicle.consumption_city ?? 12} />
+              {primaryVehicle && vehicleHydrated && (
+                <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-primary" /> Prellenado desde {primaryVehicle.nickname ?? `${primaryVehicle.brand} ${primaryVehicle.model}`}
+                </p>
               )}
-              {vehicle && user && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={savingVehicle}
-                  onClick={async () => {
-                    setSavingVehicle(true);
-                    const { error } = await supabase.from("user_vehicles").insert({
-                      user_id: user.id,
-                      brand: vehicle.brand,
-                      model: vehicle.model,
-                      year: vehicle.year,
-                      fuel_type: vehicle.fuel_type === "hybrid" ? "gasoline95" : vehicle.fuel_type,
-                      consumption_kml: vehicle.consumption_mixed ?? vehicle.consumption_city ?? 12,
-                      tank_size_l: 50,
-                      nickname: `${vehicle.brand} ${vehicle.model}`,
-                    });
-                    setSavingVehicle(false);
-                    if (error) { toast.error("No se pudo guardar"); return; }
-                    toast.success("Vehículo guardado en tu perfil");
-                  }}
-                  className="w-full rounded-xl"
-                >
-                  <Save className="w-4 h-4 mr-1" /> Guardar vehículo en mi perfil
-                </Button>
-              )}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="consumption" className="text-xs">Rendimiento (km/L)</Label>
+                  <Input
+                    id="consumption"
+                    type="number"
+                    inputMode="decimal"
+                    min={2}
+                    max={40}
+                    step={0.1}
+                    value={consumption || ""}
+                    onChange={(e) => setConsumption(Number(e.target.value) || 0)}
+                    className="h-11 mt-1 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Combustible</Label>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {FUEL_OPTIONS.map((o) => (
+                      <button
+                        key={o.key}
+                        type="button"
+                        onClick={() => setFuelType(o.key)}
+                        style={{ touchAction: "manipulation", minHeight: 36 }}
+                        className={`shrink-0 text-[11px] font-semibold px-2.5 rounded-full border transition-colors ${
+                          fuelType === o.key
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-transparent text-muted-foreground border-border hover:bg-muted/60"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </section>
 
-            {/* Destination */}
-            <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
-              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" aria-hidden="true" /> Tu destino
-              </h2>
-              <div className="grid grid-cols-2 gap-2">
-                {QUICK_DESTINATIONS.map((d) => {
-                  const active = destKm === d.km && destLabel === d.label;
-                  return (
-                    <button
-                      key={d.id}
-                      onClick={() => { setDestKm(d.km); setDestLabel(d.label); }}
-                      className={`rounded-xl border px-3 py-2 text-left text-xs press-scale transition ${active ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted/30 text-foreground hover:bg-muted"}`}
+            <Button
+              onClick={calcViaje}
+              disabled={!origin || !dest || consumption <= 0 || loadingTrip}
+              className="w-full h-12 rounded-xl bg-gradient-primary text-white font-semibold shadow-glow"
+              style={{ touchAction: "manipulation" }}
+            >
+              {loadingTrip ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Calculator className="w-4 h-4 mr-2" />}
+              Calcular costo del viaje
+            </Button>
+
+            {tripResult && (
+              <section className="space-y-3 animate-scale-in">
+                <div className="rounded-3xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] text-white p-5 shadow-glow space-y-2">
+                  <p className="text-[10px] uppercase tracking-wider text-white/85 font-bold">Costo con la más barata cerca</p>
+                  <p className="font-heading font-extrabold text-4xl tabular-nums leading-none">{formatPrice(tripResult.costCheap)}</p>
+                  <p className="text-xs text-white/85 tabular-nums">
+                    {tripResult.distanceKm.toFixed(1)} km · {tripResult.liters.toFixed(1)} {tripResult.isElectric ? "kWh" : "L"} · {fuelLabel(fuelType)}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Distancia</p>
+                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{tripResult.distanceKm.toFixed(1)} km</p>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{tripResult.isElectric ? "Energía" : "Litros"}</p>
+                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{tripResult.liters.toFixed(1)} {tripResult.isElectric ? "kWh" : "L"}</p>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Costo promedio</p>
+                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{formatPrice(tripResult.costAvg)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-card border border-border p-3">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ahorro potencial</p>
+                    <p className={`font-heading font-bold text-lg tabular-nums ${tripResult.savings > 0 ? "text-fuel-green" : "text-muted-foreground"}`}>
+                      {tripResult.savings > 0 ? `−${formatPrice(tripResult.savings)}` : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                {cheapestStation && (
+                  <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Estación más barata cerca</p>
+                      <p className="font-semibold text-foreground truncate">{cheapestStation.brand} · {cheapestStation.name}</p>
+                      <p className="text-[11px] text-muted-foreground tabular-nums">{formatPrice(cheapestStation.price ?? 0)} / {tripResult.isElectric ? "kWh" : "L"}</p>
+                    </div>
+                    <Button
+                      onClick={goRouteMode}
+                      className="rounded-xl bg-primary text-primary-foreground"
+                      style={{ touchAction: "manipulation", minHeight: 44 }}
                     >
-                      <div className="font-semibold truncate">{d.label}</div>
-                      <div className="text-[10px] text-muted-foreground">~{d.km} km</div>
-                    </button>
-                  );
-                })}
-              </div>
-              <div>
-                <Label htmlFor="custom-km" className="text-xs">O ingresa los km del viaje</Label>
-                <Input
-                  id="custom-km"
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  value={destKm || ""}
-                  onChange={(e) => { setDestKm(Number(e.target.value) || 0); setDestLabel("Personalizado"); }}
-                  placeholder="Ej. 220"
-                  className="h-11 mt-1 rounded-xl"
-                />
+                      <Navigation className="w-4 h-4 mr-1" /> Ir a la más barata
+                    </Button>
+                  </div>
+                )}
+
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl"
+                  onClick={shareTrip}
+                  style={{ touchAction: "manipulation", minHeight: 44 }}
+                >
+                  <Share2 className="w-4 h-4 mr-1" /> Compartir cálculo
+                </Button>
+              </section>
+            )}
+          </TabsContent>
+
+          {/* ============== MODO ESTANQUE ============== */}
+          <TabsContent value="estanque" className="space-y-4 mt-4">
+            <section className="bg-card border border-border rounded-2xl p-4 space-y-4 shadow-soft">
+              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
+                <Fuel className="w-4 h-4 text-primary" aria-hidden="true" /> Mi estanque
+              </h2>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="tank" className="text-xs">Capacidad (L)</Label>
+                  <Input
+                    id="tank"
+                    type="number"
+                    inputMode="numeric"
+                    min={5}
+                    max={200}
+                    value={tankSize || ""}
+                    onChange={(e) => setTankSize(Number(e.target.value) || 0)}
+                    className="h-11 mt-1 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="tank-cons" className="text-xs">Rendimiento (km/L)</Label>
+                  <Input
+                    id="tank-cons"
+                    type="number"
+                    inputMode="decimal"
+                    min={2}
+                    max={40}
+                    step={0.1}
+                    value={consumption || ""}
+                    onChange={(e) => setConsumption(Number(e.target.value) || 0)}
+                    className="h-11 mt-1 rounded-xl"
+                  />
+                </div>
               </div>
 
               <div>
-                <Label className="text-xs">Tipo de ruta</Label>
-                <div className="flex gap-2 mt-1">
-                  {([
-                    { v: "city", label: "🏙 Ciudad" },
-                    { v: "mixed", label: "🔀 Mixta" },
-                    { v: "hwy", label: "🛣 Carretera" },
-                  ] as const).map((r) => (
+                <Label className="text-xs">Combustible</Label>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {FUEL_OPTIONS.map((o) => (
                     <button
-                      key={r.v}
-                      onClick={() => setRoute(r.v)}
-                      className={`flex-1 rounded-xl px-2 py-2 text-xs font-semibold press-scale transition ${route === r.v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                      key={o.key}
+                      type="button"
+                      onClick={() => setFuelType(o.key)}
+                      style={{ touchAction: "manipulation", minHeight: 36 }}
+                      className={`shrink-0 text-[11px] font-semibold px-2.5 rounded-full border transition-colors ${
+                        fuelType === o.key
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-transparent text-muted-foreground border-border hover:bg-muted/60"
+                      }`}
                     >
-                      {r.label}
+                      {o.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-3 py-2.5">
-                <span className="text-sm text-foreground">Ida y vuelta</span>
-                <Switch checked={roundTrip} onCheckedChange={setRoundTrip} />
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs inline-flex items-center gap-1">
+                    <Gauge className="w-3.5 h-3.5" /> Nivel actual
+                  </Label>
+                  <span className="text-xs font-bold tabular-nums text-primary">{pct}% · {currentL.toFixed(1)} L</span>
+                </div>
+                <Slider
+                  value={[pct]}
+                  onValueChange={(v) => setPct(v[0])}
+                  min={0}
+                  max={100}
+                  step={1}
+                  aria-label="Nivel del estanque"
+                />
               </div>
-
-              <Button
-                onClick={handleCalculate}
-                disabled={!vehicle || !destKm || calculating}
-                className="w-full h-12 rounded-xl bg-gradient-primary text-white font-semibold shadow-glow"
-              >
-                <Calculator className="w-4 h-4 mr-2" /> Calcular costo del viaje
-              </Button>
             </section>
 
-            {/* Loading */}
-            {calculating && (
-              <section className="bg-card border border-border rounded-2xl p-6 text-center space-y-3">
-                <div className="inline-block w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <p className="text-sm text-foreground font-medium animate-fade-in" key={msgIdx}>{LOADING_MSGS[msgIdx]}</p>
-              </section>
-            )}
-
-            {/* Result */}
-            {showResult && calc && vehicle && (
-              <>
-                <section className="rounded-3xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] text-white p-5 shadow-glow space-y-2 animate-scale-in">
-                  <p className="font-heading font-extrabold text-4xl tabular-nums leading-none">{formatPrice(calc.total)}</p>
-                  <p className="text-xs text-white/85">
-                    {roundTrip ? "Ida y vuelta" : "Solo ida"} · {totalKm} km · ruta {route === "city" ? "ciudad" : route === "hwy" ? "carretera" : "mixta"}
+            <section className="grid grid-cols-2 gap-2">
+              <div className={`rounded-2xl p-4 ${lowFuel ? "bg-fuel-red/10 border-2 border-fuel-red/40" : "bg-card border border-border"}`}>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Te quedan</p>
+                <p className={`font-heading font-extrabold text-3xl tabular-nums ${lowFuel ? "text-fuel-red" : "text-foreground"}`}>{rangeKm} km</p>
+                {lowFuel && (
+                  <p className="mt-1 text-[11px] font-bold text-fuel-red inline-flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Carga pronto
                   </p>
-                  <p className="inline-flex text-[11px] font-semibold bg-white/15 rounded-full px-2 py-0.5">
-                    {vehicle.brand} {vehicle.model} {vehicle.year} · {vehicle.version}
-                  </p>
-                </section>
-
-                <section className="grid grid-cols-2 gap-2">
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{calc.isElectric ? "Energía" : "Litros"}</p>
-                    <p className="font-heading font-bold text-primary text-lg tabular-nums">{calc.units.toFixed(1)} {calc.isElectric ? "kWh" : "L"}</p>
-                  </div>
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rendimiento</p>
-                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{calc.consumption.toFixed(1)} km/{calc.isElectric ? "kWh" : "L"}</p>
-                  </div>
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Precio CNE</p>
-                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{formatPrice(effectivePrice)}/{calc.isElectric ? "kWh" : "L"}</p>
-                  </div>
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ahorro vs prom.</p>
-                    <p className={`font-heading font-bold text-lg tabular-nums ${avgSavings > 0 ? "text-success" : "text-muted-foreground"}`}>
-                      {avgSavings > 0 ? `−${formatPrice(avgSavings)}` : "Precio promedio"}
-                    </p>
-                  </div>
-                </section>
-
-                {cheapestStation && (
-                  <button
-                    onClick={() => navigate(`/station/${cheapestStation.id}`)}
-                    className="w-full text-left bg-card border-2 border-primary/30 rounded-2xl p-3 hover:bg-accent transition"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Estación más barata cerca</p>
-                        <p className="font-semibold text-foreground truncate">{cheapestStation.brand} · {cheapestStation.name}</p>
-                        <p className="text-[11px] text-muted-foreground">{formatDistance((cheapestStation.distance_m ?? 0) / 1000)}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-heading font-bold text-primary text-lg">{formatPrice(cheapestStation.price ?? 0)}</p>
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary text-primary-foreground">Más barata</span>
-                      </div>
-                    </div>
-                  </button>
                 )}
-
-                <details className="bg-muted/30 rounded-xl px-3 py-2 text-xs">
-                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">Ver cálculo</summary>
-                  <p className="mt-2 text-foreground tabular-nums">
-                    {totalKm} km ÷ {calc.consumption.toFixed(1)} km/{calc.isElectric ? "kWh" : "L"} = {calc.units.toFixed(1)} {calc.isElectric ? "kWh" : "L"} × {formatPrice(effectivePrice)} = {formatPrice(calc.total)}
-                  </p>
-                  <p className="mt-1 text-[10px] text-muted-foreground">Fuente rendimiento: consumovehicular.cl · Ciclo WLTC oficial</p>
-                </details>
-
-                {/* AI analysis */}
-                <section className="rounded-2xl bg-primary/5 border border-primary/30 p-4 space-y-2">
-                  <p className="text-[10px] uppercase tracking-wider text-primary font-bold inline-flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> Análisis del asistente TÜcom
-                  </p>
-                  {analysisLoading ? (
-                    <Skeleton className="h-16 rounded-xl" />
-                  ) : analysis ? (
-                    <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{analysis}</p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">No se pudo generar el análisis. Toca un chip abajo para preguntarle al asistente.</p>
-                  )}
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {[
-                      "💡 Cómo mejorar mi rendimiento",
-                      "📅 ¿Cuándo conviene cargar?",
-                      "🔀 Comparar con otro auto",
-                    ].map((q) => (
-                      <button
-                        key={q}
-                        onClick={() => {
-                          try { sessionStorage.setItem("tucom_chat_prefill", q); } catch { /* noop */ }
-                          window.dispatchEvent(new CustomEvent("tucom-open-chat"));
-                        }}
-                        className="text-[11px] bg-card border border-primary/30 rounded-full px-2.5 py-1 text-foreground hover:bg-primary/10"
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                </section>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {cheapestStation && (
-                    <Button variant="outline" className="rounded-xl" onClick={() => {
-                      const url = `https://www.google.com/maps/dir/?api=1&destination=${cheapestStation.lat},${cheapestStation.lng}&travelmode=driving`;
-                      window.open(url, "_blank");
-                    }}>
-                      <MapPin className="w-4 h-4 mr-1" /> Cómo llegar
-                    </Button>
-                  )}
-                  <Button variant="outline" className="rounded-xl" onClick={shareCalc}>
-                    <Share2 className="w-4 h-4 mr-1" /> Compartir
-                  </Button>
-                </div>
-
-                <Button variant="ghost" className="w-full" onClick={reset}>
-                  <RotateCcw className="w-4 h-4 mr-1" /> Calcular otro viaje
-                </Button>
-
-                <p className="text-[10px] text-muted-foreground text-center px-4 leading-relaxed">
-                  Rendimiento oficial: consumovehicular.cl · Ministerio de Energía de Chile.{" "}
-                  Precio combustible: CNE Bencina en Línea.
+              </div>
+              <div className="rounded-2xl bg-card border border-border p-4">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Para llenar</p>
+                <p className="font-heading font-extrabold text-3xl tabular-nums text-primary">{formatPrice(fillCost)}</p>
+                <p className="text-[11px] text-muted-foreground tabular-nums mt-0.5">
+                  {toFillL.toFixed(1)} L × {formatPrice(cheapestPrice)}
                 </p>
+              </div>
+            </section>
 
-                <div className="text-center">
-                  <button onClick={() => navigate("/calculadora-rutas")} className="text-[11px] text-primary hover:underline inline-flex items-center gap-1">
-                    Modo ruta avanzada con TAG <ExternalLink className="w-3 h-3" />
-                  </button>
-                </div>
-              </>
-            )}
+            <Button
+              variant="outline"
+              className="w-full rounded-xl"
+              onClick={shareTank}
+              style={{ touchAction: "manipulation", minHeight: 44 }}
+            >
+              <Share2 className="w-4 h-4 mr-1" /> Compartir cálculo
+            </Button>
           </TabsContent>
 
-          {/* TAB 2 */}
-          <TabsContent value="compare" className="mt-4">
-            <CompareCarsTab
-              defaultFuelPrice={fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? DEFAULT_PRICES.gasoline95}
-              defaultElectricPrice={DEFAULT_PRICES.electric}
-            />
+          {/* ============== MODO COMPARAR ============== */}
+          <TabsContent value="comparar" className="space-y-4 mt-4">
+            <section className="bg-card border border-border rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-heading font-bold text-foreground text-sm">¿Vale la pena usar 95?</p>
+                <p className="text-[11px] text-muted-foreground">Activa para ver el costo anual extra estimado</p>
+              </div>
+              <Switch checked={worthIt} onCheckedChange={setWorthIt} aria-label="Comparar costo anual" />
+            </section>
+
+            <section className="grid grid-cols-2 gap-2">
+              <div className="rounded-2xl bg-card border border-border p-4 text-center">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Gasolina 93</p>
+                <p className="font-heading font-extrabold text-3xl tabular-nums text-foreground mt-1">{formatPrice(price93)}</p>
+                <p className="text-[11px] text-muted-foreground">por litro</p>
+              </div>
+              <div className="rounded-2xl bg-primary/10 border-2 border-primary/30 p-4 text-center">
+                <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Gasolina 95</p>
+                <p className="font-heading font-extrabold text-3xl tabular-nums text-primary mt-1">{formatPrice(price95)}</p>
+                <p className="text-[11px] text-muted-foreground">por litro</p>
+              </div>
+            </section>
+
+            <section className="rounded-2xl bg-card border border-border p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-muted-foreground">Diferencia por litro</p>
+                <p className={`font-heading font-extrabold text-xl tabular-nums ${diff >= 0 ? "text-fuel-red" : "text-fuel-green"}`}>
+                  {diff >= 0 ? `+${formatPrice(diff)}` : formatPrice(diff)}
+                </p>
+              </div>
+              {worthIt && (
+                <div className="flex items-center justify-between pt-2 border-t border-border">
+                  <p className="text-xs font-semibold text-muted-foreground">Extra al año (15.000 km · {consumption} km/L)</p>
+                  <p className={`font-heading font-extrabold text-xl tabular-nums ${annualExtra >= 0 ? "text-fuel-red" : "text-fuel-green"}`}>
+                    {annualExtra >= 0 ? `+${formatPrice(annualExtra)}` : formatPrice(annualExtra)}
+                  </p>
+                </div>
+              )}
+            </section>
+
+            <p className="text-[11px] text-muted-foreground text-center leading-relaxed px-2">
+              Para motores que no requieren 95, el rendimiento es prácticamente igual.
+              Consulta el manual de tu vehículo: si el fabricante exige 95 o más, usar 93 puede dañar el motor.
+            </p>
           </TabsContent>
         </Tabs>
       </main>
