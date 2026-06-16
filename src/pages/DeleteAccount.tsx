@@ -359,11 +359,11 @@ const DeleteAccount = () => {
 
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground space-x-3 pt-2">
-          <Link to="/privacy" className="text-primary underline">
+          <Link to="/privacidad" className="text-primary underline">
             Política de privacidad
           </Link>
           <span>·</span>
-          <Link to="/legal" className="text-primary underline">
+          <Link to="/terminos" className="text-primary underline">
             Términos
           </Link>
           <span>·</span>
