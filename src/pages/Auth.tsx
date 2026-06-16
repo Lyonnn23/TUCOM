@@ -35,7 +35,7 @@ const Auth = () => {
 
   const handleGuest = () => {
     try {
-      sessionStorage.setItem("tucom_guest_mode", "1");
+      localStorage.setItem("guest_mode", "true");
     } catch {
       /* noop */
     }
