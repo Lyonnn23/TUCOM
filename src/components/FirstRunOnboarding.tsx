@@ -3,7 +3,9 @@ import { Fuel, Map as MapIcon, Wallet, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-const STORAGE_KEY = "onboarding_complete";
+const STORAGE_KEY = "onboarding_v1";
+const STORAGE_DONE = "done";
+const LEGACY_KEY = "onboarding_complete";
 
 type Slide = {
   icon: React.ComponentType<{ className?: string }>;
@@ -27,14 +29,17 @@ const FirstRunOnboarding = () => {
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(STORAGE_KEY) !== "true") setOpen(true);
+      const done =
+        localStorage.getItem(STORAGE_KEY) === STORAGE_DONE ||
+        localStorage.getItem(LEGACY_KEY) === "true";
+      if (!done) setOpen(true);
     } catch {
       setOpen(true);
     }
   }, []);
 
   const complete = () => {
-    try { localStorage.setItem(STORAGE_KEY, "true"); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, STORAGE_DONE); } catch {}
     setOpen(false);
   };
 
