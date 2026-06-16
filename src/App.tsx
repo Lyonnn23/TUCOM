@@ -40,6 +40,7 @@ const Leaderboard = lazy(() => import("./pages/Leaderboard.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Calculadora = lazy(() => import("./pages/Calculadora.tsx"));
 const CalculadoraRutas = lazy(() => import("./pages/CalculadoraRutas.tsx"));
+const Terminos = lazy(() => import("./pages/Terminos.tsx"));
 const CalculadoraEV = lazy(() => import("./pages/CalculadoraEV.tsx"));
 const MisCargas = lazy(() => import("./pages/MisCargas.tsx"));
 const Planes = lazy(() => import("./pages/Planes.tsx"));
