@@ -15,6 +15,8 @@ import LocalErrorBoundary from "@/components/LocalErrorBoundary";
 const StationMap = lazy(() => import("@/components/StationMap"));
 import RouteModePanel, { type RouteCorridor } from "@/components/RouteModePanel";
 import BenefitsTab from "@/components/BenefitsTab";
+import FuelFilterPills, { type FuelFilterKey } from "@/components/FuelFilterPills";
+import { useUserVehicles } from "@/hooks/useUserVehicles";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
