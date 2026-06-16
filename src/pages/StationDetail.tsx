@@ -670,7 +670,7 @@ const StationDetail = () => {
                   {r.comment && (
                     <p className="text-sm text-foreground leading-relaxed">{r.comment}</p>
                   )}
-                  {user && r.user_id !== user.id && (
+                  {user && (
                     <button
                       onClick={async () => {
                         const { error } = await supabase
