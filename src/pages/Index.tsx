@@ -28,6 +28,16 @@ import WhereToGoWidget from "@/components/WhereToGoWidget";
 import MacroWidgets from "@/components/macro/MacroWidgets";
 import VehicleMiniWidget from "@/components/VehicleMiniWidget";
 import ShareStationButton from "@/components/ShareStationButton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
@@ -247,11 +257,19 @@ const Index = () => {
     );
   };
 
-  // Initial request + silent auto-refresh every 2 min while the app is open
+  // First-run location rationale: explain why we need GPS before triggering the OS prompt.
+  const RATIONALE_KEY = "tucom_location_rationale_seen_v1";
+  const [showLocationRationale, setShowLocationRationale] = useState(false);
+
   useEffect(() => {
-    requestLocation();
+    let seen = false;
+    try { seen = localStorage.getItem(RATIONALE_KEY) === "1"; } catch { /* noop */ }
+    if (!seen) {
+      setShowLocationRationale(true);
+    } else {
+      requestLocation();
+    }
     const interval = setInterval(() => {
-      // Skip silent refresh when the user denied permission or the device doesn't support it
       setLocationErrorType((current) => {
         if (current !== "denied" && current !== "unsupported") {
           requestLocation(true);
@@ -261,6 +279,17 @@ const Index = () => {
     }, 120_000); // every 2 minutes
     return () => clearInterval(interval);
   }, []);
+
+  const acceptLocationRationale = () => {
+    try { localStorage.setItem(RATIONALE_KEY, "1"); } catch { /* noop */ }
+    setShowLocationRationale(false);
+    requestLocation();
+  };
+  const dismissLocationRationale = () => {
+    try { localStorage.setItem(RATIONALE_KEY, "1"); } catch { /* noop */ }
+    setShowLocationRationale(false);
+  };
+
 
 
   const FEATURED_BRANDS = ["Copec", "Shell", "Aramco"];
@@ -1081,7 +1110,25 @@ const Index = () => {
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <FuelLogFAB />
       <DriverModeFAB />
+
+      <AlertDialog open={showLocationRationale} onOpenChange={(o) => !o && dismissLocationRationale()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Activa tu ubicación</AlertDialogTitle>
+            <AlertDialogDescription>
+              TÜcom usa tu ubicación <strong>solo en tu dispositivo</strong> para mostrarte las
+              estaciones más cercanas, calcular distancias y encontrar la bencina más barata
+              cerca de ti. No guardamos ni compartimos tu ubicación.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={dismissLocationRationale}>Ahora no</AlertDialogCancel>
+            <AlertDialogAction onClick={acceptLocationRationale}>Permitir ubicación</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 };
 
