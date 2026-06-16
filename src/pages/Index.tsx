@@ -108,6 +108,33 @@ const Index = () => {
     };
   }, []);
 
+  // Analytics: page_view per tab + open_map + user properties
+  useEffect(() => {
+    import("@/lib/analytics").then(({ analytics, pageView, setUserProperties }) => {
+      const map: Record<string, string> = {
+        prices: "/home",
+        map: "/map",
+        stations: "/stations",
+        favorites: "/favorites",
+        benefits: "/benefits",
+      };
+      pageView(map[activeTab] ?? `/${activeTab}`);
+      if (activeTab === "map") analytics.openMap();
+      setUserProperties({
+        has_vehicle_profile: !!primaryVehicle,
+        preferred_fuel: preferredFuel,
+        location_granted: !!userLocation,
+      });
+    }).catch(() => {});
+  }, [activeTab, primaryVehicle, preferredFuel, userLocation]);
+
+  // Analytics: search_station (debounced)
+  useEffect(() => {
+    if (!debouncedSearch || debouncedSearch.length < 2) return;
+    import("@/lib/analytics").then(({ analytics }) => analytics.searchStation(debouncedSearch)).catch(() => {});
+  }, [debouncedSearch]);
+
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();

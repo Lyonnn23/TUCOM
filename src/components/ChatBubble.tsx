@@ -130,6 +130,7 @@ export default function ChatBubble() {
     setInput("");
     setStreaming(true);
     haptic("light");
+    import("@/lib/analytics").then((m) => m.analytics.useAi(trimmed.length)).catch(() => {});
 
     try {
       const session = await supabase.auth.getSession();

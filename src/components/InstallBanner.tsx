@@ -37,6 +37,7 @@ export default function InstallBanner() {
     const timer = setTimeout(() => {
       setVisible(true);
       if (isIOS()) setIosHint(true);
+      import("@/lib/analytics").then((m) => m.analytics.installPrompt(isIOS() ? "ios" : "native")).catch(() => {});
     }, SHOW_DELAY_MS);
 
     return () => {

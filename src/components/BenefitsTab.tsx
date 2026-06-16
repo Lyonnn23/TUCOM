@@ -193,7 +193,12 @@ const BenefitsTab = () => {
           return (
             <button
               key={brand}
-              onClick={() => setSelectedBrand(brand === selectedBrand ? "all" : brand)}
+              onClick={() => {
+                setSelectedBrand(brand === selectedBrand ? "all" : brand);
+                if (brand !== selectedBrand) {
+                  import("@/lib/analytics").then((m) => m.analytics.viewBenefit(brand)).catch(() => {});
+                }
+              }}
               className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors ${cls}`}
             >
               {brand}

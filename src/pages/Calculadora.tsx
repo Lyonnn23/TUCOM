@@ -171,6 +171,7 @@ const Calculadora = () => {
       });
       savePlace(LS_ORIGIN, origin);
       savePlace(LS_DEST, dest);
+      import("@/lib/analytics").then((m) => m.analytics.calculateTrip(fuelType, distanceKm)).catch(() => {});
     } catch (err) {
       console.error("trip calc error", err);
       toast.error("No se pudo calcular la distancia");
