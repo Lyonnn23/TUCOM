@@ -41,7 +41,22 @@ Deno.serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+
+    // Require an authenticated user. The report owner is identified by the JWT.
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return json({ error: "unauthorized" }, 401);
+    }
+    const authed = createClient(SUPABASE_URL, ANON_KEY);
+    const { data: claimsData, error: claimsErr } = await authed.auth.getClaims(
+      authHeader.replace("Bearer ", ""),
+    );
+    if (claimsErr || !claimsData?.claims) {
+      return json({ error: "unauthorized" }, 401);
+    }
+    const callerId = claimsData.claims.sub as string;
 
     if (!LOVABLE_API_KEY) {
       return json({ error: "LOVABLE_API_KEY not configured" }, 500);
@@ -63,6 +78,11 @@ Deno.serve(async (req) => {
 
     if (reportErr) throw reportErr;
     if (!report) return json({ error: "Report not found" }, 404);
+    // Only the report owner or an admin can trigger verification.
+    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: callerId, _role: "admin" });
+    if (report.user_id !== callerId && !isAdmin) {
+      return json({ error: "forbidden" }, 403);
+    }
     if (report.status !== "pending") {
       return json({ status: report.status, message: "Already processed" });
     }

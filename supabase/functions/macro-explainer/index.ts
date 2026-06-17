@@ -19,9 +19,31 @@ const PROMPTS: Record<string, string> = {
 
 const MAX_AGE_DAYS = 7;
 
+const ALLOWED_HOSTS = ["lovable.app","lovableproject.com","tucombustible.cl","www.tucombustible.cl","localhost","127.0.0.1"];
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+function checkRateLimit(ip: string, max = 20, windowMs = 60_000) {
+  const now = Date.now();
+  const e = rateLimitMap.get(ip);
+  if (!e || e.resetAt < now) { rateLimitMap.set(ip, { count: 1, resetAt: now + windowMs }); return true; }
+  if (e.count >= max) return false;
+  e.count++; return true;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
+    const origin = req.headers.get("origin");
+    if (origin) {
+      try {
+        const host = new URL(origin).hostname;
+        if (!ALLOWED_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) {
+          return new Response(JSON.stringify({ error: "origin_not_allowed" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      } catch { return new Response(JSON.stringify({ error: "bad_origin" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }); }
+    }
+    const ip = (req.headers.get("x-forwarded-for") ?? "unknown").split(",")[0].trim();
+    if (!checkRateLimit(ip)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
     const { topic } = await req.json();
     if (!topic || !PROMPTS[topic]) {
       return new Response(JSON.stringify({ error: "invalid topic" }), {
