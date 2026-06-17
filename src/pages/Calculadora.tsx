@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PlacesAutocomplete from "@/components/PlacesAutocomplete";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
@@ -236,13 +236,99 @@ const Calculadora = () => {
     } catch { /* cancelled */ }
   };
 
-  // === MODO COMPARAR 93 vs 95 ===
-  const [worthIt, setWorthIt] = useState(false);
-  const price93 = fuelPrices.data?.find((r) => r.type === "gasoline93")?.price ?? DEFAULT_PRICES.gasoline93;
-  const price95 = fuelPrices.data?.find((r) => r.type === "gasoline95")?.price ?? DEFAULT_PRICES.gasoline95;
-  const diff = price95 - price93;
-  const annualKm = 15000;
-  const annualExtra = Math.round((annualKm / Math.max(consumption, 0.1)) * diff);
+  // === MODO COMPARAR (rebuilt: 93/95/97/Diesel side-by-side) ===
+  type CompareFuel = "gasoline93" | "gasoline95" | "gasoline97" | "diesel";
+  const COMPARE_OPTIONS: { key: CompareFuel; label: string }[] = [
+    { key: "gasoline93", label: "93" },
+    { key: "gasoline95", label: "95" },
+    { key: "gasoline97", label: "97" },
+    { key: "diesel", label: "Diésel" },
+  ];
+  const [fuelA, setFuelA] = useState<CompareFuel>("gasoline93");
+  const [fuelB, setFuelB] = useState<CompareFuel>("gasoline95");
+  const [litros, setLitros] = useState<number>(40);
+  const [litrosHydrated, setLitrosHydrated] = useState(false);
+  const [weeksFreq, setWeeksFreq] = useState<number>(2);
+  const [priceAOverride, setPriceAOverride] = useState<number | null>(null);
+  const [priceBOverride, setPriceBOverride] = useState<number | null>(null);
+  const [editingA, setEditingA] = useState(false);
+  const [editingB, setEditingB] = useState(false);
+
+  // Prefill litros from vehicle tank size once
+  useEffect(() => {
+    if (litrosHydrated) return;
+    if (primaryVehicle && primaryVehicle.tank_size_l > 0) {
+      setLitros(Math.round(primaryVehicle.tank_size_l));
+      setLitrosHydrated(true);
+    }
+  }, [primaryVehicle, litrosHydrated]);
+
+  const pickA = (k: CompareFuel) => {
+    if (k === fuelB) setFuelB(fuelA);
+    setFuelA(k);
+    setPriceAOverride(null);
+  };
+  const pickB = (k: CompareFuel) => {
+    if (k === fuelA) setFuelA(fuelB);
+    setFuelB(k);
+    setPriceBOverride(null);
+  };
+
+  const cheapestA = useCheapestStations(gps?.lat ?? null, gps?.lng ?? null, 10000, fuelA as FuelTypeKey, 1);
+  const cheapestB = useCheapestStations(gps?.lat ?? null, gps?.lng ?? null, 10000, fuelB as FuelTypeKey, 1);
+  const autoPriceA =
+    cheapestA.data?.[0]?.price ??
+    fuelPrices.data?.find((r) => r.type === fuelA)?.price ??
+    DEFAULT_PRICES[fuelA];
+  const autoPriceB =
+    cheapestB.data?.[0]?.price ??
+    fuelPrices.data?.find((r) => r.type === fuelB)?.price ??
+    DEFAULT_PRICES[fuelB];
+  const priceA = priceAOverride ?? autoPriceA;
+  const priceB = priceBOverride ?? autoPriceB;
+
+  const costA = Math.round(priceA * litros);
+  const costB = Math.round(priceB * litros);
+  const tankDiff = costB - costA; // >0 → B más caro
+  const fillsPerYear = Math.round(52 / Math.max(weeksFreq, 1));
+  const annualA = costA * fillsPerYear;
+  const annualB = costB * fillsPerYear;
+  const annualDiff = Math.abs(annualB - annualA);
+
+  const labelA = COMPARE_OPTIONS.find((o) => o.key === fuelA)?.label ?? "";
+  const labelB = COMPARE_OPTIONS.find((o) => o.key === fuelB)?.label ?? "";
+
+  const pair = [fuelA, fuelB].sort().join("|");
+  const hasDiesel = fuelA === "diesel" || fuelB === "diesel";
+  let explanation = "";
+  if (hasDiesel) {
+    explanation =
+      "El Diésel rinde más por litro (~15–20% más autonomía) pero solo funciona en motores Diésel. No mezcles combustibles distintos al especificado por el fabricante.";
+  } else if (pair === "gasoline93|gasoline95") {
+    explanation = `¿Vale la pena el 95? Para la mayoría de los autos estándar, el 95 no mejora el rendimiento pero cuesta ${formatPrice(Math.abs(tankDiff))} más por estanque. En un año (${fillsPerYear} cargas): ${formatPrice(annualDiff)} de diferencia.`;
+  } else if (pair === "gasoline95|gasoline97") {
+    explanation = `¿Vale la pena el 97? Solo recomendado si tu manual lo especifica. El costo extra por estanque es ${formatPrice(Math.abs(tankDiff))}.`;
+  } else if (pair === "gasoline93|gasoline97") {
+    explanation = `Saltar de 93 a 97 suele costar ${formatPrice(Math.abs(tankDiff))} más por estanque. Solo úsalo si el fabricante lo exige.`;
+  } else {
+    explanation = "Selecciona dos combustibles distintos para comparar.";
+  }
+
+  const shareCompare = async () => {
+    const cheaperLabel = costA <= costB ? labelA : labelB;
+    const pricierLabel = costA <= costB ? labelB : labelA;
+    const ahorro = Math.abs(tankDiff);
+    const text = `Usando ${cheaperLabel} en vez de ${pricierLabel} ahorro ${formatPrice(ahorro)} por estanque. tucombustible.cl`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Comparé bencina con TÜcom", text, url: "https://tucombustible.cl" });
+        return;
+      }
+      await navigator.clipboard.writeText(text);
+      toast.success("¡Copiado!");
+    } catch { /* cancelled */ }
+  };
+
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -269,7 +355,7 @@ const Calculadora = () => {
             </button>
             <div>
               <h1 className="font-heading font-extrabold text-white text-lg leading-tight">Calculadora</h1>
-              <p className="text-[11px] text-white/85">Viaje · Estanque · 93 vs 95</p>
+              <p className="text-[11px] text-white/85">Viaje · Estanque · Comparar</p>
             </div>
           </div>
         </div>
@@ -280,7 +366,7 @@ const Calculadora = () => {
           <TabsList className="grid grid-cols-3 w-full rounded-xl h-11">
             <TabsTrigger value="viaje" className="rounded-lg text-xs sm:text-sm">Modo Viaje</TabsTrigger>
             <TabsTrigger value="estanque" className="rounded-lg text-xs sm:text-sm">Modo Estanque</TabsTrigger>
-            <TabsTrigger value="comparar" className="rounded-lg text-xs sm:text-sm">93 vs 95</TabsTrigger>
+            <TabsTrigger value="comparar" className="rounded-lg text-xs sm:text-sm">Comparar</TabsTrigger>
           </TabsList>
 
           {/* ============== MODO VIAJE ============== */}
@@ -550,50 +636,175 @@ const Calculadora = () => {
             </Button>
           </TabsContent>
 
-          {/* ============== MODO COMPARAR ============== */}
+          {/* ============== MODO COMPARAR (93/95/97/Diésel) ============== */}
           <TabsContent value="comparar" className="space-y-4 mt-4">
-            <section className="bg-card border border-border rounded-2xl p-4 shadow-soft flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-heading font-bold text-foreground text-sm">¿Vale la pena usar 95?</p>
-                <p className="text-[11px] text-muted-foreground">Activa para ver el costo anual extra estimado</p>
+            {/* Fuel selectors */}
+            <section className="bg-card border border-border rounded-2xl p-4 shadow-soft space-y-4">
+              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
+                <Fuel className="w-4 h-4 text-primary" aria-hidden="true" /> Elige los combustibles a comparar
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-semibold">Combustible A</Label>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {COMPARE_OPTIONS.map((o) => (
+                      <button
+                        key={o.key}
+                        type="button"
+                        onClick={() => pickA(o.key)}
+                        style={{ touchAction: "manipulation", minHeight: 36 }}
+                        className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                          fuelA === o.key
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-transparent text-muted-foreground border-border hover:bg-muted/60"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs font-semibold">Combustible B</Label>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {COMPARE_OPTIONS.map((o) => (
+                      <button
+                        key={o.key}
+                        type="button"
+                        onClick={() => pickB(o.key)}
+                        style={{ touchAction: "manipulation", minHeight: 36 }}
+                        className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                          fuelB === o.key
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-transparent text-muted-foreground border-border hover:bg-muted/60"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <Switch checked={worthIt} onCheckedChange={setWorthIt} aria-label="Comparar costo anual" />
             </section>
 
+            {/* Prices */}
             <section className="grid grid-cols-2 gap-2">
-              <div className="rounded-2xl bg-card border border-border p-4 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Gasolina 93</p>
-                <p className="font-heading font-extrabold text-3xl tabular-nums text-foreground mt-1">{formatPrice(price93)}</p>
-                <p className="text-[11px] text-muted-foreground">por litro</p>
-              </div>
-              <div className="rounded-2xl bg-primary/10 border-2 border-primary/30 p-4 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Gasolina 95</p>
-                <p className="font-heading font-extrabold text-3xl tabular-nums text-primary mt-1">{formatPrice(price95)}</p>
-                <p className="text-[11px] text-muted-foreground">por litro</p>
-              </div>
-            </section>
-
-            <section className="rounded-2xl bg-card border border-border p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-muted-foreground">Diferencia por litro</p>
-                <p className={`font-heading font-extrabold text-xl tabular-nums ${diff >= 0 ? "text-fuel-red" : "text-fuel-green"}`}>
-                  {diff >= 0 ? `+${formatPrice(diff)}` : formatPrice(diff)}
-                </p>
-              </div>
-              {worthIt && (
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <p className="text-xs font-semibold text-muted-foreground">Extra al año (15.000 km · {consumption} km/L)</p>
-                  <p className={`font-heading font-extrabold text-xl tabular-nums ${annualExtra >= 0 ? "text-fuel-red" : "text-fuel-green"}`}>
-                    {annualExtra >= 0 ? `+${formatPrice(annualExtra)}` : formatPrice(annualExtra)}
+              {[
+                { side: "A" as const, label: labelA, price: priceA, editing: editingA, setEditing: setEditingA, override: priceAOverride, setOverride: setPriceAOverride, auto: autoPriceA },
+                { side: "B" as const, label: labelB, price: priceB, editing: editingB, setEditing: setEditingB, override: priceBOverride, setOverride: setPriceBOverride, auto: autoPriceB },
+              ].map((p) => (
+                <div key={p.side} className={`rounded-2xl p-3 text-center border ${p.side === "A" ? "bg-card border-border" : "bg-primary/5 border-primary/30"}`}>
+                  <p className={`text-[10px] uppercase tracking-wider font-bold ${p.side === "A" ? "text-muted-foreground" : "text-primary"}`}>Precio {p.side} · {p.label}</p>
+                  {p.editing ? (
+                    <Input
+                      autoFocus
+                      type="number"
+                      inputMode="numeric"
+                      value={p.price || ""}
+                      onChange={(e) => p.setOverride(Number(e.target.value) || 0)}
+                      onBlur={() => p.setEditing(false)}
+                      onKeyDown={(e) => { if (e.key === "Enter") p.setEditing(false); }}
+                      className="h-10 mt-1 rounded-xl text-center tabular-nums"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => p.setEditing(true)}
+                      className="block w-full font-heading font-extrabold text-2xl tabular-nums text-foreground mt-1 hover:opacity-80"
+                      aria-label={`Editar precio ${p.side}`}
+                    >
+                      {formatPrice(p.price)}<span className="text-xs text-muted-foreground font-normal">/L</span>
+                    </button>
+                  )}
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {p.override != null ? (
+                      <button type="button" onClick={() => p.setOverride(null)} className="underline">Volver al automático</button>
+                    ) : (
+                      "Estación más barata cercana"
+                    )}
                   </p>
                 </div>
+              ))}
+            </section>
+
+            {/* Litros input */}
+            <section className="bg-card border border-border rounded-2xl p-4 shadow-soft">
+              <Label htmlFor="cmp-litros" className="text-xs font-semibold">Litros a cargar</Label>
+              <Input
+                id="cmp-litros"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={200}
+                value={litros || ""}
+                onChange={(e) => setLitros(Number(e.target.value) || 0)}
+                className="h-11 mt-1 rounded-xl tabular-nums"
+              />
+              {primaryVehicle && primaryVehicle.tank_size_l > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-1 inline-flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-primary" /> Sugerido por tu estanque ({Math.round(primaryVehicle.tank_size_l)} L)
+                </p>
               )}
             </section>
 
-            <p className="text-[11px] text-muted-foreground text-center leading-relaxed px-2">
-              Para motores que no requieren 95, el rendimiento es prácticamente igual.
-              Consulta el manual de tu vehículo: si el fabricante exige 95 o más, usar 93 puede dañar el motor.
-            </p>
+            {/* Result */}
+            <section className="rounded-3xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] text-white p-5 shadow-glow space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-white/80 font-bold">Costo {labelA}</p>
+                  <p className="font-heading font-extrabold text-2xl tabular-nums">{formatPrice(costA)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-white/80 font-bold">Costo {labelB}</p>
+                  <p className="font-heading font-extrabold text-2xl tabular-nums">{formatPrice(costB)}</p>
+                </div>
+              </div>
+              <div className="border-t border-white/20 pt-2">
+                <p className="text-[11px] text-white/85">Diferencia por estanque</p>
+                <p className="font-heading font-extrabold text-xl tabular-nums">
+                  {tankDiff === 0
+                    ? "Mismo costo"
+                    : `${formatPrice(Math.abs(tankDiff))} más ${tankDiff > 0 ? "caro" : "barato"} usar ${labelB}`}
+                </p>
+              </div>
+            </section>
+
+            {/* Explanation */}
+            <section className="rounded-2xl bg-card border border-border p-4">
+              <p className="text-xs leading-relaxed text-foreground">{explanation}</p>
+            </section>
+
+            {/* Annual cost */}
+            <section className="bg-card border border-border rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold">Cada cuántas semanas cargas</Label>
+                <span className="text-xs font-bold text-primary tabular-nums">cada {weeksFreq} sem · {fillsPerYear}/año</span>
+              </div>
+              <Slider value={[weeksFreq]} onValueChange={(v) => setWeeksFreq(v[0] ?? 2)} min={1} max={4} step={1} />
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="rounded-xl bg-muted/40 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Anual {labelA}</p>
+                  <p className="font-heading font-bold text-foreground tabular-nums">{formatPrice(annualA)}</p>
+                </div>
+                <div className="rounded-xl bg-muted/40 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Anual {labelB}</p>
+                  <p className="font-heading font-bold text-foreground tabular-nums">{formatPrice(annualB)}</p>
+                </div>
+              </div>
+              <div className="rounded-xl bg-primary/10 border border-primary/30 p-3 text-center">
+                <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Diferencia anual</p>
+                <p className="font-heading font-extrabold text-2xl tabular-nums text-primary">{formatPrice(annualDiff)}</p>
+              </div>
+            </section>
+
+            <Button
+              variant="outline"
+              className="w-full rounded-xl"
+              onClick={shareCompare}
+              style={{ touchAction: "manipulation", minHeight: 44 }}
+            >
+              <Share2 className="w-4 h-4 mr-1" /> Compartir comparación
+            </Button>
           </TabsContent>
         </Tabs>
       </main>
