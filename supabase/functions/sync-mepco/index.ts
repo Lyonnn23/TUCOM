@@ -64,6 +64,17 @@ async function fetchPublishedMepco(): Promise<{
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  // Cron/admin auth: require CRON_SECRET header or service-role bearer
+  const __cronSecret = Deno.env.get("CRON_SECRET");
+  const __sentSecret = req.headers.get("x-cron-secret") ?? "";
+  const __auth = req.headers.get("Authorization") ?? "";
+  const __serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const __okCron = !!__cronSecret && __sentSecret === __cronSecret;
+  const __okService = !!__serviceKey && __auth === `Bearer ${__serviceKey}`;
+  if (!__okCron && !__okService) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
   try {
     const week_of = nextThursday();
     const data = await fetchPublishedMepco();
