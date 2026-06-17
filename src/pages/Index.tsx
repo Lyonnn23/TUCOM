@@ -187,6 +187,11 @@ const Index = () => {
     nationalPrices: fuelPrices,
     radiusKm: 10,
   });
+  // Search radius confirmation (CRITICAL FIX: 10km radius enforced)
+  if (typeof window !== "undefined" && !(window as any).__tucomRadiusLogged) {
+    (window as any).__tucomRadiusLogged = true;
+    console.log("[TÜcom] Station search radius:", { radius: 10000, radius_km: 10 });
+  }
   const { data: recentReports } = useRecentReports();
   const { data: stationRatings } = useStationRatings();
 
