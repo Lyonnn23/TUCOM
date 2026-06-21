@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
         "anthropic-dangerous-direct-browser-calls": "true",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5-20250929",
+        model: "claude-sonnet-4-5",
         max_tokens: 600,
         system: SYSTEM_PROMPT,
         stream: true,
