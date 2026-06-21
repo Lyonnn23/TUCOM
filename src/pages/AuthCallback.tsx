@@ -1,24 +1,22 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Wait for auth state to resolve (cloud-auth handles the token exchange).
-    if (loading) return;
-    if (user) {
-      navigate("/", { replace: true });
-    } else {
-      // No session after callback: surface error and send back to login.
-      toast.error("No se pudo iniciar sesión. Intenta de nuevo.");
-      navigate("/auth", { replace: true });
-    }
-  }, [user, loading, navigate]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/", { replace: true });
+      } else {
+        toast.error("No se pudo iniciar sesión. Intenta de nuevo.");
+        navigate("/auth", { replace: true });
+      }
+    });
+  }, [navigate]);
 
   return (
     <div

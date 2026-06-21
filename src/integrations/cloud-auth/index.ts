@@ -1,35 +1,22 @@
-import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import { supabase } from "../supabase/client";
-
-const cloudAuth = createLovableAuth();
 
 type SignInOptions = {
   redirect_uri?: string;
-  extraParams?: Record<string, string>;
 };
 
 export const auth = {
-  signInWithOAuth: async (provider: "google" | "apple" | "microsoft", opts?: SignInOptions) => {
-    const result = await cloudAuth.signInWithOAuth(provider, {
-      redirect_uri: opts?.redirect_uri,
-      extraParams: {
-        ...opts?.extraParams,
+  signInWithOAuth: async (_provider: "google" | "apple" | "microsoft", opts?: SignInOptions) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: opts?.redirect_uri ?? `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
-
-    if (result.redirected) {
-      return result;
-    }
-
-    if (result.error) {
-      return result;
-    }
-
-    try {
-      await supabase.auth.setSession(result.tokens);
-    } catch (e) {
-      return { error: e instanceof Error ? e : new Error(String(e)) };
-    }
-    return result;
+    if (error) return { error };
+    return { redirected: true, data };
   },
 };
