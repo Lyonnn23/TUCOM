@@ -310,6 +310,8 @@ const Calculadora = () => {
     explanation = `¿Vale la pena el 97? Solo recomendado si tu manual lo especifica. El costo extra por estanque es ${formatPrice(Math.abs(tankDiff))}.`;
   } else if (pair === "gasoline93|gasoline97") {
     explanation = `Saltar de 93 a 97 suele costar ${formatPrice(Math.abs(tankDiff))} más por estanque. Solo úsalo si el fabricante lo exige.`;
+  } else if (fuelA === fuelB) {
+    explanation = "Selecciona dos combustibles distintos para comparar costos.";
   } else {
     explanation = "Selecciona dos combustibles distintos para comparar.";
   }
@@ -660,6 +662,14 @@ const Calculadora = () => {
                         }`}
                       >
                         {o.label}
+                        {fuelA === o.key && (
+                          <span className="block text-[9px] font-normal opacity-80 mt-0.5 leading-tight">
+                            {o.key === "gasoline93" && "Estándar · más económico"}
+                            {o.key === "gasoline95" && "Mayor octanaje · +rendimiento"}
+                            {o.key === "gasoline97" && "Premium · máx octanaje"}
+                            {o.key === "diesel" && "Rinde ~20% más por litro"}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -680,6 +690,14 @@ const Calculadora = () => {
                         }`}
                       >
                         {o.label}
+                        {fuelB === o.key && (
+                          <span className="block text-[9px] font-normal opacity-80 mt-0.5 leading-tight">
+                            {o.key === "gasoline93" && "Estándar · más económico"}
+                            {o.key === "gasoline95" && "Mayor octanaje · +rendimiento"}
+                            {o.key === "gasoline97" && "Premium · máx octanaje"}
+                            {o.key === "diesel" && "Rinde ~20% más por litro"}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
