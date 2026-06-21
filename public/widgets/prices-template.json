@@ -12,6 +12,6 @@
     ]}
   ],
   "actions": [
-    { "type": "Action.OpenUrl", "title": "Abrir TÜcom", "url": "https://tucombustible.lovable.app" }
+    { "type": "Action.OpenUrl", "title": "Abrir TÜcom", "url": "https://tucombustible.cl" }
   ]
 }

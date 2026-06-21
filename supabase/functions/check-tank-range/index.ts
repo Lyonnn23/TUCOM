@@ -2,7 +2,10 @@
 // Cuando los km estimados restantes caen bajo su umbral, envía un push
 // con la estación más barata cercana.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 const FUEL_LABELS: Record<string, string> = {
   gasoline93: "93",

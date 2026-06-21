@@ -20,7 +20,7 @@ export default function MepcoInfo() {
       <Helmet>
         <title>MEPCO: ajustes semanales de precio | TÜcom</title>
         <meta name="description" content="Mecanismo de Estabilización del Precio de los Combustibles (MEPCO): cómo funciona y últimos ajustes semanales en Chile." />
-        <link rel="canonical" href="https://tucombustible.lovable.app/mepco-info" />
+        <link rel="canonical" href="https://tucombustible.cl/mepco-info" />
       </Helmet>
       <header className="bg-gradient-primary px-4 py-4 sticky top-0 z-30 shadow-soft">
         <div className="max-w-3xl mx-auto flex items-center gap-3">

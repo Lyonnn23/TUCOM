@@ -135,7 +135,7 @@ const Compare = () => {
       <Helmet>
         <title>Comparar precios de bencina entre estaciones | TÜcom</title>
         <meta name="description" content="Compara precios de bencina 93, 95, 97 y Diésel entre estaciones de servicio y calcula cuánto ahorrarías llenando tu estanque." />
-        <link rel="canonical" href="https://tucombustible.lovable.app/compare" />
+        <link rel="canonical" href="https://tucombustible.cl/compare" />
       </Helmet>
       <header className="bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">
         <div className="flex items-center gap-3 py-3 max-w-5xl mx-auto">

@@ -388,14 +388,14 @@ const Index = () => {
       <Helmet>
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
-        <link rel="canonical" href="https://tucombustible.lovable.app/" />
+        <link rel="canonical" href="https://tucombustible.cl/" />
         <meta property="og:title" content={meta.title} />
         <meta property="og:description" content={meta.description} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Inicio", item: "https://tucombustible.lovable.app/" },
+            { "@type": "ListItem", position: 1, name: "Inicio", item: "https://tucombustible.cl/" },
           ],
         })}</script>
       </Helmet>

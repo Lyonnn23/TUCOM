@@ -1,6 +1,9 @@
 // Returns walking + driving distance/duration between origin and a station via Routes API.
 // POST { originLat, originLng, destLat, destLng } → { driving: {meters,seconds}, walking: {meters,seconds} }
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.101.0/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.101.0";
 
 async function requireUser(req: Request): Promise<Response | null> {
@@ -9,8 +12,8 @@ async function requireUser(req: Request): Promise<Response | null> {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!);
-  const { data, error } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
-  if (error || !data?.claims) return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const { data, error } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+  if (error || !data?.user) return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   return null;
 }
 

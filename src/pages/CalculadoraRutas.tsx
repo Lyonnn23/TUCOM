@@ -169,7 +169,7 @@ const CalculadoraRutas = () => {
       <Helmet>
         <title>Calculadora de costo de viaje | TÜcom</title>
         <meta name="description" content="Calcula el costo de bencina y TAG de tu viaje en Chile. Compara rutas alternativas y encuentra la estación más barata en el camino." />
-        <link rel="canonical" href="https://tucombustible.lovable.app/calculadora" />
+        <link rel="canonical" href="https://tucombustible.cl/calculadora" />
       </Helmet>
 
       <header className="bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">

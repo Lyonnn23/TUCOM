@@ -1,4 +1,7 @@
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.101.0/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 // Rate limiter por IP (best-effort, in-memory por instancia)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();

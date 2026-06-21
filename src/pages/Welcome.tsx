@@ -45,7 +45,7 @@ const Welcome = () => {
     setSigning(true);
     try {
       const result = await auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth/callback`,
       });
       if (result.error) {
         toast.error("No se pudo iniciar sesión con Google");

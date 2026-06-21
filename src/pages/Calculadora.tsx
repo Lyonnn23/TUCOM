@@ -340,7 +340,7 @@ const Calculadora = () => {
           name="description"
           content="Calcula cuánto cuesta tu viaje, la autonomía de tu estanque y si vale la pena usar 95 vs 93. Precios CNE en tiempo real."
         />
-        <link rel="canonical" href="https://tucombustible.lovable.app/calculadora" />
+        <link rel="canonical" href="https://tucombustible.cl/calculadora" />
       </Helmet>
 
       {/* Header */}

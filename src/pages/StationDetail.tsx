@@ -228,7 +228,7 @@ const StationDetail = () => {
   const priceMin = pricesArr.length ? Math.min(...pricesArr) : null;
   const priceMax = pricesArr.length ? Math.max(...pricesArr) : null;
   const priceRange = priceMin && priceMax ? `$${priceMin}–$${priceMax} CLP/L` : "$$";
-  const stationUrl = `https://tucombustible.lovable.app/station/${station.id}`;
+  const stationUrl = `https://tucombustible.cl/station/${station.id}`;
   const ogImage = `https://laldmbpaleeykbsgtchk.supabase.co/functions/v1/station-static-map?lat=${station.lat}&lng=${station.lng}`;
 
   return (
@@ -282,8 +282,8 @@ const StationDetail = () => {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Inicio", item: "https://tucombustible.lovable.app/" },
-            { "@type": "ListItem", position: 2, name: "Estaciones", item: "https://tucombustible.lovable.app/?tab=stations" },
+            { "@type": "ListItem", position: 1, name: "Inicio", item: "https://tucombustible.cl/" },
+            { "@type": "ListItem", position: 2, name: "Estaciones", item: "https://tucombustible.cl/?tab=stations" },
             { "@type": "ListItem", position: 3, name: station.name, item: stationUrl },
           ],
         })}</script>
