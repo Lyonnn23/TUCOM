@@ -50,13 +50,13 @@ Deno.serve(async (req) => {
       return json({ error: "unauthorized" }, 401);
     }
     const authed = createClient(SUPABASE_URL, ANON_KEY);
-    const { data: claimsData, error: claimsErr } = await authed.auth.getClaims(
+    const { data: userData, error: userErr } = await authed.auth.getUser(
       authHeader.replace("Bearer ", ""),
     );
-    if (claimsErr || !claimsData?.claims) {
+    if (userErr || !userData?.user) {
       return json({ error: "unauthorized" }, 401);
     }
-    const callerId = claimsData.claims.sub as string;
+    const callerId = userData.user.id;
 
     if (!LOVABLE_API_KEY) {
       return json({ error: "LOVABLE_API_KEY not configured" }, 500);
