@@ -1,6 +1,9 @@
 // Returns a Google Static Map PNG centered on a station.
 // Usage: POST { lat, lng, zoom?, width?, height?, brand? } → image/png
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.101.0/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 const ALLOWED_HOSTS = ["lovable.app","lovableproject.com","tucombustible.cl","www.tucombustible.cl","localhost","127.0.0.1"];
 const SOCIAL_BOTS = /(facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|discordbot|slackbot|googlebot|bingbot)/i;

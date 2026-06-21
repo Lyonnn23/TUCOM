@@ -4,7 +4,10 @@
 //
 // Requires an authenticated Supabase user. The Google Maps API key is never
 // embedded in the returned photo URLs — clients receive same-origin proxy URLs.
-import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.101.0/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.101.0";
 
 async function requireUser(req: Request): Promise<Response | null> {
