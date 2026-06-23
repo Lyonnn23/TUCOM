@@ -611,7 +611,7 @@ const Index = () => {
         })()}
         {activeTab === "prices" && <VehicleMiniWidget />}
         {activeTab === "prices" && <div className="mb-4"><TankRangeBanner /></div>}
-        {activeTab === "prices" && <div className="mb-4"><WhereToGoWidget /></div>}
+        {activeTab === "prices" && <div className="mb-4"><WhereToGoWidget userLocation={userLocation} /></div>}
         {activeTab === "prices" && <div className="mb-4"><UpcomingDeadlinesCard /></div>}
         {activeTab === "prices" && <MacroWidgets />}
 
