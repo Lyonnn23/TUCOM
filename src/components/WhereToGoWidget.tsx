@@ -33,7 +33,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
   } | null>(null);
   const [pending, setPending] = useState(false);
 
-  const { primaryVehicle } = useUserVehicles();
+  const { primary: primaryVehicle } = useUserVehicles();
   const { preferences } = useUserPreferences();
 
   const fuelType: FuelTypeKey = useMemo(() => {
