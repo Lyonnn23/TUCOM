@@ -1,11 +1,11 @@
-[
+[[
   {
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
       "package_name": "com.tucom.app",
       "sha256_cert_fingerprints": [
-        "REEMPLAZAR_CON_SHA256_DE_GOOGLE_PLAY_APP_SIGNING"
+        "FF:3C:72:AE:F4:A4:94:F1:EA:91:0D:14:53:AC:A8:90:74:DC:13:72:E6:9E:48:2E:64:60:E7:5A:7D:55:E9:5B"
       ]
     }
   }
