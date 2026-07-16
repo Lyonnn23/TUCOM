@@ -40,7 +40,9 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
-    if (!this.state.hasError) return this.props.children;
+    const error = this.props.error ?? this.state.error;
+    const hasError = !!error;
+    if (!hasError) return this.props.children;
 
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
