@@ -144,6 +144,28 @@ const Index = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Read ?tab=, ?sort=, ?brand=, ?commune= from URL on mount so links from other pages land on the right tab/filter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const validTabs: TabType[] = ["prices", "map", "stations", "favorites", "benefits"];
+    const tab = params.get("tab");
+    if (tab && (validTabs as string[]).includes(tab)) {
+      setActiveTab(tab as TabType);
+    }
+    const sort = params.get("sort");
+    if (sort) {
+      const validSorts = ["distance", "gasoline93", "gasoline95", "gasoline97", "diesel", "electric"];
+      const mapped = sort === "price" ? "gasoline93" : sort;
+      if (validSorts.includes(mapped)) setSortByFuel(mapped);
+    }
+    const brand = params.get("brand");
+    if (brand) setSelectedBrand(brand);
+    const commune = params.get("commune");
+    if (commune) setSearchQuery(commune);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
 
   // Analytics: page_view per tab + open_map + user properties
   useEffect(() => {
