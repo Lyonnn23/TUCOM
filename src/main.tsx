@@ -25,10 +25,25 @@ if ("serviceWorker" in navigator && !isPreviewHost && !isInIframe) {
   });
 }
 
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.MODE,
+  tracesSampleRate: 0.1,
+});
+
 createRoot(document.getElementById("root")!).render(
-  <ErrorBoundary>
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
-  </ErrorBoundary>,
+  <Sentry.ErrorBoundary
+    fallback={({ error, resetError }) => (
+      <ErrorBoundary
+        error={error instanceof Error ? error : error ? new Error(String(error)) : null}
+        resetError={resetError}
+      />
+    )}
+  >
+    <ErrorBoundary>
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
+    </ErrorBoundary>
+  </Sentry.ErrorBoundary>,
 );
