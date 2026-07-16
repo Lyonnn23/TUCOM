@@ -17,6 +17,7 @@ import RouteModePanel, { type RouteCorridor } from "@/components/RouteModePanel"
 import BenefitsTab from "@/components/BenefitsTab";
 import FuelFilterPills, { type FuelFilterKey } from "@/components/FuelFilterPills";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
@@ -89,18 +90,38 @@ const Index = () => {
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
+  // Preferred fuel — single source of truth:
+  //   • Logged-in users: user_preferences.preferred_fuel via useUserPreferences (shared
+  //     with Profile.tsx, Onboarding.tsx, Drive.tsx).
+  //   • Guests: localStorage("preferred_fuel") fallback only.
+  const { preferences, save: savePreferences } = useUserPreferences();
+  const VALID_FUELS: FuelFilterKey[] = ["all", "gasoline93", "gasoline95", "gasoline97", "diesel", "electric"];
   const [preferredFuel, setPreferredFuelState] = useState<FuelFilterKey>(() => {
     if (typeof window === "undefined") return "all";
     const v = window.localStorage.getItem("preferred_fuel") as FuelFilterKey | null;
-    return v && ["all", "gasoline93", "gasoline95", "gasoline97", "diesel", "electric"].includes(v) ? v : "all";
+    return v && VALID_FUELS.includes(v) ? v : "all";
   });
+  // Hydrate from DB when the logged-in user's preferences arrive.
+  useEffect(() => {
+    const remote = preferences?.preferred_fuel as FuelFilterKey | undefined;
+    if (remote && VALID_FUELS.includes(remote)) {
+      setPreferredFuelState(remote);
+      try { window.localStorage.setItem("preferred_fuel", remote); } catch {}
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences?.preferred_fuel]);
   const setPreferredFuel = useCallback((v: FuelFilterKey) => {
     setPreferredFuelState(v);
     try { window.localStorage.setItem("preferred_fuel", v); } catch {}
-  }, []);
+    if (user) {
+      savePreferences({ preferred_fuel: v }).catch((e) => console.warn("save preferred_fuel", e));
+    }
+  }, [user, savePreferences]);
   const { primary: primaryVehicle } = useUserVehicles();
   useEffect(() => {
     if (!primaryVehicle) return;
+    // Don't override an explicit user choice (local or remote).
+    if (preferences?.preferred_fuel) return;
     const hasStored = (() => { try { return !!window.localStorage.getItem("preferred_fuel"); } catch { return false; } })();
     if (hasStored) return;
     const map: Record<string, FuelFilterKey> = {
@@ -112,7 +133,7 @@ const Index = () => {
     };
     const next = map[primaryVehicle.fuel_type];
     if (next) setPreferredFuelState(next);
-  }, [primaryVehicle]);
+  }, [primaryVehicle, preferences?.preferred_fuel]);
   const [stationKind, setStationKind] = useState<"all" | "fuel" | "ev" | "glp" | "gnc">("all");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [locationErrorType, setLocationErrorType] = useState<"denied" | "unavailable" | "timeout" | "unsupported" | null>(null);
