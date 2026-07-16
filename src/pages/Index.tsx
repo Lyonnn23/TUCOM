@@ -61,6 +61,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Helmet } from "react-helmet-async";
 
+// Google encoded polyline decoder — mirrors the one in RouteModePanel.tsx.
+// Used to rehydrate a route from Calculadora's "tucom_route_mode_init" handoff.
+function decodeHandoffPolyline(str: string): { lat: number; lng: number }[] {
+  const points: { lat: number; lng: number }[] = [];
+  let index = 0, lat = 0, lng = 0;
+  while (index < str.length) {
+    let b: number, shift = 0, result = 0;
+    do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    const dlat = (result & 1) ? ~(result >> 1) : (result >> 1);
+    lat += dlat;
+    shift = 0; result = 0;
+    do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+    const dlng = (result & 1) ? ~(result >> 1) : (result >> 1);
+    lng += dlng;
+    points.push({ lat: lat / 1e5, lng: lng / 1e5 });
+  }
+  return points;
+}
 
 const Index = () => {
   const navigate = useNavigate();
