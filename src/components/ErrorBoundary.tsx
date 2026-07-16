@@ -1,8 +1,11 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Zap } from "lucide-react";
+import * as Sentry from "@sentry/react";
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
+  error?: Error | null;
+  resetError?: () => void;
 }
 
 interface State {
@@ -20,13 +23,16 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Log to console always; in production a logging hook could be added here.
-    // We avoid hitting Supabase from the boundary to prevent infinite loops.
+    // Report to Sentry while keeping the existing console log.
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info.componentStack } },
+    });
     console.error("[TÜcom] Unhandled error:", error, info.componentStack);
   }
 
   handleReload = () => {
     try {
+      this.props.resetError?.();
       window.location.reload();
     } catch {
       /* ignore */
@@ -34,7 +40,9 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   render() {
-    if (!this.state.hasError) return this.props.children;
+    const error = this.props.error ?? this.state.error;
+    const hasError = !!error;
+    if (!hasError) return this.props.children;
 
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
@@ -60,9 +68,9 @@ class ErrorBoundary extends Component<Props, State> {
             soporte@tucombustible.cl
           </a>
         </p>
-        {isDev && this.state.error && (
+        {isDev && error && (
           <pre className="mt-6 max-w-xl w-full text-left text-[10px] text-destructive bg-destructive/10 rounded-xl p-3 overflow-auto max-h-64">
-            {this.state.error.stack || this.state.error.message}
+            {error.stack || error.message}
           </pre>
         )}
       </div>

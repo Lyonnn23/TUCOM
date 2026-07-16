@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import * as Sentry from "@sentry/react";
 
 interface Props {
   children: ReactNode;
@@ -22,6 +23,9 @@ class LocalErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info.componentStack } },
+    });
     console.error(`[TÜcom] ${this.props.label ?? "panel"} crashed:`, error, info.componentStack);
   }
 
