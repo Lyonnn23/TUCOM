@@ -1,8 +1,11 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Zap } from "lucide-react";
+import * as Sentry from "@sentry/react";
 
 interface Props {
   children: ReactNode;
+  error?: Error | null;
+  resetError?: () => void;
 }
 
 interface State {
