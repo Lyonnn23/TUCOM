@@ -3,7 +3,7 @@ import { Zap } from "lucide-react";
 import * as Sentry from "@sentry/react";
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
   error?: Error | null;
   resetError?: () => void;
 }
