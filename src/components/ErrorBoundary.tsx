@@ -68,9 +68,9 @@ class ErrorBoundary extends Component<Props, State> {
             soporte@tucombustible.cl
           </a>
         </p>
-        {isDev && this.state.error && (
+        {isDev && error && (
           <pre className="mt-6 max-w-xl w-full text-left text-[10px] text-destructive bg-destructive/10 rounded-xl p-3 overflow-auto max-h-64">
-            {this.state.error.stack || this.state.error.message}
+            {error.stack || error.message}
           </pre>
         )}
       </div>
