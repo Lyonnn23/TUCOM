@@ -144,26 +144,162 @@ const Index = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Read ?tab=, ?sort=, ?brand=, ?commune= from URL on mount so links from other pages land on the right tab/filter
+  // Route-mode handoff from Calculadora (sessionStorage "tucom_route_mode_init"): we stash
+  // the origin/destination/stationId here on mount, then a follow-up effect (below, once
+  // `stations` finishes loading) invokes trip-calculator and builds a RouteCorridor —
+  // mirroring how RouteModePanel.tsx computes its corridor — so the map opens with the
+  // route already drawn and the target station highlighted.
+  const [pendingRoute, setPendingRoute] = useState<null | {
+    origin: { lat: number; lng: number };
+    destination: { lat: number; lng: number };
+    stationId?: string;
+  }>(null);
+
+  // Read ?tab=, ?lat=/?lng=, ?brand=, ?commune=, ?sort= from URL on mount so deep links
+  // from other pages (Profile, Descuentos, CommunePage, TankRangeBanner, ShareTargetHandler,
+  // Calculadora's Modo Ruta handoff) land on the right tab with the right filters.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const validTabs: TabType[] = ["prices", "map", "stations", "favorites", "benefits"];
-    const tab = params.get("tab");
-    if (tab && (validTabs as string[]).includes(tab)) {
-      setActiveTab(tab as TabType);
+
+    // 1. tab: accept English and Spanish values, normalise to the English TabType.
+    const tabAliases: Record<string, TabType> = {
+      prices: "prices", map: "map", stations: "stations", favorites: "favorites", benefits: "benefits",
+      precios: "prices", mapa: "map", estaciones: "stations", favoritos: "favorites", beneficios: "benefits",
+    };
+    const rawTab = params.get("tab")?.toLowerCase() ?? "";
+    const nextTab: TabType | null = tabAliases[rawTab] ?? null;
+    if (nextTab) setActiveTab(nextTab);
+
+    // 2. lat/lng from URL, or from ShareTargetHandler's sessionStorage fallback.
+    //    Never overwrite an already-resolved userLocation (GPS is more accurate).
+    const latNum = Number(params.get("lat"));
+    const lngNum = Number(params.get("lng"));
+    let coords: { lat: number; lng: number } | null =
+      Number.isFinite(latNum) && Number.isFinite(lngNum) ? { lat: latNum, lng: lngNum } : null;
+    if (!coords) {
+      try {
+        const raw = sessionStorage.getItem("tucom_shared_location");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Number.isFinite(parsed?.lat) && Number.isFinite(parsed?.lng)) {
+            coords = { lat: Number(parsed.lat), lng: Number(parsed.lng) };
+          }
+          sessionStorage.removeItem("tucom_shared_location");
+        }
+      } catch { /* noop */ }
     }
-    const sort = params.get("sort");
-    if (sort) {
-      const validSorts = ["distance", "gasoline93", "gasoline95", "gasoline97", "diesel", "electric"];
-      const mapped = sort === "price" ? "gasoline93" : sort;
-      if (validSorts.includes(mapped)) setSortByFuel(mapped);
-    }
+    if (coords) setUserLocation((current) => current ?? coords);
+
+    // 3. brand
     const brand = params.get("brand");
     if (brand) setSelectedBrand(brand);
+
+    // 4. commune: no dedicated commune filter exists on stationsWithDistance yet, so we
+    //    fall back to seeding the free-text search which matches name/brand/address.
     const commune = params.get("commune");
     if (commune) setSearchQuery(commune);
+
+    // 5. sort=price → use the user's preferred fuel (or fall back to distance).
+    const sort = params.get("sort");
+    if (sort === "price") {
+      setSortByFuel(preferredFuel !== "all" ? preferredFuel : "distance");
+    } else if (sort) {
+      const validSorts = ["distance", "gasoline93", "gasoline95", "gasoline97", "diesel", "electric"];
+      if (validSorts.includes(sort)) setSortByFuel(sort);
+    }
+
+    // 6. Route-mode handoff: consume "tucom_route_mode_init" iff we're heading to the map.
+    const goingToMap = nextTab === "map" || params.get("ruta") === "1" || window.location.hash === "#map";
+    if (goingToMap) {
+      if (nextTab !== "map") setActiveTab("map");
+      try {
+        const raw = sessionStorage.getItem("tucom_route_mode_init");
+        if (raw) {
+          sessionStorage.removeItem("tucom_route_mode_init");
+          const parsed = JSON.parse(raw);
+          if (
+            Number.isFinite(parsed?.origin?.lat) && Number.isFinite(parsed?.origin?.lng) &&
+            Number.isFinite(parsed?.destination?.lat) && Number.isFinite(parsed?.destination?.lng)
+          ) {
+            setPendingRoute({
+              origin: { lat: parsed.origin.lat, lng: parsed.origin.lng },
+              destination: { lat: parsed.destination.lat, lng: parsed.destination.lng },
+              stationId: typeof parsed.stationId === "string" ? parsed.stationId : undefined,
+            });
+            if (!coords) setUserLocation((current) => current ?? { lat: parsed.origin.lat, lng: parsed.origin.lng });
+          }
+        }
+      } catch { /* noop */ }
+    }
+
+    // Clean consumed params from the URL so refresh/back-nav is stable.
+    const url = new URL(window.location.href);
+    ["tab", "lat", "lng", "brand", "commune", "sort", "ruta"].forEach((k) => url.searchParams.delete(k));
+    const cleaned = url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : "") + url.hash;
+    window.history.replaceState({}, "", cleaned);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Once `stations` are loaded, resolve any pending route-mode handoff into a full
+  // RouteCorridor by calling trip-calculator + decoding the polyline, mirroring the
+  // corridor logic in RouteModePanel.tsx (2 km default corridor around the polyline).
+  useEffect(() => {
+    if (!pendingRoute || !stations || stations.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("trip-calculator", {
+          body: {
+            origin: pendingRoute.origin,
+            destination: pendingRoute.destination,
+            vehicle: { consumption_kml: 12, fuel_type: "gasoline95" },
+          },
+        });
+        if (error) throw error;
+        const route = (data as any)?.routes?.[0];
+        if (!route?.polyline) return;
+        const path = decodeHandoffPolyline(route.polyline);
+        const corridorKm = 2;
+        const ids = new Set<string>();
+        let cheapestId: string | null = pendingRoute.stationId ?? null;
+        let cheapestPrice = Infinity;
+        for (const s of stations) {
+          for (const pt of path) {
+            const R = 6371;
+            const dLat = ((pt.lat - s.lat) * Math.PI) / 180;
+            const dLng = ((pt.lng - s.lng) * Math.PI) / 180;
+            const la1 = (s.lat * Math.PI) / 180;
+            const la2 = (pt.lat * Math.PI) / 180;
+            const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
+            const d = 2 * R * Math.asin(Math.sqrt(h));
+            if (d <= corridorKm) {
+              ids.add(s.id);
+              const p = s.prices.gasoline95 ?? s.prices.gasoline93 ?? s.prices.diesel ?? 0;
+              if (p > 0 && p < cheapestPrice) {
+                cheapestPrice = p;
+                if (!pendingRoute.stationId) cheapestId = s.id;
+              }
+              break;
+            }
+          }
+        }
+        if (cancelled) return;
+        setRouteCorridor({
+          path,
+          corridorKm,
+          stationIds: ids,
+          cheapestStationId: cheapestId,
+          distanceKm: route.distance_km ?? 0,
+          fuelCost: route.fuel_cost ?? 0,
+          cheapestName: route.cheapest_station?.name ?? null,
+        });
+        setPendingRoute(null);
+      } catch (e) {
+        console.warn("[route handoff] failed", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [pendingRoute, stations]);
 
 
 
