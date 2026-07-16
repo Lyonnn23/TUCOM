@@ -240,66 +240,6 @@ const Index = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Once `stations` are loaded, resolve any pending route-mode handoff into a full
-  // RouteCorridor by calling trip-calculator + decoding the polyline, mirroring the
-  // corridor logic in RouteModePanel.tsx (2 km default corridor around the polyline).
-  useEffect(() => {
-    if (!pendingRoute || !stations || stations.length === 0) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("trip-calculator", {
-          body: {
-            origin: pendingRoute.origin,
-            destination: pendingRoute.destination,
-            vehicle: { consumption_kml: 12, fuel_type: "gasoline95" },
-          },
-        });
-        if (error) throw error;
-        const route = (data as any)?.routes?.[0];
-        if (!route?.polyline) return;
-        const path = decodeHandoffPolyline(route.polyline);
-        const corridorKm = 2;
-        const ids = new Set<string>();
-        let cheapestId: string | null = pendingRoute.stationId ?? null;
-        let cheapestPrice = Infinity;
-        for (const s of stations) {
-          for (const pt of path) {
-            const R = 6371;
-            const dLat = ((pt.lat - s.lat) * Math.PI) / 180;
-            const dLng = ((pt.lng - s.lng) * Math.PI) / 180;
-            const la1 = (s.lat * Math.PI) / 180;
-            const la2 = (pt.lat * Math.PI) / 180;
-            const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLng / 2) ** 2;
-            const d = 2 * R * Math.asin(Math.sqrt(h));
-            if (d <= corridorKm) {
-              ids.add(s.id);
-              const p = s.prices.gasoline95 ?? s.prices.gasoline93 ?? s.prices.diesel ?? 0;
-              if (p > 0 && p < cheapestPrice) {
-                cheapestPrice = p;
-                if (!pendingRoute.stationId) cheapestId = s.id;
-              }
-              break;
-            }
-          }
-        }
-        if (cancelled) return;
-        setRouteCorridor({
-          path,
-          corridorKm,
-          stationIds: ids,
-          cheapestStationId: cheapestId,
-          distanceKm: route.distance_km ?? 0,
-          fuelCost: route.fuel_cost ?? 0,
-          cheapestName: route.cheapest_station?.name ?? null,
-        });
-        setPendingRoute(null);
-      } catch (e) {
-        console.warn("[route handoff] failed", e);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [pendingRoute, stations]);
 
 
 
