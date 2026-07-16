@@ -23,6 +23,9 @@ class LocalErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info.componentStack } },
+    });
     console.error(`[TÜcom] ${this.props.label ?? "panel"} crashed:`, error, info.componentStack);
   }
 
