@@ -121,6 +121,37 @@ const Calculadora = () => {
     isElectric: boolean;
   }>(null);
 
+  // Deep-link handoff from StationDetail.tsx ("/calculadora?km=X&dest=Y"): preload a
+  // trip result with the pre-computed km so the user sees the estimated cost immediately
+  // without having to fill origin/destination via PlacesAutocomplete.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const destLabel = params.get("dest");
+    const kmStr = params.get("km");
+    const km = kmStr ? Number(kmStr) : NaN;
+    if (destLabel) {
+      // lat/lng unknown from the deep link — label is enough to display the destination.
+      setDest({ lat: 0, lng: 0, label: destLabel });
+    }
+    if (Number.isFinite(km) && km > 0) {
+      const cons = consumption > 0 ? consumption : 12;
+      const units = km / Math.max(cons, 0.1);
+      const priceCheap = cheapestPrice || avgPrice;
+      const priceAvg = avgPrice || priceCheap;
+      const costCheap = Math.round(units * priceCheap);
+      const costAvg = Math.round(units * priceAvg);
+      setTripResult({
+        distanceKm: km,
+        liters: Math.round(units * 10) / 10,
+        costCheap,
+        costAvg,
+        savings: Math.max(0, costAvg - costCheap),
+        isElectric: fuelType === "electric",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const useMyLocation = () => {
     if (!gps) {
       toast.error("Activa el GPS primero");
