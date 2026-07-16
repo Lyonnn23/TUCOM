@@ -23,13 +23,16 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Log to console always; in production a logging hook could be added here.
-    // We avoid hitting Supabase from the boundary to prevent infinite loops.
+    // Report to Sentry while keeping the existing console log.
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info.componentStack } },
+    });
     console.error("[TÜcom] Unhandled error:", error, info.componentStack);
   }
 
   handleReload = () => {
     try {
+      this.props.resetError?.();
       window.location.reload();
     } catch {
       /* ignore */
