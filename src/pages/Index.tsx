@@ -566,15 +566,19 @@ const Index = () => {
       title: "Precios de bencina hoy en Chile | TÜcom",
       description: "Compara precios de bencina 93, 95, 97, Diésel y carga EV en estaciones cerca de ti en Chile. Actualizados a diario.",
     },
+    map: {
+      title: "Mapa de estaciones cerca de ti | TÜcom",
+      description: "Explora estaciones de servicio cercanas en un mapa interactivo. Filtra por marca, combustible y precio.",
+    },
     stations: {
       title: "Estaciones de servicio cerca de mí | TÜcom",
       description: "Encuentra estaciones de servicio cercanas en un mapa interactivo. Filtra por marca y combustible.",
     },
-    favoritos: {
+    favorites: {
       title: "Mis estaciones favoritas | TÜcom",
       description: "Accede rápido a tus estaciones de servicio guardadas en TÜcom.",
     },
-    beneficios: {
+    benefits: {
       title: "Descuentos y beneficios en combustible | TÜcom",
       description: "Promociones y descuentos disponibles en estaciones de servicio de Chile.",
     },
