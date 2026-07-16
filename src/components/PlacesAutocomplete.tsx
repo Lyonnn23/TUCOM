@@ -1,28 +1,12 @@
-// Lightweight Places (New) autocomplete using the Maps JS API.
-// Loads the JS API on first mount, fetches suggestions via AutocompleteSuggestion,
-// resolves the chosen place to coordinates via Place.fetchFields.
+// Places (New) autocomplete built on the shared @vis.gl/react-google-maps loader.
+// Uses APIProvider + useMapsLibrary so the Maps JS API is loaded exactly once
+// across the app (StationMap and this component share the same loader).
 
 import { useEffect, useRef, useState } from "react";
+import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Loader2, MapPin } from "lucide-react";
-
-declare global { interface Window { google: any; __tucomMapsLoading?: Promise<void>; } }
-
-async function loadGoogleMaps(apiKey: string) {
-  if (typeof window === "undefined") return;
-  if (window.google?.maps?.importLibrary) return;
-  if (window.__tucomMapsLoading) return window.__tucomMapsLoading;
-  window.__tucomMapsLoading = new Promise<void>((resolve, reject) => {
-    const s = document.createElement("script");
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&loading=async&libraries=places&language=es-CL&region=CL`;
-    s.async = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("maps_load_failed"));
-    document.head.appendChild(s);
-  });
-  return window.__tucomMapsLoading;
-}
 
 interface Suggestion {
   placeId: string;
@@ -37,44 +21,36 @@ interface Props {
   bias?: { lat: number; lng: number };
 }
 
-const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = "", onSelect, bias }: Props) => {
+const PlacesAutocompleteInner = ({
+  placeholder = "¿A dónde vas?",
+  initialValue = "",
+  onSelect,
+  bias,
+}: Props) => {
+  const placesLib = useMapsLibrary("places");
   const [value, setValue] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
   const sessionRef = useRef<any>(null);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("get-maps-key");
-        if (cancelled) return;
-        if (error || !data?.key) return;
-        await loadGoogleMaps(data.key);
-        if (cancelled) return;
-        await window.google.maps.importLibrary("places");
-        const { AutocompleteSessionToken } = window.google.maps.places;
-        sessionRef.current = new AutocompleteSessionToken();
-        setReady(true);
-      } catch (e) {
-        console.warn("Places init failed:", e);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
+    if (!placesLib) return;
+    sessionRef.current = new placesLib.AutocompleteSessionToken();
+  }, [placesLib]);
 
-  useEffect(() => { setValue(initialValue); }, [initialValue]);
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
 
   const fetchSuggestions = async (input: string) => {
-    if (!ready || !input.trim()) {
-      setSuggestions([]); return;
+    if (!placesLib || !input.trim()) {
+      setSuggestions([]);
+      return;
     }
     setLoading(true);
     try {
-      const { AutocompleteSuggestion } = window.google.maps.places;
       const req: any = {
         input,
         sessionToken: sessionRef.current,
@@ -87,13 +63,17 @@ const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = ""
           center: { lat: bias.lat, lng: bias.lng },
         };
       }
-      const { suggestions: raw } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(req);
+      const { suggestions: raw } =
+        await placesLib.AutocompleteSuggestion.fetchAutocompleteSuggestions(req);
       const mapped: Suggestion[] = (raw ?? [])
         .filter((s: any) => s.placePrediction)
         .slice(0, 6)
         .map((s: any) => ({
           placeId: s.placePrediction.placeId,
-          primary: s.placePrediction.mainText?.text ?? s.placePrediction.text?.text ?? "",
+          primary:
+            s.placePrediction.mainText?.text ??
+            s.placePrediction.text?.text ??
+            "",
           secondary: s.placePrediction.secondaryText?.text ?? "",
         }));
       setSuggestions(mapped);
@@ -108,16 +88,24 @@ const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = ""
   const handleChange = (next: string) => {
     setValue(next);
     if (timerRef.current) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => fetchSuggestions(next), 250) as unknown as number;
+    timerRef.current = window.setTimeout(
+      () => fetchSuggestions(next),
+      250,
+    ) as unknown as number;
   };
 
   const handleSelect = async (s: Suggestion) => {
     setValue(`${s.primary}${s.secondary ? `, ${s.secondary}` : ""}`);
     setOpen(false);
+    if (!placesLib) return;
     try {
-      const { Place } = window.google.maps.places;
-      const place = new Place({ id: s.placeId, requestedLanguage: "es-CL" });
-      await place.fetchFields({ fields: ["location", "displayName", "formattedAddress"] });
+      const place = new placesLib.Place({
+        id: s.placeId,
+        requestedLanguage: "es-CL",
+      });
+      await place.fetchFields({
+        fields: ["location", "displayName", "formattedAddress"],
+      });
       const loc = place.location;
       if (!loc) return;
       onSelect({
@@ -125,9 +113,7 @@ const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = ""
         lng: loc.lng(),
         label: place.formattedAddress ?? place.displayName ?? s.primary,
       });
-      // Reset session token after selection
-      const { AutocompleteSessionToken } = window.google.maps.places;
-      sessionRef.current = new AutocompleteSessionToken();
+      sessionRef.current = new placesLib.AutocompleteSessionToken();
     } catch (err) {
       console.warn("Place fetch failed:", err);
     }
@@ -136,7 +122,10 @@ const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = ""
   return (
     <div className="relative">
       <div className="relative">
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+        <MapPin
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+          aria-hidden="true"
+        />
         <Input
           value={value}
           onChange={(e) => handleChange(e.target.value)}
@@ -149,7 +138,10 @@ const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = ""
           aria-expanded={open}
         />
         {loading && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" aria-hidden="true" />
+          <Loader2
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground"
+            aria-hidden="true"
+          />
         )}
       </div>
       {open && suggestions.length > 0 && (
@@ -165,11 +157,18 @@ const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = ""
                 onClick={() => handleSelect(s)}
                 className="w-full text-left px-3 py-2.5 hover:bg-accent flex items-start gap-2"
               >
-                <MapPin className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0" aria-hidden="true" />
+                <MapPin
+                  className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0"
+                  aria-hidden="true"
+                />
                 <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground truncate">{s.primary}</div>
+                  <div className="text-sm font-medium text-foreground truncate">
+                    {s.primary}
+                  </div>
                   {s.secondary && (
-                    <div className="text-xs text-muted-foreground truncate">{s.secondary}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {s.secondary}
+                    </div>
                   )}
                 </div>
               </button>
@@ -178,6 +177,49 @@ const PlacesAutocomplete = ({ placeholder = "¿A dónde vas?", initialValue = ""
         </ul>
       )}
     </div>
+  );
+};
+
+const PlacesAutocomplete = (props: Props) => {
+  const [apiKey, setApiKey] = useState<string>("");
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.functions
+      .invoke("get-maps-key")
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (!error && data?.key) setApiKey(data.key);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!apiKey) {
+    // Render the input in a disabled-looking state until the key resolves.
+    return (
+      <div className="relative">
+        <MapPin
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+          aria-hidden="true"
+        />
+        <Input
+          value={props.initialValue ?? ""}
+          readOnly
+          placeholder={props.placeholder ?? "¿A dónde vas?"}
+          className="pl-9 pr-9 h-12 rounded-xl"
+          aria-label={props.placeholder ?? "¿A dónde vas?"}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <APIProvider apiKey={apiKey} libraries={["places"]} language="es-CL" region="CL">
+      <PlacesAutocompleteInner {...props} />
+    </APIProvider>
   );
 };
 
