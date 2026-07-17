@@ -102,7 +102,7 @@ export default function EmpresaConfig() {
           <Label>Logo</Label>
           <div className="flex items-center gap-3">
             {org.logo_url ? (
-              <img src={org.logo_url} alt="Logo" className="w-16 h-16 rounded-xl object-cover border border-border" />
+              <img src={org.logo_url} alt="Logo" loading="lazy" className="w-16 h-16 rounded-xl object-cover border border-border" />
             ) : (
               <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center text-muted-foreground text-xs">Sin logo</div>
             )}
