@@ -89,6 +89,25 @@ function writeCache(data: GasStation[]) {
 }
 
 export function useGasStations() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("station_prices_public_changes")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "station_prices_public" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["gas-stations"] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return useQuery({
     queryKey: ["gas-stations"],
     staleTime: 5 * 60 * 1000,
