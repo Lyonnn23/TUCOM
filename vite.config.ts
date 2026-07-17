@@ -83,9 +83,20 @@ export default defineConfig(({ mode }) => ({
         ],
         navigateFallbackDenylist: [/^\/\~oauth/, /^\/api\//],
       },
-      manifest: false,
+    manifest: false,
     }),
   ].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          recharts: ["recharts"],
+          maps: ["@vis.gl/react-google-maps"],
+          vendor: ["react", "react-dom", "react-router-dom"],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
