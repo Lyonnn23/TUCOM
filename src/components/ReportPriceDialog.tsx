@@ -206,6 +206,7 @@ const ReportPriceDialog = ({ station }: ReportPriceDialogProps) => {
                 <img
                   src={photoPreview}
                   alt="Vista previa del reporte"
+                  loading="lazy"
                   className="w-full h-32 object-cover"
                 />
                 <button
