@@ -85,7 +85,7 @@ const Install = () => {
         {platform === "ios" && !isInstalled && (
           <div className="space-y-4">
             <h3 className="font-bold text-foreground flex items-center gap-2">
-              <img src="/icons/icon-32x32.png" alt="" className="w-5 h-5 rounded" />
+              <img src="/icons/icon-32x32.png" alt="" loading="lazy" className="w-5 h-5 rounded" />
               Instrucciones para iPhone / iPad
             </h3>
             <div className="space-y-3">
@@ -109,7 +109,7 @@ const Install = () => {
         {platform === "android" && !isInstalled && !deferredPrompt && (
           <div className="space-y-4">
             <h3 className="font-bold text-foreground flex items-center gap-2">
-              <img src="/icons/icon-32x32.png" alt="" className="w-5 h-5 rounded" />
+              <img src="/icons/icon-32x32.png" alt="" loading="lazy" className="w-5 h-5 rounded" />
               Instrucciones para Android
             </h3>
             <div className="space-y-3">
