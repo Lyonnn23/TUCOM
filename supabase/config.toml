@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.admin-global-push]
 verify_jwt = false
+
+[functions.checkout-webhook]
+verify_jwt = false
