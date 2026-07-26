@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      _rls_test_results: {
+        Row: {
+          label: string | null
+          result: string | null
+        }
+        Insert: {
+          label?: string | null
+          result?: string | null
+        }
+        Update: {
+          label?: string | null
+          result?: string | null
+        }
+        Relationships: []
+      }
       admin_settings: {
         Row: {
           key: string
@@ -1821,6 +1836,10 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_creator: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
