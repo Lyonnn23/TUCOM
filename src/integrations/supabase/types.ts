@@ -607,6 +607,24 @@ export type Database = {
         }
         Relationships: []
       }
+      ranking_snapshots: {
+        Row: {
+          position: number
+          snapshot_at: string
+          user_id: string
+        }
+        Insert: {
+          position: number
+          snapshot_at?: string
+          user_id: string
+        }
+        Update: {
+          position?: number
+          snapshot_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       recalls: {
         Row: {
           brand: string
