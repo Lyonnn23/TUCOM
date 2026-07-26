@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          is_self_grant: boolean
+          new_role: string
+          operation: string
+          organization_id: string
+          previous_role: string | null
+          target_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          is_self_grant?: boolean
+          new_role: string
+          operation: string
+          organization_id: string
+          previous_role?: string | null
+          target_user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          is_self_grant?: boolean
+          new_role?: string
+          operation?: string
+          organization_id?: string
+          previous_role?: string | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       admin_settings: {
         Row: {
           key: string
