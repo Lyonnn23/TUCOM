@@ -14,21 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      _rls_test_results: {
-        Row: {
-          label: string | null
-          result: string | null
-        }
-        Insert: {
-          label?: string | null
-          result?: string | null
-        }
-        Update: {
-          label?: string | null
-          result?: string | null
-        }
-        Relationships: []
-      }
       admin_settings: {
         Row: {
           key: string
