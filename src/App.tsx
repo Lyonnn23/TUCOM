@@ -59,6 +59,8 @@ const MepcoInfo = lazy(() => import("./pages/MepcoInfo.tsx"));
 const Descuentos = lazy(() => import("./pages/Descuentos.tsx"));
 const CommuneIndexPage = lazy(() => import("./pages/CommuneIndexPage.tsx"));
 const CommunePage = lazy(() => import("./pages/CommunePage.tsx"));
+const BrandIndexPage = lazy(() => import("./pages/BrandIndexPage.tsx"));
+const BrandPage = lazy(() => import("./pages/BrandPage.tsx"));
 
 import RequireAdmin from "@/components/RequireAdmin";
 
@@ -206,6 +208,8 @@ const App = () => {
                 <Route path="/discounts" element={<Navigate to="/descuentos" replace />} />
                 <Route path="/bencina" element={<CommuneIndexPage />} />
                 <Route path="/bencina/:slug" element={<CommunePage />} />
+                <Route path="/marcas" element={<BrandIndexPage />} />
+                <Route path="/marca/:slug" element={<BrandPage />} />
 
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />
