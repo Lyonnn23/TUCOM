@@ -87,8 +87,6 @@ Deno.test("organization_members RLS blocks self-promotion to admin", async () =>
 
   const { data: userRes } = await supabase.auth.getUser();
   const userId = userRes.user!.id;
-
-  const userId = userRes.user!.id;
   const fakeOrgId = crypto.randomUUID();
 
   // (a) Attempt to self-insert as admin — MUST be blocked by RLS policy
