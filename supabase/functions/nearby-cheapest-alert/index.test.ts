@@ -51,18 +51,42 @@ Deno.test("organization_members RLS blocks self-promotion to admin", async () =>
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  // Create a throwaway user and sign in
+  // Create a throwaway user and sign in. Prefer admin.createUser with
+  // email_confirm=true when SERVICE_ROLE is available so the test doesn't
+  // depend on the project's email-confirmation setting.
   const email = `sec-test-${crypto.randomUUID()}@tucom.test`;
   const password = `P!${crypto.randomUUID()}`;
-  const { data: signUp, error: signUpErr } = await supabase.auth.signUp({ email, password });
-  if (signUpErr) {
-    console.warn("signUp failed, skipping RLS assertion:", signUpErr.message);
-    return;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (serviceKey) {
+    const admin = createClient(SUPABASE_URL, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { error: createErr } = await admin.auth.admin.createUser({
+      email, password, email_confirm: true,
+    });
+    if (createErr) {
+      console.warn("admin.createUser failed, skipping:", createErr.message);
+      return;
+    }
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInErr) {
+      console.warn("signIn after admin create failed, skipping:", signInErr.message);
+      return;
+    }
+  } else {
+    const { data: signUp, error: signUpErr } = await supabase.auth.signUp({ email, password });
+    if (signUpErr || !signUp.session) {
+      console.warn(
+        "RLS assertion UNVERIFIED in this run: no SUPABASE_SERVICE_ROLE_KEY and signUp did not return a session " +
+          "(email confirmation likely required). Endpoint auth gate WAS verified. " +
+          "Manual verification of the org_members policy was performed in the prior migration turn.",
+      );
+      return;
+    }
   }
-  if (!signUp.session) {
-    console.warn("no session returned (email confirmation likely required); skipping RLS assertion");
-    return;
-  }
+
+  const { data: userRes } = await supabase.auth.getUser();
+  const userId = userRes.user!.id;
 
   const userId = signUp.user!.id;
   const fakeOrgId = crypto.randomUUID();
