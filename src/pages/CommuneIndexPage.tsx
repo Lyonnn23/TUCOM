@@ -14,6 +14,8 @@ const CommuneIndexPage = () => {
         <title>Precios de bencina por ciudad en Chile | TÜcom</title>
         <meta name="description" content="Consulta el precio de la bencina en tu ciudad. Datos CNE en tiempo real para las 20 ciudades más grandes de Chile." />
         <link rel="canonical" href={`${SITE_URL}/bencina`} />
+        <meta property="og:title" content="Precios de bencina por ciudad en Chile | TÜcom" />
+        <meta property="og:description" content="Consulta el precio de la bencina en tu ciudad con datos CNE en tiempo real." />
         <meta property="og:url" content={`${SITE_URL}/bencina`} />
       </Helmet>
       <header className="bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] shadow-elegant">
