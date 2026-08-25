@@ -3,7 +3,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const BASE_URL = "https://tucombustible.lovable.app";
+const BASE_URL = "https://tucombustible.cl";
 const SUPABASE_URL = "https://laldmbpaleeykbsgtchk.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbGRtYnBhbGVleWtic2d0Y2hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MjQ3ODEsImV4cCI6MjA5MDUwMDc4MX0.ZW7WqCdMeyqWCdGcK8-D9eSNbxfME5r6ltsGOg4uGC0";

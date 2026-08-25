@@ -243,7 +243,7 @@ const StationDetail = () => {
         <meta property="og:title" content={`${station.name} — Precios hoy | TÜcom`} />
         <meta property="og:description" content={`Precios de combustible actualizados en ${station.address}.`} />
         <meta property="og:url" content={stationUrl} />
-        <meta property="og:type" content="place" />
+        <meta property="og:type" content="website" />
         <meta property="og:image" content={ogImage} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",

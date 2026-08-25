@@ -15,6 +15,8 @@ const BrandIndexPage = () => {
         <title>Precios de bencina por marca en Chile | TÜcom</title>
         <meta name="description" content="Compara precios de bencina por marca en Chile: Copec, Shell, Aramco, Petrobras, Enex y Terpel. Datos CNE en tiempo real." />
         <link rel="canonical" href={`${SITE_URL}/marcas`} />
+        <meta property="og:title" content="Precios de bencina por marca en Chile | TÜcom" />
+        <meta property="og:description" content="Compara Copec, Shell, Aramco, Petrobras, Enex y Terpel con datos CNE en tiempo real." />
         <meta property="og:url" content={`${SITE_URL}/marcas`} />
       </Helmet>
       <header className="bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] shadow-elegant">
