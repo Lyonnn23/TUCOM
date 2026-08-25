@@ -24,6 +24,7 @@ const staticEntries: Entry[] = [
   { path: "/legal", changefreq: "yearly", priority: "0.2" },
   { path: "/privacy", changefreq: "yearly", priority: "0.2" },
   { path: "/install", changefreq: "monthly", priority: "0.3" },
+  { path: "/parafina", changefreq: "weekly", priority: "0.7" },
 ];
 
 async function fetchStations(): Promise<Array<{ id: string; updated_at: string | null }>> {
