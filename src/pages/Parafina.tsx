@@ -4,7 +4,6 @@ import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Flame, Info, ShieldAlert, Tag, Thermometer, Droplet, ExternalLink } from "lucide-react";
 import { SITE_URL } from "@/data/brands";
 import { useStationDiscounts } from "@/hooks/useStationDiscounts";
-import { dayName } from "@/lib/discounts";
 import BrandLogo from "@/components/BrandLogo";
 
 const url = `${SITE_URL}/parafina`;
@@ -146,7 +145,7 @@ const Parafina = () => {
                     <p className="font-semibold text-foreground">{d.payment_method}</p>
                     <p className="text-xs text-muted-foreground">
                       {d.description ?? `Descuento en parafina en ${d.brand}`}
-                      {d.day_of_week?.length ? ` · ${d.day_of_week.map(dayName).join(", ")}` : ""}
+                      {d.day_of_week?.length ? ` · ${d.day_of_week.join(", ")}` : ""}
                     </p>
                   </div>
                   <span className="rounded-lg bg-[hsl(45_98%_52%/0.2)] text-[hsl(28_95%_35%)] font-extrabold text-sm px-2.5 py-1 tabular-nums">

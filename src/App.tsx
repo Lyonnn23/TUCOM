@@ -61,6 +61,7 @@ const CommuneIndexPage = lazy(() => import("./pages/CommuneIndexPage.tsx"));
 const CommunePage = lazy(() => import("./pages/CommunePage.tsx"));
 const BrandIndexPage = lazy(() => import("./pages/BrandIndexPage.tsx"));
 const BrandPage = lazy(() => import("./pages/BrandPage.tsx"));
+const Parafina = lazy(() => import("./pages/Parafina.tsx"));
 
 import RequireAdmin from "@/components/RequireAdmin";
 
@@ -210,6 +211,8 @@ const App = () => {
                 <Route path="/bencina/:slug" element={<CommunePage />} />
                 <Route path="/marcas" element={<BrandIndexPage />} />
                 <Route path="/marca/:slug" element={<BrandPage />} />
+                <Route path="/parafina" element={<Parafina />} />
+                <Route path="/kerosene" element={<Navigate to="/parafina" replace />} />
 
                 <Route path="/install" element={<Install />} />
                 <Route path="/legal" element={<Legal />} />
