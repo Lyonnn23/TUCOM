@@ -111,10 +111,20 @@ const headline =
           navigate(`/station/${station.id}`);
         }
       }}
-      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+      className={`group relative rounded-2xl bg-card/80 backdrop-blur-sm ring-1 ring-border/50 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.99] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
+      {/* Brand color strip */}
+      {featured && (
+        <span
+          aria-hidden="true"
+          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+          style={{
+            backgroundImage: `linear-gradient(to bottom, hsl(var(--brand-${station.brand.toLowerCase()})), hsl(var(--brand-${station.brand.toLowerCase()}) / 0.5))`,
+          }}
+        />
+      )}
       {/* Favorite + Share (top right floating) */}
       <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
         <ShareStationButton
