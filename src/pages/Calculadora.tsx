@@ -395,8 +395,18 @@ const Calculadora = () => {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-5">
-        <Tabs defaultValue="viaje" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full rounded-xl h-11">
+        <Tabs defaultValue="viaje" className="w-full" onValueChange={setActiveTab}>
+          <TabsList className="relative grid grid-cols-3 w-full rounded-xl h-11">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-1 left-0 h-0.5 w-1/3 px-3"
+              style={{
+                transform: `translateX(${["viaje", "estanque", "comparar"].indexOf(activeTab) * 100}%)`,
+                transition: "transform 250ms cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+            >
+              <span className="block h-0.5 w-full rounded-full bg-primary" />
+            </span>
             <TabsTrigger value="viaje" className="rounded-lg text-xs sm:text-sm">Modo Viaje</TabsTrigger>
             <TabsTrigger value="estanque" className="rounded-lg text-xs sm:text-sm">Modo Estanque</TabsTrigger>
             <TabsTrigger value="comparar" className="rounded-lg text-xs sm:text-sm">Comparar</TabsTrigger>
