@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Flame, Info, ShieldAlert, Tag, Thermometer, Droplet, ExternalLink } from "lucide-react";
+import { ArrowLeft, Flame, Info, ShieldAlert, Tag, Thermometer, Droplet, ExternalLink, MapPin, Search, Navigation } from "lucide-react";
 import { SITE_URL } from "@/data/brands";
 import { useStationDiscounts } from "@/hooks/useStationDiscounts";
+import { useGasStations, calculateDistance, formatRelativeTime } from "@/hooks/useGasStations";
+import { formatPrice } from "@/lib/format";
 import BrandLogo from "@/components/BrandLogo";
 
 const url = `${SITE_URL}/parafina`;
@@ -42,6 +44,62 @@ const Parafina = () => {
   );
 
   const otherDiscounts = useMemo(() => (discounts ?? []).slice(0, 6), [discounts]);
+
+  // ---- Estaciones con parafina ----
+  const { data: stations, isLoading: loadingStations } = useGasStations();
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [query, setQuery] = useState("");
+  const [visible, setVisible] = useState(20);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setCoords(null),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 10 * 60 * 1000 },
+    );
+  }, []);
+
+  const parafinaStations = useMemo(() => {
+    const list = (stations ?? [])
+      .filter((s) => s.prices.kerosene > 0)
+      .map((s) => ({
+        ...s,
+        distance: coords ? calculateDistance(coords.lat, coords.lng, s.lat, s.lng) : undefined,
+      }));
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? list.filter((s) =>
+          [s.name, s.brand, s.address, s.commune ?? "", s.region ?? ""]
+            .join(" ")
+            .toLowerCase()
+            .includes(q),
+        )
+      : list;
+    return filtered.sort((a, b) => {
+      if (a.distance != null && b.distance != null) return a.distance - b.distance;
+      return a.prices.kerosene - b.prices.kerosene;
+    });
+  }, [stations, coords, query]);
+
+  const stats = useMemo(() => {
+    const prices = parafinaStations.map((s) => s.prices.kerosene);
+    if (!prices.length) return null;
+    const sorted = [...prices].sort((a, b) => a - b);
+    return {
+      count: prices.length,
+      min: sorted[0],
+      max: sorted[sorted.length - 1],
+      avg: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+    };
+  }, [parafinaStations]);
+
+  const cheapest = useMemo(
+    () => [...parafinaStations].sort((a, b) => a.prices.kerosene - b.prices.kerosene).slice(0, 3),
+    [parafinaStations],
+  );
+
+  useEffect(() => setVisible(20), [query, coords]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -126,6 +184,125 @@ const Parafina = () => {
             ))}
           </div>
         </section>
+
+        {/* Precios de parafina por estación */}
+        <section id="precios" className="bg-card border border-border rounded-2xl shadow-soft overflow-hidden">
+          <div className="p-4 border-b border-border bg-[hsl(45_98%_52%/0.12)]">
+            <div className="flex items-center gap-2">
+              <Droplet className="w-4 h-4 text-[hsl(28_95%_40%)]" />
+              <h2 className="font-heading font-bold">Precio de la parafina por estación</h2>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Precios oficiales CNE por litro. {coords ? "Ordenadas por cercanía a tu ubicación." : "Ordenadas de más barata a más cara."}
+            </p>
+
+            {stats && (
+              <div className="grid grid-cols-4 gap-2 mt-3">
+                {[
+                  { l: "Estaciones", v: String(stats.count) },
+                  { l: "Más barata", v: formatPrice(stats.min) },
+                  { l: "Promedio", v: formatPrice(stats.avg) },
+                  { l: "Más cara", v: formatPrice(stats.max) },
+                ].map((s) => (
+                  <div key={s.l} className="rounded-xl bg-card border border-[hsl(28_95%_48%/0.3)] p-2 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{s.l}</p>
+                    <p className="text-sm font-extrabold tabular-nums text-foreground">{s.v}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative mt-3">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar por comuna, marca o dirección…"
+                aria-label="Buscar estaciones con parafina"
+                className="w-full rounded-xl border border-border bg-background pl-9 pr-3 py-2 text-sm"
+              />
+            </div>
+          </div>
+
+          {loadingStations ? (
+            <p className="p-4 text-sm text-muted-foreground">Cargando precios de parafina…</p>
+          ) : parafinaStations.length === 0 ? (
+            <p className="p-4 text-sm text-muted-foreground">
+              No encontramos estaciones con parafina para «{query}». Prueba con otra comuna o marca.
+            </p>
+          ) : (
+            <>
+              {!query && cheapest.length > 0 && (
+                <div className="p-4 border-b border-border">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wide text-[hsl(28_95%_38%)] mb-2">
+                    Las 3 más baratas del país
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {cheapest.map((s, i) => (
+                      <Link
+                        key={s.id}
+                        to={`/station/${s.id}`}
+                        className="flex items-center gap-3 rounded-xl border border-[hsl(28_95%_48%/0.35)] bg-[hsl(45_98%_52%/0.08)] p-2.5"
+                      >
+                        <span className="text-lg">{["🥇", "🥈", "🥉"][i]}</span>
+                        <BrandLogo brand={s.brand} size={28} />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate text-foreground">{s.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{s.commune ?? s.address}</p>
+                        </div>
+                        <span className="font-extrabold tabular-nums text-[hsl(28_95%_35%)]">
+                          {formatPrice(s.prices.kerosene)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <ul className="divide-y divide-border">
+                {parafinaStations.slice(0, visible).map((s) => (
+                  <li key={s.id}>
+                    <Link to={`/station/${s.id}`} className="p-4 flex items-center gap-3">
+                      <BrandLogo brand={s.brand} size={32} />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-foreground truncate">{s.name}</p>
+                        <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                          <MapPin className="w-3 h-3 shrink-0" />
+                          {s.commune ? `${s.commune} · ` : ""}
+                          {s.address}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {s.distance != null && (
+                            <span className="inline-flex items-center gap-1 mr-2">
+                              <Navigation className="w-3 h-3" />
+                              {s.distance} km
+                            </span>
+                          )}
+                          Actualizado {formatRelativeTime(s.lastUpdated)}
+                        </p>
+                      </div>
+                      <span className="rounded-lg bg-[hsl(45_98%_52%/0.2)] text-[hsl(28_95%_35%)] font-extrabold text-sm px-2.5 py-1 tabular-nums shrink-0">
+                        {formatPrice(s.prices.kerosene)}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              {visible < parafinaStations.length && (
+                <button
+                  onClick={() => setVisible((v) => v + 20)}
+                  className="w-full p-3 text-sm font-bold text-[hsl(28_95%_38%)] border-t border-border"
+                >
+                  Ver más estaciones ({parafinaStations.length - visible} restantes)
+                </button>
+              )}
+            </>
+          )}
+        </section>
+
+
 
         {/* Beneficios y descuentos */}
         <section className="bg-card border border-border rounded-2xl shadow-soft overflow-hidden">
