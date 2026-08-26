@@ -4,7 +4,7 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-md bg-muted/70",
+        "skeleton-shimmer relative overflow-hidden rounded-md",
         "before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer",
         "before:bg-gradient-to-r before:from-transparent before:via-white/40 dark:before:via-white/10 before:to-transparent",
         className,
@@ -15,9 +15,12 @@ function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
 }
 
 /** Skeleton sized like a StationCard. Use a few of these in a list. */
-function StationCardSkeleton() {
+function StationCardSkeleton({ index = 0 }: { index?: number }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-soft flex gap-3">
+    <div
+      className="stagger-item rounded-2xl border border-border bg-card p-4 shadow-soft flex gap-3"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
       <Skeleton className="w-12 h-12 rounded-xl shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-2/3 rounded-md" />
@@ -36,7 +39,7 @@ function StationListSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
-        <StationCardSkeleton key={i} />
+        <StationCardSkeleton key={i} index={i} />
       ))}
     </div>
   );
