@@ -73,12 +73,10 @@ const MepcoThursdayBanner = () => {
   return (
     <div
       role="status"
-      className={`relative overflow-hidden rounded-2xl border p-4 pr-12 flex items-center gap-3 animate-slide-down-in ${
-        direction === "up"
-          ? "border-amber-500/30 bg-gradient-to-r from-amber-500/20 to-orange-500/10 pulse"
-          : direction === "down"
-            ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500/20 to-teal-500/10"
-            : "border-primary/30 bg-gradient-to-r from-primary/15 to-accent/15"
+      className={`relative overflow-hidden rounded-2xl p-4 pr-12 flex items-center gap-3 shadow-md animate-slide-down-in text-white ${
+        direction === "down"
+          ? "bg-gradient-to-r from-emerald-500 to-green-500"
+          : "bg-gradient-to-r from-amber-500 to-orange-500"
       }`}
     >
       {direction === "down" && (
@@ -86,35 +84,18 @@ const MepcoThursdayBanner = () => {
           {[12, 34, 56, 78, 90].map((left, i) => (
             <span
               key={left}
-              className="confetti-dot absolute top-1 w-1.5 h-1.5 rounded-full bg-emerald-400/70"
+              className="confetti-dot absolute top-1 w-1.5 h-1.5 rounded-full bg-white/70"
               style={{ left: `${left}%`, animationDelay: `${i * 320}ms` }}
             />
           ))}
         </span>
       )}
-      <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-          direction === "up"
-            ? "bg-amber-500/20"
-            : direction === "down"
-              ? "bg-emerald-500/20"
-              : "bg-primary/20"
-        }`}
-      >
-        <DirIcon
-          className={`w-5 h-5 animate-bounce motion-reduce:animate-none ${
-            direction === "up"
-              ? "text-amber-500"
-              : direction === "down"
-                ? "text-emerald-500"
-                : "text-primary"
-          }`}
-          style={{ animationIterationCount: 2 }}
-        />
+      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+        <DirIcon className="w-5 h-5 text-white animate-pulse motion-reduce:animate-none" />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-foreground">⛽ Precios MEPCO actualizados hoy</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm font-bold text-white">⛽ Precios MEPCO actualizados hoy</p>
+        <p className="text-xs text-white/85">
           {avgChange > 0
             ? `Variación promedio de $${Math.round(avgChange)} por litro esta semana`
             : "Revisa los nuevos precios MEPCO de esta semana"}
@@ -123,7 +104,7 @@ const MepcoThursdayBanner = () => {
       <button
         onClick={dismiss}
         aria-label="Cerrar"
-        className="absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background/60"
+        className="absolute top-2 right-2 w-9 h-9 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15"
       >
         <X className="w-4 h-4" />
       </button>
