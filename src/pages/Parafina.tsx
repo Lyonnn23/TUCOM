@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { ArrowLeft, Flame, Info, ShieldAlert, Tag, Thermometer, Droplet, ExternalLink } from "lucide-react";
+import { ArrowLeft, Flame, Info, ShieldAlert, Tag, Thermometer, Droplet, ExternalLink, MapPin, Search, Navigation } from "lucide-react";
 import { SITE_URL } from "@/data/brands";
 import { useStationDiscounts } from "@/hooks/useStationDiscounts";
+import { useGasStations, calculateDistance, formatRelativeTime } from "@/hooks/useGasStations";
+import { formatPrice } from "@/lib/format";
 import BrandLogo from "@/components/BrandLogo";
 
 const url = `${SITE_URL}/parafina`;
