@@ -974,7 +974,7 @@ const Index = () => {
             </div>
             <div
               className="h-[calc(100dvh-320px)] min-h-[400px] max-h-[calc(100dvh-220px)] rounded-2xl overflow-hidden border border-border shadow-md isolate"
-              style={{ flex: 1, minHeight: 0 }}
+              style={{ flex: 1 }}
             >
               <LocalErrorBoundary label="Mapa">
                 <Suspense fallback={<Skeleton className="w-full h-full rounded-2xl" />}>
