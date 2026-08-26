@@ -305,7 +305,7 @@ const headline =
         <ReportPriceDialog station={station} />
         <button
           onClick={(e) => { e.stopPropagation(); onNavigate?.(station); }}
-          className="bg-muted hover:bg-muted/70 text-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale transition-colors min-h-11"
+          className="bg-card/50 backdrop-blur-sm border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-foreground rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 ease-out active:scale-[0.97] min-h-11"
           aria-label={`Abrir ${station.name} en Waze`}
         >
           Waze
@@ -317,10 +317,10 @@ const headline =
             if (pref) openNavApp(pref, station.lat, station.lng);
             else setNavOpen(true);
           }}
-          className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5 min-h-11"
+          className="group/nav btn-shine flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold shadow-soft hover:shadow-glow hover:brightness-110 active:scale-[0.97] transition-all duration-150 ease-out flex items-center justify-center gap-1.5 min-h-11"
           aria-label={`Cómo llegar a ${station.name}`}
         >
-          <Navigation className="w-3.5 h-3.5" aria-hidden="true" />
+          <Navigation className="icon-nudge w-3.5 h-3.5" aria-hidden="true" />
           Cómo llegar
         </button>
       </div>
