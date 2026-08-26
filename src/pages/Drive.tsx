@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Navigation,
   Mic,
-  MicOff,
   Volume2,
   Loader2,
   MapPin,
@@ -13,8 +12,10 @@ import {
   Fuel,
   BellOff,
   Bell,
+  ExternalLink,
 } from "lucide-react";
-import { useGasStations, calculateDistance, type GasStation } from "@/hooks/useGasStations";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useNearbyStations, type NearbyStationRow } from "@/hooks/useNearbyStations";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useFuelLogs } from "@/hooks/useFuelLogs";
@@ -48,12 +49,36 @@ const BRAND_STRIP: Record<string, string> = {
 
 const fmt = (n: number) => `$${n.toLocaleString("es-CL")}`;
 
-const openDirections = (s: GasStation, from?: { lat: number; lng: number }) => {
-  const dest = `${s.lat},${s.lng}`;
-  const url = from
-    ? `https://www.google.com/maps/dir/?api=1&origin=${from.lat},${from.lng}&destination=${dest}&travelmode=driving`
-    : `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`;
-  window.open(url, "_blank", "noopener,noreferrer");
+const isIOSDevice = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+type NavApp = "waze" | "google" | "apple";
+const NAV_APP_KEY = "tucom_drive_nav_app";
+const HELP_KEY = "tucom_drive_help_shown";
+
+const navUrl = (app: NavApp, lat: number, lng: number, from?: { lat: number; lng: number }) => {
+  if (app === "waze") return `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+  if (app === "apple") return `maps://maps.apple.com/?daddr=${lat},${lng}`;
+  return from
+    ? `https://www.google.com/maps/dir/?api=1&origin=${from.lat},${from.lng}&destination=${lat},${lng}&travelmode=driving`
+    : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+};
+
+const openNav = (
+  app: NavApp,
+  lat: number,
+  lng: number,
+  from?: { lat: number; lng: number }
+) => {
+  window.open(navUrl(app, lat, lng, from), "_blank", "noopener,noreferrer");
+};
+
+const getPreferredNavApp = (): NavApp | null => {
+  try {
+    const v = localStorage.getItem(NAV_APP_KEY);
+    return v === "waze" || v === "google" || v === "apple" ? v : null;
+  } catch {
+    return null;
+  }
 };
 
 // ---- Voice recognition -----------------------------------------------------
@@ -83,9 +108,10 @@ const speak = (text: string) => {
 
 const DND_KEY = "tucom_driver_dnd";
 
+type DriveStation = NearbyStationRow & { distance: number };
+
 const Drive = () => {
   const navigate = useNavigate();
-  const { data: stations = [], isLoading } = useGasStations();
   const { preferences } = useUserPreferences();
   const { favorites } = useFavorites();
   const { logs } = useFuelLogs();
@@ -96,7 +122,9 @@ const Drive = () => {
   const [posError, setPosError] = useState<string | null>(null);
   const [listening, setListening] = useState(false);
   const [heardText, setHeardText] = useState<string>("");
-  const [pendingNav, setPendingNav] = useState<GasStation | null>(null);
+  const [pendingNav, setPendingNav] = useState<DriveStation | null>(null);
+  const [navTarget, setNavTarget] = useState<DriveStation | null>(null);
+  const [alwaysUse, setAlwaysUse] = useState(false);
   const [dnd, setDnd] = useState<boolean>(() => {
     try { return localStorage.getItem(DND_KEY) === "1"; } catch { return false; }
   });
@@ -105,8 +133,25 @@ const Drive = () => {
 
   const lowThreshold = preferences?.low_fuel_threshold_km ?? 80;
 
-  // Night mode (extra dark theme is already dark; we keep pure black always but
-  // dim the strip overlay between 19:00–07:00).
+  // Nearby stations (10 km) — server-side, already sorted by distance
+  const { data: nearbyData = [], isLoading } = useNearbyStations(
+    pos?.lat ?? null,
+    pos?.lng ?? null,
+    10000,
+    preferredFuel as any,
+    20
+  );
+
+  // Slightly wider radius for favorites
+  const { data: favNearby = [] } = useNearbyStations(
+    pos?.lat ?? null,
+    pos?.lng ?? null,
+    15000,
+    preferredFuel as any,
+    100
+  );
+
+  // Night mode
   const isNight = useMemo(() => {
     const h = new Date().getHours();
     return h >= 19 || h < 7;
@@ -135,6 +180,18 @@ const Drive = () => {
       window.speechSynthesis?.cancel?.();
       recogRef.current?.abort?.();
     };
+  }, []);
+
+  // Voice commands help — first time only
+  useEffect(() => {
+    let shown = false;
+    try { shown = localStorage.getItem(HELP_KEY) === "1"; } catch {}
+    if (shown) return;
+    const t = window.setTimeout(() => {
+      toast('🎙️ Di "la más barata", una marca, o "la más cercana"', { duration: 6000 });
+      try { localStorage.setItem(HELP_KEY, "1"); } catch {}
+    }, 2000);
+    return () => clearTimeout(t);
   }, []);
 
   // Night brightness hint (first time per night)
@@ -192,14 +249,18 @@ const Drive = () => {
     return best;
   }, [logs]);
 
-  // Favorite price warning — if any favorite is now >3% over average of last 3 fill-ups there
+  const toDriveStation = (r: NearbyStationRow): DriveStation => ({
+    ...r,
+    distance: Number((r.distance_m / 1000).toFixed(1)),
+  });
+
+  // Favorite price warning
   const favoriteWarnings = useMemo(() => {
-    const out: { stationId: string; deltaClp: number; pct: number }[] = [];
+    const out: { stationId: string; name: string; brand: string; deltaClp: number }[] = [];
     for (const fav of favorites) {
-      const station = stations.find((s) => s.id === fav.station_id);
-      if (!station) continue;
-      const now = (station.prices as any)[preferredFuel] as number;
-      if (!now) continue;
+      const station = favNearby.find((s) => s.id === fav.station_id);
+      const now = station?.price;
+      if (!station || !now) continue;
       const past = logs
         .filter((l) => l.station_id === fav.station_id && l.fuel_type === preferredFuel)
         .slice(0, 3)
@@ -207,23 +268,20 @@ const Drive = () => {
       if (past.length < 1) continue;
       const avg = past.reduce((a, b) => a + b, 0) / past.length;
       const delta = now - avg;
-      const pct = (delta / avg) * 100;
-      if (pct > 3) out.push({ stationId: fav.station_id, deltaClp: Math.round(delta), pct });
+      if ((delta / avg) * 100 > 3) {
+        out.push({ stationId: fav.station_id, name: station.name, brand: station.brand, deltaClp: Math.round(delta) });
+      }
     }
     return out;
-  }, [favorites, stations, logs, preferredFuel]);
+  }, [favorites, favNearby, logs, preferredFuel]);
 
-  // 5 nearest with valid preferred-fuel price; pin usual first if within set
+  // 5 nearest with valid preferred-fuel price; pin usual first
   const top5 = useMemo(() => {
     if (!pos) return [];
-    const enriched = stations
-      .map((s) => ({
-        ...s,
-        distance: Number(calculateDistance(pos.lat, pos.lng, s.lat, s.lng).toFixed(1)),
-      }))
-      .filter((s) => (s.prices as any)[preferredFuel] > 0)
-      .sort((a, b) => a.distance! - b.distance!)
-      .slice(0, 5);
+    const enriched = nearbyData
+      .filter((s) => typeof s.price === "number" && (s.price as number) > 0)
+      .slice(0, 5)
+      .map(toDriveStation);
     if (usualStationId) {
       const i = enriched.findIndex((s) => s.id === usualStationId);
       if (i > 0) {
@@ -232,50 +290,86 @@ const Drive = () => {
       }
     }
     return enriched;
-  }, [stations, pos, preferredFuel, usualStationId]);
+  }, [nearbyData, pos, usualStationId]);
+
+  // Low-density area: >3 of the top5 are farther than 5 km
+  const lowDensity = useMemo(
+    () => top5.filter((s) => s.distance > 5).length > 3,
+    [top5]
+  );
 
   const cheapest = useMemo(() => {
     if (top5.length === 0) return null;
-    return [...top5].sort(
-      (a, b) =>
-        ((a.prices as any)[preferredFuel] as number) -
-        ((b.prices as any)[preferredFuel] as number)
-    )[0];
-  }, [top5, preferredFuel]);
+    return [...top5].sort((a, b) => (a.price as number) - (b.price as number))[0];
+  }, [top5]);
+
+  // Favorites nearby (within 15 km) that are not already in the top5
+  const favoritesNearby = useMemo(() => {
+    if (!pos || favorites.length === 0) return [];
+    const favIds = new Set(favorites.map((f) => f.station_id));
+    const topIds = new Set(top5.map((s) => s.id));
+    return favNearby
+      .filter(
+        (s) =>
+          favIds.has(s.id) &&
+          !topIds.has(s.id) &&
+          s.distance_m <= 15000 &&
+          typeof s.price === "number" &&
+          (s.price as number) > 0
+      )
+      .slice(0, 3)
+      .map(toDriveStation);
+  }, [favNearby, favorites, top5, pos]);
+
+  // ---- Navigation ----------------------------------------------------------
+
+  const requestNav = (s: DriveStation) => {
+    const pref = getPreferredNavApp();
+    if (pref) {
+      openNav(pref, s.lat, s.lng, pos ?? undefined);
+      return;
+    }
+    setAlwaysUse(false);
+    setNavTarget(s);
+  };
+
+  const pickNavApp = (app: NavApp) => {
+    if (!navTarget) return;
+    if (alwaysUse) {
+      try { localStorage.setItem(NAV_APP_KEY, app); } catch {}
+    }
+    openNav(app, navTarget.lat, navTarget.lng, pos ?? undefined);
+    setNavTarget(null);
+  };
 
   // ---- Voice command handling --------------------------------------------
 
   const announceCheapest = () => {
     if (!cheapest) return;
-    const price = (cheapest.prices as any)[preferredFuel] as number;
+    const price = cheapest.price as number;
     const text = `La estación más barata es ${cheapest.brand} ${cheapest.name}, a ${cheapest.distance} kilómetros. El precio de ${FUEL_SPEECH[preferredFuel]} es ${price} pesos. ¿Quieres que te lleve allá?`;
     setHeardText(text);
-    setPendingNav(cheapest as GasStation);
+    setPendingNav(cheapest);
     speak(text);
   };
 
   const announceBrand = (brand: string) => {
     if (!pos) return;
-    const candidates = stations
-      .map((s) => ({
-        ...s,
-        distance: calculateDistance(pos.lat, pos.lng, s.lat, s.lng),
-      }))
+    const target = nearbyData
       .filter(
         (s) =>
           s.brand?.toLowerCase().includes(brand) &&
-          ((s.prices as any)[preferredFuel] as number) > 0
+          typeof s.price === "number" &&
+          (s.price as number) > 0
       )
-      .sort((a, b) => a.distance - b.distance);
-    const target = candidates[0];
+      .map(toDriveStation)[0];
     if (!target) {
       speak(`No encontré estaciones de ${brand} cerca.`);
       return;
     }
-    const price = (target.prices as any)[preferredFuel] as number;
-    const text = `${target.brand} ${target.name} está a ${target.distance.toFixed(1)} kilómetros, con ${FUEL_SPEECH[preferredFuel]} a ${price} pesos. ¿Te llevo?`;
+    const text = `${target.brand} ${target.name} está a ${target.distance} kilómetros, con ${FUEL_SPEECH[preferredFuel]} a ${target.price} pesos. ¿Te llevo?`;
     setHeardText(text);
-    setPendingNav(target as GasStation);
+    setPendingNav(target);
     speak(text);
   };
 
@@ -285,7 +379,8 @@ const Drive = () => {
     if (pendingNav && /\b(s[ií]|dale|llévame|vamos|claro|ok)\b/.test(t)) {
       const target = pendingNav;
       setPendingNav(null);
-      openDirections(target, pos ?? undefined);
+      // Voice flow: always Google Maps, no sheet (user is driving)
+      openNav("google", target.lat, target.lng, pos ?? undefined);
       speak("Abriendo navegación.");
       return;
     }
@@ -305,7 +400,7 @@ const Drive = () => {
       const first = top5[0];
       if (!first) return;
       const text = `La más cercana es ${first.brand} ${first.name}, a ${first.distance} kilómetros.`;
-      setPendingNav(first as GasStation);
+      setPendingNav(first);
       setHeardText(text);
       speak(text + " ¿Te llevo?");
       return;
@@ -345,6 +440,12 @@ const Drive = () => {
     });
   };
 
+  // Tank range colour coding
+  const rangeKm = tankRange?.remainingKm ?? 0;
+  const rangeColor =
+    rangeKm > 100 ? "text-emerald-400" : rangeKm >= 50 ? "text-amber-400" : "text-rose-400";
+  const rangeEmoji = rangeKm > 100 ? "🟢" : rangeKm >= 50 ? "🟡" : "🔴";
+
   // ---- Render -------------------------------------------------------------
 
   return (
@@ -352,6 +453,17 @@ const Drive = () => {
       className="min-h-screen text-white pb-[env(safe-area-inset-bottom)] motion-reduce:transition-none"
       style={{ backgroundColor: "#0A0A0A" }}
     >
+      <style>{`
+        @keyframes tucom-wave { 0%,100% { height: 8px } 50% { height: 20px } }
+        .tucom-wave-bar {
+          width: 4px; border-radius: 9999px; background: #fff;
+          animation: tucom-wave 700ms ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .tucom-wave-bar { animation: none; height: 14px }
+        }
+      `}</style>
+
       {/* Header */}
       <header
         className="sticky top-0 z-30 px-4 pt-[env(safe-area-inset-top)] py-3 flex items-center gap-3 border-b border-white/10"
@@ -370,6 +482,14 @@ const Drive = () => {
           </h1>
           <p className="text-base text-white/70 truncate">
             {FUEL_NAME[preferredFuel] ?? preferredFuel}
+            {rangeKm > 0 && (
+              <>
+                {" · "}
+                <span className={`font-bold ${rangeColor}`}>
+                  ~{rangeKm}km restantes {rangeEmoji}
+                </span>
+              </>
+            )}
             {isNight ? " · 🌙 noche" : ""}
             {dnd ? " · 🔕 no molestar" : ""}
           </p>
@@ -394,18 +514,14 @@ const Drive = () => {
           </div>
         )}
 
-        {favoriteWarnings.slice(0, 1).map((w) => {
-          const st = stations.find((s) => s.id === w.stationId);
-          if (!st) return null;
-          return (
-            <div key={w.stationId} className="rounded-2xl border-2 border-rose-500/50 bg-rose-500/10 p-4 flex items-center gap-3">
-              <TrendingUp className="w-7 h-7 text-rose-400 shrink-0" />
-              <p className="text-lg font-bold leading-tight">
-                Hoy {st.brand} {st.name} está ${w.deltaClp} más cara que tu promedio
-              </p>
-            </div>
-          );
-        })}
+        {favoriteWarnings.slice(0, 1).map((w) => (
+          <div key={w.stationId} className="rounded-2xl border-2 border-rose-500/50 bg-rose-500/10 p-4 flex items-center gap-3">
+            <TrendingUp className="w-7 h-7 text-rose-400 shrink-0" />
+            <p className="text-lg font-bold leading-tight">
+              Hoy {w.brand} {w.name} está ${w.deltaClp} más cara que tu promedio
+            </p>
+          </div>
+        ))}
 
         {/* Status */}
         {!pos && !posError && (
@@ -444,7 +560,7 @@ const Drive = () => {
 
         {/* Giant station cards */}
         {top5.map((s, idx) => {
-          const price = (s.prices as any)[preferredFuel] as number;
+          const price = s.price as number;
           const isCheapest = cheapest?.id === s.id;
           const isUsual = usualStationId === s.id;
           const isNearest = idx === 0 && (!usualStationId || top5[0].id !== usualStationId);
@@ -493,6 +609,11 @@ const Drive = () => {
                       <MapPin className="w-4 h-4 shrink-0" />
                       <span className="tabular-nums">{s.distance} km</span>
                     </p>
+                    {lowDensity && s.distance > 5 && (
+                      <p className="text-sm text-amber-400/80 mt-0.5">
+                        Algo lejos · considera esperar
+                      </p>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <div className="text-xs uppercase font-bold text-white/50">
@@ -509,7 +630,7 @@ const Drive = () => {
                 </div>
 
                 <button
-                  onClick={() => openDirections(s, pos ?? undefined)}
+                  onClick={() => requestNav(s)}
                   className="w-full rounded-2xl bg-violet-600 active:bg-violet-700 text-white text-xl font-extrabold flex items-center justify-center gap-3"
                   style={{ height: 56 }}
                 >
@@ -520,17 +641,95 @@ const Drive = () => {
             </article>
           );
         })}
+
+        {/* Favorites nearby */}
+        {favoritesNearby.length > 0 && (
+          <section className="space-y-2 pt-2">
+            <h2 className="text-lg font-bold text-white/80 px-1">Tus favoritas cercanas</h2>
+            {favoritesNearby.map((s) => (
+              <article
+                key={s.id}
+                className="rounded-2xl border border-white/10 bg-[#16161A] px-4 py-3 flex items-center gap-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-bold truncate">
+                    {s.brand} · {s.name}
+                  </p>
+                  <p className="text-sm text-white/60 tabular-nums">
+                    {s.distance} km · {fmt(s.price as number)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => requestNav(s)}
+                  className="shrink-0 h-11 px-4 rounded-xl bg-violet-600 active:bg-violet-700 font-bold flex items-center gap-2"
+                  aria-label={`Ir a ${s.name}`}
+                >
+                  <Navigation className="w-4 h-4" />
+                  Ir
+                </button>
+              </article>
+            ))}
+          </section>
+        )}
       </main>
+
+      {/* Navigation app sheet */}
+      <Sheet open={!!navTarget} onOpenChange={(v) => { if (!v) setNavTarget(null); }}>
+        <SheetContent side="bottom" className="rounded-t-2xl pb-[max(env(safe-area-inset-bottom),1rem)]">
+          <SheetHeader className="text-left">
+            <SheetTitle className="flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-primary" />
+              ¿Cómo quieres ir?
+            </SheetTitle>
+          </SheetHeader>
+          <div className="grid grid-cols-1 gap-2 mt-4">
+            {([
+              { key: "waze" as NavApp, label: "Waze", emoji: "🚗" },
+              { key: "google" as NavApp, label: "Google Maps", emoji: "🗺️" },
+              ...(isIOSDevice() ? [{ key: "apple" as NavApp, label: "Apple Maps", emoji: "🍎" }] : []),
+            ]).map((a) => (
+              <button
+                key={a.key}
+                onClick={() => pickNavApp(a.key)}
+                className="flex items-center justify-between w-full rounded-xl border border-border bg-card hover:bg-muted/60 px-4 py-3 text-left transition-colors min-h-14"
+              >
+                <span className="flex items-center gap-3 font-semibold text-base text-foreground">
+                  <span className="text-xl" aria-hidden="true">{a.emoji}</span>
+                  {a.label}
+                </span>
+                <ExternalLink className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+          <label className="flex items-center gap-2 mt-4 text-sm text-muted-foreground cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={alwaysUse}
+              onChange={(e) => setAlwaysUse(e.target.checked)}
+              className="w-4 h-4 rounded border-border accent-primary"
+            />
+            Usar siempre esta app
+          </label>
+        </SheetContent>
+      </Sheet>
 
       {/* Voice FAB */}
       <button
         onClick={startListening}
         aria-label={listening ? "Escuchando" : "Activar comando de voz"}
         className={`fixed bottom-6 right-5 z-40 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-white active:scale-95 transition-transform motion-reduce:transition-none ${
-          listening ? "bg-rose-600 animate-pulse motion-reduce:animate-none" : "bg-violet-600"
+          listening ? "bg-rose-600" : "bg-violet-600"
         }`}
       >
-        {listening ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" strokeWidth={2.5} />}
+        {listening ? (
+          <span className="flex items-end gap-1 h-6" aria-hidden="true">
+            <span className="tucom-wave-bar" style={{ height: 8, animationDelay: "0ms" }} />
+            <span className="tucom-wave-bar" style={{ height: 8, animationDelay: "150ms" }} />
+            <span className="tucom-wave-bar" style={{ height: 8, animationDelay: "300ms" }} />
+          </span>
+        ) : (
+          <Mic className="w-7 h-7" strokeWidth={2.5} />
+        )}
       </button>
 
       {/* Read aloud secondary FAB */}

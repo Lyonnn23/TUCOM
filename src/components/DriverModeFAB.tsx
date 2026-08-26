@@ -73,7 +73,7 @@ const DriverModeFAB = () => {
   const activate = () => {
     setOpen(false);
     setAutoPromptOpen(false);
-    navigate("/conducir");
+    navigate("/drive");
   };
   const dismissAuto = () => {
     try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch {}
