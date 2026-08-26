@@ -197,11 +197,93 @@
   .animate-count-up { animation: count-up 0.5s ease-out; }
 
   /* Page transition: applied to the route container.
-     IMPORTANT: opacity-only — a persistent `transform` here would create a
-     containing block and break `position: fixed` on BottomNav (and any other
-     fixed children rendered inside the route). */
-  @keyframes page-fade-in { from { opacity: 0; } to { opacity: 1; } }
-  .page-enter { animation: page-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+     IMPORTANT: no `both` fill-mode and no persistent transform — a lingering
+     `transform` creates a containing block and breaks `position: fixed` on
+     BottomNav (and any other fixed child rendered inside the route). */
+  @keyframes page-fade-up {
+    from { opacity: 0; transform: translate3d(0, 10px, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  .page-enter { animation: page-fade-up 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+
+  /* Skeleton shimmer (sweeping gradient) */
+  @keyframes shimmer-sweep {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.08) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 800px 100%;
+    animation: shimmer-sweep 1.6s infinite linear;
+  }
+
+  /* Number counters — smooth pop when the value changes */
+  .price-value {
+    transition:
+      transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+      color 0.35s ease,
+      opacity 0.35s ease;
+  }
+
+  /* Floating labels */
+  .float-label { transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease; }
+
+  /* Attention ring for FABs */
+  @keyframes ring-pulse {
+    0%   { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+    70%  { box-shadow: 0 0 0 10px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .ring-pulse { animation: ring-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+  /* Shine overlay for premium buttons */
+  .btn-shine { position: relative; overflow: hidden; }
+  .btn-shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, hsl(0 0% 100% / 0.15), transparent 60%);
+  }
+
+  /* Tap-rotate for icons inside pressed buttons */
+  @keyframes icon-nudge {
+    0%   { transform: rotate(0deg); }
+    50%  { transform: rotate(12deg); }
+    100% { transform: rotate(0deg); }
+  }
+  .group\/nav:active .icon-nudge,
+  .icon-nudge-active { animation: icon-nudge 150ms ease-out; }
+
+  /* Small confetti dots (MEPCO celebration) */
+  @keyframes confetti-fall {
+    0%   { opacity: 0; transform: translate3d(0, -6px, 0) scale(0.6); }
+    30%  { opacity: 1; }
+    100% { opacity: 0; transform: translate3d(0, 18px, 0) scale(1); }
+  }
+  .confetti-dot { animation: confetti-fall 2.4s ease-in-out infinite; }
+
+  /* Banner entrances */
+  @keyframes slide-up-in {
+    from { opacity: 0; transform: translate3d(0, 100%, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  .animate-slide-up-in { animation: slide-up-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  @keyframes slide-down-in {
+    from { opacity: 0; transform: translate3d(0, -100%, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  .animate-slide-down-in { animation: slide-down-in 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+  /* Safari dynamic viewport units */
+  .min-h-screen { min-height: 100svh; }
+  .h-screen { height: 100svh; }
+
 
   /* Animated checkmark (draws stroke) */
   .checkmark-path {
