@@ -18,6 +18,7 @@ const VALID_PRICE_RANGES: Record<string, { min: number; max: number }> = {
   gasoline95: { min: 1490, max: 1800 },
   gasoline97: { min: 1550, max: 1850 },
   diesel:     { min: 1430, max: 1650 },
+  kerosene:   { min: 700,  max: 1600 },
 };
 
 async function loginCNE(): Promise<string> {
@@ -57,6 +58,7 @@ function getFuelName(type: string): string {
     gasoline95: "Bencina 95",
     gasoline97: "Bencina 97",
     diesel: "Diésel",
+    kerosene: "Parafina",
   };
   return names[type] || type;
 }
@@ -76,12 +78,19 @@ function extractPrices(station: any, attendedOnly = false): Record<string, numbe
     ["95", "gasoline95"],
     ["97", "gasoline97"],
     ["DI", "diesel"],
+    ["KE", "kerosene"],
+    ["K", "kerosene"],
+    ["KERO", "kerosene"],
+    ["KEROSENE", "kerosene"],
+    ["PAR", "kerosene"],
+    ["PARAFINA", "kerosene"],
   ];
   const selfServiceKeys: [string, string][] = [
     ["A93", "gasoline93"],
     ["A95", "gasoline95"],
     ["A97", "gasoline97"],
     ["ADI", "diesel"],
+    ["AKE", "kerosene"],
   ];
 
   for (const [cneKey, fuelType] of attendedKeys) {
@@ -110,6 +119,7 @@ function createBuckets() {
     gasoline95: [] as number[],
     gasoline97: [] as number[],
     diesel: [] as number[],
+    kerosene: [] as number[],
   };
 }
 
@@ -132,6 +142,7 @@ function computeNationalAverages(estaciones: any[]) {
       gasoline95: buckets.gasoline95.length > 0 ? Math.round(buckets.gasoline95.reduce((a, b) => a + b, 0) / buckets.gasoline95.length) : null,
       gasoline97: buckets.gasoline97.length > 0 ? Math.round(buckets.gasoline97.reduce((a, b) => a + b, 0) / buckets.gasoline97.length) : null,
       diesel: buckets.diesel.length > 0 ? Math.round(buckets.diesel.reduce((a, b) => a + b, 0) / buckets.diesel.length) : null,
+      kerosene: buckets.kerosene.length > 0 ? Math.round(buckets.kerosene.reduce((a, b) => a + b, 0) / buckets.kerosene.length) : null,
     } as Record<string, number | null>,
   };
 }
@@ -171,6 +182,13 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Diagnóstico: claves de precios reportadas por CNE (para detectar parafina)
+    const keySample = new Set<string>();
+    for (const st of estaciones.slice(0, 500)) {
+      for (const k of Object.keys(st?.precios ?? {})) keySample.add(k);
+    }
+    console.log("CNE precios keys:", [...keySample].join(","));
 
     const { buckets, averages } = computeNationalAverages(estaciones);
 
@@ -217,7 +235,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    for (const fuelType of ["gasoline93", "gasoline95", "gasoline97", "diesel"]) {
+    for (const fuelType of ["gasoline93", "gasoline95", "gasoline97", "diesel", "kerosene"]) {
       const avg = averages[fuelType];
       if (avg === null) continue;
 
@@ -242,7 +260,7 @@ Deno.serve(async (req) => {
 
     // Snapshot daily history
     const today = new Date().toISOString().slice(0, 10);
-    for (const fuelType of ["gasoline93", "gasoline95", "gasoline97", "diesel"]) {
+    for (const fuelType of ["gasoline93", "gasoline95", "gasoline97", "diesel", "kerosene"]) {
       const bucket = buckets[fuelType as keyof typeof buckets];
       if (bucket.length === 0) continue;
       const avg = averages[fuelType];
