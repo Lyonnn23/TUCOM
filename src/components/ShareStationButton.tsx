@@ -30,14 +30,14 @@ const ShareStationButton = ({ payload, variant = "icon", className = "" }: Props
       <div className={`inline-flex items-center gap-2 ${className}`}>
         <button
           onClick={handleShare}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow-soft hover:shadow-glow transition-all press-scale"
+          className="group/share btn-shine inline-flex items-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground px-4 py-2.5 text-sm font-semibold shadow-soft hover:shadow-glow hover:brightness-110 active:scale-[0.97] transition-all duration-150 ease-out"
           aria-label="Compartir estación"
         >
-          <Share2 className="w-4 h-4" /> Compartir
+          <Share2 className="w-4 h-4 transition-transform duration-300 group-active/share:rotate-[15deg]" /> Compartir
         </button>
         <button
           onClick={handleWa}
-          className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#25D366] text-white press-scale shadow-soft"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#25D366] text-white active:scale-[0.96] transition-transform shadow-soft"
           aria-label="Compartir por WhatsApp"
           title="WhatsApp"
         >
@@ -50,11 +50,13 @@ const ShareStationButton = ({ payload, variant = "icon", className = "" }: Props
   return (
     <button
       onClick={handleShare}
-      className={`inline-flex items-center justify-center w-8 h-8 rounded-full bg-background/70 backdrop-blur text-muted-foreground hover:text-foreground hover:bg-background transition-colors ${className}`}
+      className={`group/share inline-flex items-center justify-center w-8 h-8 rounded-full bg-background/70 backdrop-blur text-muted-foreground hover:text-foreground hover:bg-background active:scale-90 transition-all ${className}`}
       aria-label="Compartir"
       title="Compartir"
     >
-      <Share2 className="w-4 h-4" />
+      <Share2
+        className="w-4 h-4 transition-transform duration-300 group-active/share:rotate-[15deg]"
+      />
     </button>
   );
 };

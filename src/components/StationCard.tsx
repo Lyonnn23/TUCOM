@@ -111,10 +111,20 @@ const headline =
           navigate(`/station/${station.id}`);
         }
       }}
-      className={`group relative rounded-2xl bg-card border border-border shadow-soft hover:shadow-elegant transition-all duration-300 hover-scale overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+      className={`group relative rounded-2xl bg-card/80 backdrop-blur-sm ring-1 ring-border/50 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.99] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
+      {/* Brand color strip */}
+      {featured && (
+        <span
+          aria-hidden="true"
+          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+          style={{
+            backgroundImage: `linear-gradient(to bottom, hsl(var(--brand-${station.brand.toLowerCase()})), hsl(var(--brand-${station.brand.toLowerCase()}) / 0.5))`,
+          }}
+        />
+      )}
       {/* Favorite + Share (top right floating) */}
       <div className="absolute top-2.5 right-2.5 z-10 flex items-center gap-1.5">
         <ShareStationButton
@@ -171,7 +181,8 @@ const headline =
                   {formatPrice(headline.price)}
                 </p>
                 <p
-                  className="font-heading tabular-nums font-extrabold text-xl leading-tight text-fuel-green"
+                  className="price-value font-heading tabular-nums font-extrabold text-xl leading-tight text-fuel-green"
+                  style={{ filter: "drop-shadow(0 0 14px hsl(var(--fuel-green) / 0.35))" }}
                   title={DISCOUNT_DISCLAIMER}
                   aria-label={`Precio con descuento: ${formatPrice(best.finalPrice)} por litro`}
                 >
@@ -184,7 +195,8 @@ const headline =
             ) : (
               <>
                 <p
-                  className={`font-heading tabular-nums font-extrabold leading-tight ${priceTier ? "text-2xl" : "text-xl"} ${tierClass}`}
+                  className={`price-value font-heading tabular-nums font-extrabold leading-tight ${priceTier ? "text-2xl" : "text-xl"} ${tierClass}`}
+                  style={priceTier === "low" ? { filter: "drop-shadow(0 0 14px hsl(var(--fuel-green) / 0.35))" } : undefined}
                   aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
                 >
                   {headline.price ? formatPrice(headline.price) : "—"}
@@ -215,22 +227,22 @@ const headline =
         {/* Badges */}
         <div className="flex items-center gap-1.5 flex-wrap mt-2">
           {featured && (
-            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
+            <span style={{ animationDelay: "0ms" }} className={`stagger-item backdrop-blur-sm ring-1 ring-white/20 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
               <Star className="w-2.5 h-2.5" aria-hidden="true" /> {station.brand}
             </span>
           )}
           {station.hasEvCharging && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white" aria-label="Carga eléctrica disponible">
+            <span style={{ animationDelay: "50ms" }} className="stagger-item backdrop-blur-sm ring-1 ring-white/20 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white" aria-label="Carga eléctrica disponible">
               <Zap className="w-2.5 h-2.5" aria-hidden="true" /> EV
             </span>
           )}
           {station.distance !== undefined && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary" aria-label={`Distancia: ${formatKm(station.distance)}`}>
+            <span style={{ animationDelay: "100ms" }} className="stagger-item backdrop-blur-sm ring-1 ring-primary/20 inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary" aria-label={`Distancia: ${formatKm(station.distance)}`}>
               <Navigation className="w-2.5 h-2.5" aria-hidden="true" /> {formatKm(station.distance)}
             </span>
           )}
           {rating && rating.count > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent" aria-label={`Calificación promedio: ${rating.avg.toFixed(1)} de 5, basada en ${rating.count} reseñas`}>
+            <span style={{ animationDelay: "150ms" }} className="stagger-item backdrop-blur-sm ring-1 ring-accent/20 inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent" aria-label={`Calificación promedio: ${rating.avg.toFixed(1)} de 5, basada en ${rating.count} reseñas`}>
               <Star className="w-2.5 h-2.5 fill-current" aria-hidden="true" />
               {rating.avg.toFixed(1).replace(".", ",")}
               <span className="opacity-70 ml-0.5">({rating.count})</span>
@@ -277,7 +289,7 @@ const headline =
               }`}
             >
               <p className="text-[10px] text-muted-foreground font-medium">{item.label}</p>
-              <p className={`text-xs font-bold tabular-nums ${isHero ? "text-accent" : "text-foreground"}`}>
+              <p className={`price-value text-xs font-bold tabular-nums ${isHero ? "text-accent" : "text-foreground"}`}>
                 {item.price ? formatPrice(item.price) : "—"}
               </p>
               {item.estimated && (
@@ -293,7 +305,7 @@ const headline =
         <ReportPriceDialog station={station} />
         <button
           onClick={(e) => { e.stopPropagation(); onNavigate?.(station); }}
-          className="bg-muted hover:bg-muted/70 text-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale transition-colors min-h-11"
+          className="bg-card/50 backdrop-blur-sm border border-border/60 hover:border-primary/40 hover:bg-primary/5 text-foreground rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150 ease-out active:scale-[0.97] min-h-11"
           aria-label={`Abrir ${station.name} en Waze`}
         >
           Waze
@@ -305,10 +317,10 @@ const headline =
             if (pref) openNavApp(pref, station.lat, station.lng);
             else setNavOpen(true);
           }}
-          className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold press-scale shadow-soft hover:shadow-glow transition-all flex items-center justify-center gap-1.5 min-h-11"
+          className="group/nav btn-shine flex-1 bg-gradient-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold shadow-soft hover:shadow-glow hover:brightness-110 active:scale-[0.97] transition-all duration-150 ease-out flex items-center justify-center gap-1.5 min-h-11"
           aria-label={`Cómo llegar a ${station.name}`}
         >
-          <Navigation className="w-3.5 h-3.5" aria-hidden="true" />
+          <Navigation className="icon-nudge w-3.5 h-3.5" aria-hidden="true" />
           Cómo llegar
         </button>
       </div>

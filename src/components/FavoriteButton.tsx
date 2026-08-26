@@ -66,7 +66,7 @@ const FavoriteButton = ({ stationId, size = "md", variant = "surface", className
         className={cn(
           s.btn,
           base,
-          "rounded-full flex items-center justify-center press-scale transition-all disabled:opacity-60",
+          "rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 disabled:opacity-60",
           className,
         )}
       >
@@ -74,10 +74,10 @@ const FavoriteButton = ({ stationId, size = "md", variant = "surface", className
           key={String(active)}
           className={cn(
             s.icon,
-            "transition-colors",
+            "transition-colors duration-200",
             active
               ? "fill-[hsl(0,75%,55%)] text-[hsl(0,75%,55%)] animate-spring-pop"
-              : "fill-transparent",
+              : "fill-transparent text-muted-foreground",
           )}
           strokeWidth={2.25}
         />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Fuel, X } from "lucide-react";
+import { Fuel, TrendingDown, TrendingUp, X } from "lucide-react";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 
 const STORAGE_KEY = "mepco_thursday_banner_dismissed";
@@ -62,13 +62,55 @@ const MepcoThursdayBanner = () => {
 
   if (!visible) return null;
 
+  const signedAvg =
+    prices && prices.length
+      ? prices.reduce((sum, p) => sum + (p.change ?? 0), 0) / prices.length
+      : 0;
+  const direction: "up" | "down" | "flat" =
+    signedAvg > 0 ? "up" : signedAvg < 0 ? "down" : "flat";
+  const DirIcon = direction === "up" ? TrendingUp : direction === "down" ? TrendingDown : Fuel;
+
   return (
     <div
       role="status"
-      className="relative rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/15 to-accent/15 p-4 pr-12 flex items-center gap-3 animate-fade-in"
+      className={`relative overflow-hidden rounded-2xl border p-4 pr-12 flex items-center gap-3 animate-slide-down-in ${
+        direction === "up"
+          ? "border-amber-500/30 bg-gradient-to-r from-amber-500/20 to-orange-500/10 pulse"
+          : direction === "down"
+            ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500/20 to-teal-500/10"
+            : "border-primary/30 bg-gradient-to-r from-primary/15 to-accent/15"
+      }`}
     >
-      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-        <Fuel className="w-5 h-5 text-primary" />
+      {direction === "down" && (
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0">
+          {[12, 34, 56, 78, 90].map((left, i) => (
+            <span
+              key={left}
+              className="confetti-dot absolute top-1 w-1.5 h-1.5 rounded-full bg-emerald-400/70"
+              style={{ left: `${left}%`, animationDelay: `${i * 320}ms` }}
+            />
+          ))}
+        </span>
+      )}
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+          direction === "up"
+            ? "bg-amber-500/20"
+            : direction === "down"
+              ? "bg-emerald-500/20"
+              : "bg-primary/20"
+        }`}
+      >
+        <DirIcon
+          className={`w-5 h-5 animate-bounce motion-reduce:animate-none ${
+            direction === "up"
+              ? "text-amber-500"
+              : direction === "down"
+                ? "text-emerald-500"
+                : "text-primary"
+          }`}
+          style={{ animationIterationCount: 2 }}
+        />
       </div>
       <div className="min-w-0">
         <p className="text-sm font-semibold text-foreground">⛽ Precios MEPCO actualizados hoy</p>

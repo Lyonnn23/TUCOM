@@ -95,8 +95,8 @@ export default function InstallBanner() {
   return (
     <>
       {visible && !iosSheet && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md animate-fade-in">
-          <div className="bg-gradient-hero text-white rounded-2xl shadow-elegant border border-white/10 p-4 flex items-center gap-3 backdrop-blur-sm">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md animate-slide-up-in">
+          <div className="btn-shine bg-gradient-primary text-white rounded-t-2xl rounded-b-2xl shadow-elegant border border-white/10 p-4 pb-[max(env(safe-area-inset-bottom),1rem)] flex items-center gap-3 backdrop-blur-sm">
             <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
               <Download className="w-5 h-5" />
             </div>
@@ -109,14 +109,14 @@ export default function InstallBanner() {
             <Button
               size="sm"
               onClick={handleInstall}
-              className="bg-white text-primary hover:bg-white/95 rounded-xl font-semibold"
+              className="btn-shine bg-white text-primary hover:bg-white/95 hover:brightness-100 rounded-xl font-semibold active:scale-[0.97]"
             >
               Instalar
             </Button>
             <button
               onClick={handleDismiss}
               aria-label="Ahora no"
-              className="text-xs text-white/85 hover:text-white px-2 py-1 rounded-md shrink-0"
+              className="text-xs text-white/70 hover:text-white px-2 py-1 rounded-md shrink-0 transition-colors"
             >
               Ahora no
             </button>
