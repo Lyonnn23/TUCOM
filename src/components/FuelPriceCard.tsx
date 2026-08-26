@@ -104,7 +104,7 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
 
   return (
     <article
-      className={`bg-gradient-to-r ${colorClass} rounded-2xl p-4 border flex flex-col gap-2`}
+      className={`bg-gradient-to-br ${colorClass} backdrop-blur-sm rounded-2xl p-4 border border-black/5 dark:border-white/10 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elegant`}
       aria-label={`${fuel.name}: ${formatPrice(fuel.price)} por litro. Tendencia: ${trendLabel}.`}
     >
       <div className="flex items-center justify-between">
@@ -119,7 +119,7 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
           <div>
             <p className="text-xs font-semibold text-foreground tracking-wide">{fuel.name}</p>
             <p
-              className="text-2xl font-heading font-bold text-foreground mt-0.5"
+              className="price-value animate-count-up text-3xl font-heading font-black tabular-nums text-foreground mt-0.5"
               aria-live="polite"
               aria-atomic="true"
             >
@@ -129,7 +129,7 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
           </div>
         </div>
         <div
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${
+          className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold tracking-wide ring-1 ring-current/20 ${
             trendDown
               ? "bg-fuel-green/20 text-fuel-green"
               : trendUp
@@ -139,7 +139,11 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
           role="status"
           aria-label={`Tendencia: ${trendLabel}`}
         >
-          <TrendIcon className="w-3.5 h-3.5" aria-hidden="true" />
+          <TrendIcon
+            className="w-3.5 h-3.5 animate-bounce motion-reduce:animate-none"
+            style={{ animationIterationCount: 2 }}
+            aria-hidden="true"
+          />
           <span>{trendLabel}</span>
         </div>
       </div>
