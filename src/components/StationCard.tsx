@@ -195,7 +195,8 @@ const headline =
             ) : (
               <>
                 <p
-                  className={`font-heading tabular-nums font-extrabold leading-tight ${priceTier ? "text-2xl" : "text-xl"} ${tierClass}`}
+                  className={`price-value font-heading tabular-nums font-extrabold leading-tight ${priceTier ? "text-2xl" : "text-xl"} ${tierClass}`}
+                  style={priceTier === "low" ? { filter: "drop-shadow(0 0 14px hsl(var(--fuel-green) / 0.35))" } : undefined}
                   aria-label={`Precio de ${headline.label}: ${formatPrice(headline.price)} por litro`}
                 >
                   {headline.price ? formatPrice(headline.price) : "—"}
