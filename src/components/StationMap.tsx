@@ -163,7 +163,7 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="font-bold text-sm">{selected.name}</h3>
                   {highlightStationId === selected.id && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#F5B301] text-[#1a1a1a] whitespace-nowrap">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-[#10B981] text-white whitespace-nowrap">
                       ★ Más barata
                     </span>
                   )}

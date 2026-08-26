@@ -68,6 +68,7 @@ const Calculadora = () => {
   const fuelPrices = useFuelPrices();
 
   // GPS
+  const [activeTab, setActiveTab] = useState("viaje");
   const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
