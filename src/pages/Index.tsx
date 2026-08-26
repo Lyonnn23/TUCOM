@@ -587,7 +587,7 @@ const Index = () => {
 
   return (
     <div
-      className="page-enter min-h-screen bg-background"
+      className="min-h-screen bg-background"
       style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
     >
       <Helmet>
