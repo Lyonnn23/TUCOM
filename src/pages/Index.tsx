@@ -89,7 +89,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
-  const [radiusKm, setRadiusKm] = useState<number | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number>(10);
   // Preferred fuel — single source of truth:
   //   • Logged-in users: user_preferences.preferred_fuel via useUserPreferences (shared
   //     with Profile.tsx, Onboarding.tsx, Drive.tsx).
@@ -456,7 +456,7 @@ const Index = () => {
           if (!silent) toast.error("No se pudo obtener tu ubicación");
         }
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     );
   };
 
@@ -586,7 +586,10 @@ const Index = () => {
   const meta = titleByTab[activeTab] ?? titleByTab.prices;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div
+      className="page-enter min-h-screen bg-background"
+      style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
+    >
       <Helmet>
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
