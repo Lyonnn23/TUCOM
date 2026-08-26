@@ -213,6 +213,15 @@ export default function ChatBubble() {
       }
       haptic("double");
     } catch (e: any) {
+      clearTimeout(timeoutId);
+      if (e?.name === "AbortError") {
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: "⏱️ El asistente tardó demasiado. Verifica tu conexión e intenta de nuevo.",
+        }]);
+        setStreaming(false);
+        return;
+      }
       const errMsg = e?.message ?? "Error de red";
       toast.error(errMsg);
       setMessages((prev) => [...prev, {
@@ -220,6 +229,7 @@ export default function ChatBubble() {
         content: `⚠️ **Error de conexión.** ${errMsg}\n\nRevisa tu internet e intenta de nuevo.`,
       }]);
     } finally {
+      clearTimeout(timeoutId);
       setStreaming(false);
     }
   };
