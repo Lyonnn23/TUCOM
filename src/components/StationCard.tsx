@@ -289,7 +289,7 @@ const headline =
               }`}
             >
               <p className="text-[10px] text-muted-foreground font-medium">{item.label}</p>
-              <p className={`text-xs font-bold tabular-nums ${isHero ? "text-accent" : "text-foreground"}`}>
+              <p className={`price-value text-xs font-bold tabular-nums ${isHero ? "text-accent" : "text-foreground"}`}>
                 {item.price ? formatPrice(item.price) : "—"}
               </p>
               {item.estimated && (
