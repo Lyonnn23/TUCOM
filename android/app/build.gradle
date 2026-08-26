@@ -2,7 +2,9 @@ apply plugin: 'com.android.application'
 
 android {
     namespace = "com.tucom.app"
-    compileSdk = 35
+    // compileSdk 36 is required by Capacitor 8's androidx dependencies.
+    // targetSdk is kept at 35 to comply with Google Play's Aug 31, 2026 deadline.
+    compileSdk = 36
     defaultConfig {
         applicationId "com.tucom.app"
         minSdkVersion 24

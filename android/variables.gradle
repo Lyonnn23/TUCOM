@@ -1,6 +1,8 @@
 ext {
     minSdkVersion = 24
-    compileSdkVersion = 35
+    // compileSdk 36 is required by Capacitor 8's androidx dependencies (activity/core 1.11+).
+    // targetSdk remains 35 to meet the Google Play Aug 31, 2026 deadline.
+    compileSdkVersion = 36
     targetSdkVersion = 35
     androidxActivityVersion = '1.11.0'
     androidxAppCompatVersion = '1.7.1'
