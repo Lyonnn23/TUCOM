@@ -181,7 +181,8 @@ const headline =
                   {formatPrice(headline.price)}
                 </p>
                 <p
-                  className="font-heading tabular-nums font-extrabold text-xl leading-tight text-fuel-green"
+                  className="price-value font-heading tabular-nums font-extrabold text-xl leading-tight text-fuel-green"
+                  style={{ filter: "drop-shadow(0 0 14px hsl(var(--fuel-green) / 0.35))" }}
                   title={DISCOUNT_DISCLAIMER}
                   aria-label={`Precio con descuento: ${formatPrice(best.finalPrice)} por litro`}
                 >
