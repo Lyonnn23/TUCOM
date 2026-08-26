@@ -45,6 +45,62 @@ const Parafina = () => {
 
   const otherDiscounts = useMemo(() => (discounts ?? []).slice(0, 6), [discounts]);
 
+  // ---- Estaciones con parafina ----
+  const { data: stations, isLoading: loadingStations } = useGasStations();
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [query, setQuery] = useState("");
+  const [visible, setVisible] = useState(20);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setCoords(null),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 10 * 60 * 1000 },
+    );
+  }, []);
+
+  const parafinaStations = useMemo(() => {
+    const list = (stations ?? [])
+      .filter((s) => s.prices.kerosene > 0)
+      .map((s) => ({
+        ...s,
+        distance: coords ? calculateDistance(coords.lat, coords.lng, s.lat, s.lng) : undefined,
+      }));
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? list.filter((s) =>
+          [s.name, s.brand, s.address, s.commune ?? "", s.region ?? ""]
+            .join(" ")
+            .toLowerCase()
+            .includes(q),
+        )
+      : list;
+    return filtered.sort((a, b) => {
+      if (a.distance != null && b.distance != null) return a.distance - b.distance;
+      return a.prices.kerosene - b.prices.kerosene;
+    });
+  }, [stations, coords, query]);
+
+  const stats = useMemo(() => {
+    const prices = parafinaStations.map((s) => s.prices.kerosene);
+    if (!prices.length) return null;
+    const sorted = [...prices].sort((a, b) => a - b);
+    return {
+      count: prices.length,
+      min: sorted[0],
+      max: sorted[sorted.length - 1],
+      avg: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+    };
+  }, [parafinaStations]);
+
+  const cheapest = useMemo(
+    () => [...parafinaStations].sort((a, b) => a.prices.kerosene - b.prices.kerosene).slice(0, 3),
+    [parafinaStations],
+  );
+
+  useEffect(() => setVisible(20), [query, coords]);
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <Helmet>
