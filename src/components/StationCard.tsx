@@ -227,22 +227,22 @@ const headline =
         {/* Badges */}
         <div className="flex items-center gap-1.5 flex-wrap mt-2">
           {featured && (
-            <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
+            <span style={{ animationDelay: "0ms" }} className={`stagger-item backdrop-blur-sm ring-1 ring-white/20 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${style.badge}`}>
               <Star className="w-2.5 h-2.5" aria-hidden="true" /> {station.brand}
             </span>
           )}
           {station.hasEvCharging && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white" aria-label="Carga eléctrica disponible">
+            <span style={{ animationDelay: "50ms" }} className="stagger-item backdrop-blur-sm ring-1 ring-white/20 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[hsl(142,70%,45%)] text-white" aria-label="Carga eléctrica disponible">
               <Zap className="w-2.5 h-2.5" aria-hidden="true" /> EV
             </span>
           )}
           {station.distance !== undefined && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary" aria-label={`Distancia: ${formatKm(station.distance)}`}>
+            <span style={{ animationDelay: "100ms" }} className="stagger-item backdrop-blur-sm ring-1 ring-primary/20 inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary" aria-label={`Distancia: ${formatKm(station.distance)}`}>
               <Navigation className="w-2.5 h-2.5" aria-hidden="true" /> {formatKm(station.distance)}
             </span>
           )}
           {rating && rating.count > 0 && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent" aria-label={`Calificación promedio: ${rating.avg.toFixed(1)} de 5, basada en ${rating.count} reseñas`}>
+            <span style={{ animationDelay: "150ms" }} className="stagger-item backdrop-blur-sm ring-1 ring-accent/20 inline-flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent" aria-label={`Calificación promedio: ${rating.avg.toFixed(1)} de 5, basada en ${rating.count} reseñas`}>
               <Star className="w-2.5 h-2.5 fill-current" aria-hidden="true" />
               {rating.avg.toFixed(1).replace(".", ",")}
               <span className="opacity-70 ml-0.5">({rating.count})</span>
