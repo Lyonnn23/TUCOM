@@ -89,7 +89,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [sortByFuel, setSortByFuel] = useState<string>("distance");
-  const [radiusKm, setRadiusKm] = useState<number | null>(null);
+  const [radiusKm, setRadiusKm] = useState<number>(10);
   // Preferred fuel — single source of truth:
   //   • Logged-in users: user_preferences.preferred_fuel via useUserPreferences (shared
   //     with Profile.tsx, Onboarding.tsx, Drive.tsx).
@@ -456,7 +456,7 @@ const Index = () => {
           if (!silent) toast.error("No se pudo obtener tu ubicación");
         }
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     );
   };
 
@@ -586,7 +586,10 @@ const Index = () => {
   const meta = titleByTab[activeTab] ?? titleByTab.prices;
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div
+      className="min-h-screen bg-background"
+      style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
+    >
       <Helmet>
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
@@ -969,7 +972,10 @@ const Index = () => {
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-fuel-red inline-block" /> Cerradas</span>
               </div>
             </div>
-            <div className="h-[calc(100dvh-320px)] min-h-[320px] max-h-[calc(100dvh-220px)] rounded-2xl overflow-hidden border border-border shadow-md isolate">
+            <div
+              className="h-[calc(100dvh-320px)] min-h-[400px] max-h-[calc(100dvh-220px)] rounded-2xl overflow-hidden border border-border shadow-md isolate"
+              style={{ flex: 1 }}
+            >
               <LocalErrorBoundary label="Mapa">
                 <Suspense fallback={<Skeleton className="w-full h-full rounded-2xl" />}>
                   <StationMap

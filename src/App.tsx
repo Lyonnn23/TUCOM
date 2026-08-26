@@ -66,7 +66,7 @@ const Parafina = lazy(() => import("./pages/Parafina.tsx"));
 import RequireAdmin from "@/components/RequireAdmin";
 
 const RouteFallback = () => (
-  <div className="min-h-screen bg-background p-4 space-y-3">
+  <div className="page-enter min-h-screen bg-background p-4 space-y-3">
     <Skeleton className="h-14 rounded-2xl" />
     <Skeleton className="h-40 rounded-2xl" />
     <Skeleton className="h-64 rounded-2xl" />

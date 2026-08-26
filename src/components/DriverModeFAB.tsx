@@ -59,7 +59,7 @@ const DriverModeFAB = () => {
         }
       },
       () => {},
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     );
     watchIdRef.current = id;
     return () => {

@@ -42,7 +42,7 @@ const EMPRESA_FEATURES = [
   "Onboarding y soporte dedicado",
 ];
 
-const WHATSAPP_EMPRESAS = "https://wa.me/56900000000?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20T%C3%9Ccom%20Empresas";
+const WHATSAPP_EMPRESAS = "mailto:contacto@tucombustible.cl?subject=T%C3%9Ccom%20Empresas%20-%20Quiero%20m%C3%A1s%20informaci%C3%B3n";
 
 export default function Planes() {
   const navigate = useNavigate();

@@ -142,6 +142,8 @@ export default function ChatBubble() {
     haptic("light");
     import("@/lib/analytics").then((m) => m.analytics.useAi(trimmed.length)).catch(() => {});
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
     try {
       const session = await supabase.auth.getSession();
       const accessToken = session.data.session?.access_token;
@@ -153,7 +155,9 @@ export default function ChatBubble() {
           Authorization: `Bearer ${accessToken ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ messages: next, context: buildContext() }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       if (resp.status === 429) {
         const j = await resp.json().catch(() => ({}));
         setUsedToday(j.used ?? FREE_DAILY_LIMIT);
@@ -209,6 +213,15 @@ export default function ChatBubble() {
       }
       haptic("double");
     } catch (e: any) {
+      clearTimeout(timeoutId);
+      if (e?.name === "AbortError") {
+        setMessages((prev) => [...prev, {
+          role: "assistant",
+          content: "⏱️ El asistente tardó demasiado. Verifica tu conexión e intenta de nuevo.",
+        }]);
+        setStreaming(false);
+        return;
+      }
       const errMsg = e?.message ?? "Error de red";
       toast.error(errMsg);
       setMessages((prev) => [...prev, {
@@ -216,6 +229,7 @@ export default function ChatBubble() {
         content: `⚠️ **Error de conexión.** ${errMsg}\n\nRevisa tu internet e intenta de nuevo.`,
       }]);
     } finally {
+      clearTimeout(timeoutId);
       setStreaming(false);
     }
   };
