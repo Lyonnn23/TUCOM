@@ -167,6 +167,7 @@ export function useGasStations() {
               gasoline95: getPrice("gasoline95"),
               gasoline97: getPrice("gasoline97"),
               diesel: getPrice("diesel"),
+              kerosene: getPrice("kerosene"),
               electric,
             },
           };
