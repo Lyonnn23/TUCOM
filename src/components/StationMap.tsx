@@ -120,6 +120,8 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
                 : 0;
             const priceLabel = fuelPrice > 0 ? `$${Math.round(fuelPrice)}` : "";
             const showPrice = !isCheapest && priceLabel !== "";
+            const isSelected = selected?.id === station.id;
+            const baseScale = isCheapest ? 19.6 : isNearest ? 18 : showPrice ? 18 : 14;
             return (
               <Marker
                 key={station.id}
@@ -128,14 +130,22 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
                 title={`${station.brand} · ${station.name}${isCheapest ? " · La más barata" : isNearest ? " · Cercana" : isOpen ? " · Abierta" : " · Cerrada"}${priceLabel ? ` · ${priceLabel}` : ""}`}
                 label={
                   isCheapest
-                    ? { text: "★", color: "#1a1a1a", fontSize: "16px", fontWeight: "900" }
+                    ? { text: "★", color: "#ffffff", fontSize: "16px", fontWeight: "900" }
                     : showPrice
                       ? { text: priceLabel, color: "#fff", fontSize: "10px", fontWeight: "800" }
                       : undefined
                 }
-                icon={getMarkerIcon(isCheapest ? "#F5B301" : statusColor, isCheapest ? 20 : isNearest ? 18 : showPrice ? 18 : 14)}
-                zIndex={isCheapest ? 999 : isNearest ? 500 : undefined}
-                animation={(globalThis as any).google?.maps?.Animation?.DROP}
+                icon={getMarkerIcon(
+                  isCheapest ? "#10B981" : statusColor,
+                  isSelected ? baseScale * 1.2 : baseScale,
+                  isCheapest || isSelected ? 3 : 2,
+                )}
+                zIndex={isCheapest ? 999 : isSelected ? 800 : isNearest ? 500 : undefined}
+                animation={
+                  isSelected
+                    ? (globalThis as any).google?.maps?.Animation?.BOUNCE
+                    : (globalThis as any).google?.maps?.Animation?.DROP
+                }
               />
             );
           })}
