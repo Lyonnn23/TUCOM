@@ -90,7 +90,15 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
     <APIProvider apiKey={apiKey}>
       <div
         className="relative w-full h-full"
-        style={{ willChange: "transform", WebkitOverflowScrolling: "touch" }}
+        style={{
+          height: "100%",
+          minHeight: "400px",
+          width: "100%",
+          willChange: "transform",
+          WebkitTransform: "translateZ(0)",
+          transform: "translateZ(0)",
+          WebkitOverflowScrolling: "touch",
+        }}
       >
         <Map
           defaultCenter={center}
