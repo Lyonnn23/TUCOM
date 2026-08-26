@@ -52,15 +52,15 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
                   aria-hidden="true"
                 />
               </div>
-              <span className={`text-[10px] mt-0.5 ${isActive ? "font-bold" : "font-medium"}`}>
+              <span className={`text-[10px] mt-0.5 ${isActive ? "font-bold text-primary" : "font-medium text-muted-foreground"}`}>
                 {tab.label}
               </span>
-              {isActive && (
-                <span
-                  aria-hidden="true"
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary animate-spring-pop"
-                />
-              )}
+              <span
+                aria-hidden="true"
+                className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary transition-all duration-300 ${
+                  isActive ? "opacity-100 scale-100" : "opacity-0 scale-0"
+                }`}
+              />
             </button>
           );
         })}
