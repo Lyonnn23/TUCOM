@@ -198,7 +198,7 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
   );
 };
 
-function getMarkerIcon(color: string, scale: number) {
+function getMarkerIcon(color: string, scale: number, strokeWeight = 2) {
   const maps = (globalThis as any).google?.maps;
   if (!maps?.SymbolPath) return undefined;
   return {
@@ -207,7 +207,7 @@ function getMarkerIcon(color: string, scale: number) {
     fillColor: color,
     fillOpacity: 1,
     strokeColor: "#fff",
-    strokeWeight: 2,
+    strokeWeight,
   };
 }
 
