@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TUcom</string>
+    <string name="title_activity_main">TUcom</string>
+    <string name="package_name">com.tucom.app</string>
+    <string name="custom_url_scheme">com.tucom.app</string>
+</resources>

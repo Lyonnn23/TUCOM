@@ -4,6 +4,8 @@ const config: CapacitorConfig = {
   appId: 'com.tucom.app',
   appName: 'TUcom',
   webDir: 'dist',
+  androidTargetSdkVersion: 35,
+  androidMinSdkVersion: 24,
   // El bloque "server" se usa SOLO en desarrollo con hot-reload.
   // Para compilar la APK/AAB de producción debe estar comentado/eliminado.
   // server: {
