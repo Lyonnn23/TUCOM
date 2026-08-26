@@ -13,6 +13,7 @@ export const PRICE_RANGES: Record<string, PriceRange> = {
   gasoline95: { min: 1490, max: 1800, avg: 1616 },
   gasoline97: { min: 1550, max: 1850, avg: 1670 },
   diesel:     { min: 1430, max: 1650, avg: 1510 },
+  kerosene:   { min: 700,  max: 1600, avg: 1150 },
   glp:        { min: 500,  max: 750,  avg: 620 },
   electric:   { min: 50,   max: 1000, avg: 120 },
 };

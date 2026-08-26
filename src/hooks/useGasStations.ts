@@ -16,6 +16,7 @@ export interface GasStation {
     gasoline95: number;
     gasoline97: number;
     diesel: number;
+    kerosene: number;
     electric: number;
   };
   distance?: number;
