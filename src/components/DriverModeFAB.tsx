@@ -86,7 +86,7 @@ const DriverModeFAB = () => {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Activar modo conductor"
-        className="fixed bottom-44 right-5 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl flex items-center justify-center active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2"
+        className="fixed bottom-44 right-5 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-xl shadow-primary/30 hover:scale-105 hover:shadow-2xl active:scale-[0.96] transition-all duration-150 ease-out flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2"
       >
         <Car className="w-6 h-6" strokeWidth={2.5} aria-hidden="true" />
       </button>
