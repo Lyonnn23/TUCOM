@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { QUICK_DESTINATIONS } from "@/lib/tripCalc";
 import { useNearbyStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
@@ -32,6 +33,17 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     consumption: number;
   } | null>(null);
   const [pending, setPending] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const pendingRef = useRef<{ km: number; label: string | null } | null>(null);
+
+  // Fallback national average prices (CLP/L) when no nearby prices are found
+  const FALLBACK_PRICES: Record<FuelTypeKey, number> = {
+    gasoline93: 1050,
+    gasoline95: 1100,
+    gasoline97: 1180,
+    diesel: 980,
+    electric: 250,
+  };
 
   const { primary: primaryVehicle } = useUserVehicles();
   const { preferences } = useUserPreferences();
