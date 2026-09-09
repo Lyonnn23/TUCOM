@@ -293,7 +293,7 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                 />
               </div>
               <div>
-                <Label className="text-xs">{fuelType === "electric" ? "Eficiencia (km/kWh)" : "Rendimiento (km/L)"}</Label>
+                <Label className="text-xs">{fuelType === "electric" ? "Consumo (km/kWh)" : "Rendimiento (km/L)"}</Label>
                 <Input
                   type="number"
                   inputMode="decimal"
