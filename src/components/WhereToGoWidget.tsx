@@ -121,6 +121,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
   const run = (tripKm: number, label: string | null) => {
     if (!tripKm || tripKm <= 0) return;
     setKm(String(tripKm));
+    setSelectedCity(label);
     if (cheapest) {
       compute(tripKm, label, cheapest);
       return;
@@ -135,7 +136,8 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       toast.error("Ingresa los kilómetros del viaje");
       return;
     }
-    run(n, null);
+    if (selectedCity && String(n) !== km) setSelectedCity(null);
+    run(n, selectedCity);
   };
 
   const noLocation = !userLocation;
