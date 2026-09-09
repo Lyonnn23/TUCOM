@@ -73,23 +73,10 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     return Math.min(...prices);
   }, [nearby]);
 
-  const run = (tripKm: number, label: string | null) => {
-    if (!tripKm || tripKm <= 0) return;
-    if (!cheapest) {
-      setPending(true);
-      // try again briefly while data loads
-      setTimeout(() => {
-        setPending(false);
-        if (cheapest) compute(tripKm, label, cheapest);
-      }, 600);
-      return;
-    }
-    compute(tripKm, label, cheapest);
-  };
-
-  const compute = (tripKm: number, label: string | null, price: number) => {
+  const compute = (tripKm: number, label: string | null, price: number, fallback = false) => {
     const units = tripKm / consumption;
     const total = Math.round(units * price);
+    setUsingFallback(fallback);
     setResult({
       km: tripKm,
       label,
@@ -97,7 +84,50 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       fuelLabel: FUEL_LABEL[fuelType] ?? "combustible",
       cheapest: price,
       consumption,
+      units,
     });
+  };
+
+  // Resolve a pending calculation once prices arrive, or fall back after 8s
+  useEffect(() => {
+    if (!pending) return;
+    if (cheapest && pendingRef.current) {
+      const { km: k, label } = pendingRef.current;
+      pendingRef.current = null;
+      setPending(false);
+      compute(k, label, cheapest);
+      return;
+    }
+    const t = setTimeout(() => {
+      if (!pendingRef.current) return;
+      const { km: k, label } = pendingRef.current;
+      pendingRef.current = null;
+      setPending(false);
+      toast.info("No se encontraron precios cercanos. Usando precio promedio nacional.");
+      compute(k, label, FALLBACK_PRICES[fuelType] ?? 1100, true);
+    }, 8000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending, cheapest, fuelType]);
+
+  const run = (tripKm: number, label: string | null) => {
+    if (!tripKm || tripKm <= 0) return;
+    setKm(String(tripKm));
+    if (cheapest) {
+      compute(tripKm, label, cheapest);
+      return;
+    }
+    pendingRef.current = { km: tripKm, label };
+    setPending(true);
+  };
+
+  const handleCalculate = () => {
+    const n = parseFloat(km);
+    if (!n || n <= 0) {
+      toast.error("Ingresa los kilómetros del viaje");
+      return;
+    }
+    run(n, null);
   };
 
   const noLocation = !userLocation;
