@@ -213,6 +213,9 @@ export default function WhereToGoWidget({ userLocation }: Props) {
             {usingFallback
               ? `Usando precio promedio nacional ${formatPrice(result.cheapest)} · rendimiento ${result.consumption} km/L.`
               : `Estimado con ${result.consumption} km/L y ${formatPrice(result.cheapest)} (más barato cercano).`}
+            {!usingFallback && cheapestStationName && (
+              <> 📍 Precio en: <span className="font-medium">{cheapestStationName}</span></>
+            )}
           </div>
         </div>
       )}
