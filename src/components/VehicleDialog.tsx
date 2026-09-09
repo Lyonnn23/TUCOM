@@ -23,6 +23,30 @@ interface Props {
   vehicle?: UserVehicle | null;
 }
 
+const BRANDS_RAW = [
+  // Marcas masivas Chile
+  "Toyota","Hyundai","Kia","Chevrolet","Suzuki","Nissan","Mazda","Honda","Ford","Subaru",
+  "Volkswagen","Mitsubishi","Peugeot","Citroën","Renault","Fiat","Jeep","Dodge","RAM",
+  "MG","BYD","Chery","DFSK","JAC","Great Wall",
+  // Premium y lujo
+  "BMW","Mercedes-Benz","Audi","Volvo","Tesla","Lexus","Infinity","Acura",
+  "Porsche","Land Rover","Jaguar","Cadillac","Lincoln","Genesis","CUPRA","SEAT",
+  "Alfa Romeo","Maserati","Ferrari","Lamborghini",
+  // Eléctricos y emergentes
+  "NIO","Zeekr","Ora",
+];
+const BRANDS = [...new Set(BRANDS_RAW)].sort((a, b) => a.localeCompare(b, "es"));
+
+const EV_BRANDS = new Set(["Tesla", "BYD", "NIO", "Zeekr", "Ora"]);
+
+const MODEL_SUGGESTIONS: Record<string, string[]> = {
+  Tesla: ["Model 3", "Model Y", "Model S", "Model X", "Cybertruck"],
+  BMW: ["Serie 1", "Serie 2", "Serie 3", "Serie 4", "Serie 5", "Serie 7", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "iX", "i4"],
+  "Mercedes-Benz": ["Clase A", "Clase B", "Clase C", "Clase E", "Clase S", "GLA", "GLB", "GLC", "GLE", "GLS", "EQA", "EQB", "EQC"],
+  Audi: ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q2", "Q3", "Q5", "Q7", "Q8", "e-tron", "RS3", "RS6"],
+  CUPRA: ["Born", "Formentor", "Leon", "Ateca"],
+};
+
 const FUELS = [
   { value: "gasoline93", label: "Gasolina 93" },
   { value: "gasoline95", label: "Gasolina 95" },
