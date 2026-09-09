@@ -4,9 +4,9 @@ import type { CatalogVehicle } from "@/hooks/useVehiclesCatalog";
 export type RouteType = "city" | "mixed" | "hwy";
 
 export const QUICK_DESTINATIONS = [
-  { id: "vina",      label: "Viña del Mar / Valparaíso", km: 150 },
-  { id: "conce",     label: "Concepción",                km: 400 },
-  { id: "serena",    label: "La Serena",                 km: 580 },
+  { id: "vina",      label: "Viña del Mar / Valparaíso", km: 120 },
+  { id: "conce",     label: "Concepción",                km: 500 },
+  { id: "serena",    label: "La Serena",                 km: 470 },
   { id: "pmontt",    label: "Puerto Montt",              km: 1000 },
   { id: "antofa",    label: "Antofagasta",               km: 1350 },
   { id: "arica",     label: "Arica",                     km: 2050 },

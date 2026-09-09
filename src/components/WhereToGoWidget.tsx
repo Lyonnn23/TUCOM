@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { QUICK_DESTINATIONS } from "@/lib/tripCalc";
 import { useNearbyStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
@@ -30,8 +31,20 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     fuelLabel: string;
     cheapest: number;
     consumption: number;
+    units: number;
   } | null>(null);
   const [pending, setPending] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const pendingRef = useRef<{ km: number; label: string | null } | null>(null);
+
+  // Fallback national average prices (CLP/L) when no nearby prices are found
+  const FALLBACK_PRICES: Record<FuelTypeKey, number> = {
+    gasoline93: 1050,
+    gasoline95: 1100,
+    gasoline97: 1180,
+    diesel: 980,
+    electric: 250,
+  };
 
   const { primary: primaryVehicle } = useUserVehicles();
   const { preferences } = useUserPreferences();
@@ -61,23 +74,10 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     return Math.min(...prices);
   }, [nearby]);
 
-  const run = (tripKm: number, label: string | null) => {
-    if (!tripKm || tripKm <= 0) return;
-    if (!cheapest) {
-      setPending(true);
-      // try again briefly while data loads
-      setTimeout(() => {
-        setPending(false);
-        if (cheapest) compute(tripKm, label, cheapest);
-      }, 600);
-      return;
-    }
-    compute(tripKm, label, cheapest);
-  };
-
-  const compute = (tripKm: number, label: string | null, price: number) => {
+  const compute = (tripKm: number, label: string | null, price: number, fallback = false) => {
     const units = tripKm / consumption;
     const total = Math.round(units * price);
+    setUsingFallback(fallback);
     setResult({
       km: tripKm,
       label,
@@ -85,7 +85,50 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       fuelLabel: FUEL_LABEL[fuelType] ?? "combustible",
       cheapest: price,
       consumption,
+      units,
     });
+  };
+
+  // Resolve a pending calculation once prices arrive, or fall back after 8s
+  useEffect(() => {
+    if (!pending) return;
+    if (cheapest && pendingRef.current) {
+      const { km: k, label } = pendingRef.current;
+      pendingRef.current = null;
+      setPending(false);
+      compute(k, label, cheapest);
+      return;
+    }
+    const t = setTimeout(() => {
+      if (!pendingRef.current) return;
+      const { km: k, label } = pendingRef.current;
+      pendingRef.current = null;
+      setPending(false);
+      toast.info("No se encontraron precios cercanos. Usando precio promedio nacional.");
+      compute(k, label, FALLBACK_PRICES[fuelType] ?? 1100, true);
+    }, 8000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending, cheapest, fuelType]);
+
+  const run = (tripKm: number, label: string | null) => {
+    if (!tripKm || tripKm <= 0) return;
+    setKm(String(tripKm));
+    if (cheapest) {
+      compute(tripKm, label, cheapest);
+      return;
+    }
+    pendingRef.current = { km: tripKm, label };
+    setPending(true);
+  };
+
+  const handleCalculate = () => {
+    const n = parseFloat(km);
+    if (!n || n <= 0) {
+      toast.error("Ingresa los kilómetros del viaje");
+      return;
+    }
+    run(n, null);
   };
 
   const noLocation = !userLocation;
@@ -110,8 +153,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const n = Number(km);
-          if (n > 0) run(n, null);
+          handleCalculate();
         }}
         className="flex gap-2"
       >
@@ -150,8 +192,14 @@ export default function WhereToGoWidget({ userLocation }: Props) {
         <div className="rounded-xl bg-primary/5 border border-primary/20 px-3 py-2.5 text-sm text-foreground animate-fade-in">
           Tu viaje{result.label ? ` a ${result.label}` : ""} (~{formatInt(result.km)} km) costará aproximadamente{" "}
           <span className="font-bold text-primary">{formatPrice(result.total)}</span> con {result.fuelLabel}.
+          <div className="text-xs mt-1">
+            Litros necesarios: <span className="font-semibold">{result.units.toFixed(1)} L</span>
+            {" · "}Costo estimado: <span className="font-semibold">{formatPrice(result.total)}</span>
+          </div>
           <div className="text-[11px] text-muted-foreground mt-0.5">
-            Estimado con {result.consumption} km/L y {formatPrice(result.cheapest)} (más barato cercano).
+            {usingFallback
+              ? `Usando precio promedio nacional ${formatPrice(result.cheapest)} · rendimiento ${result.consumption} km/L.`
+              : `Estimado con ${result.consumption} km/L y ${formatPrice(result.cheapest)} (más barato cercano).`}
           </div>
         </div>
       )}
