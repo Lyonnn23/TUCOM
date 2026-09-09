@@ -153,9 +153,13 @@ export default function WhereToGoWidget({ userLocation }: Props) {
           <button
             key={d.id}
             onClick={() => run(d.km, d.label)}
-            className="text-[11px] rounded-full border border-border bg-muted/40 px-2.5 py-1 text-foreground hover:bg-primary/10 hover:border-primary/40 transition"
+            className={`text-[11px] rounded-full px-2.5 py-1 transition border ${
+              selectedCity === d.label
+                ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/50"
+                : "border-border bg-muted/40 text-foreground hover:bg-primary/10 hover:border-primary/40"
+            }`}
           >
-            {d.label} <span className="text-muted-foreground">· {d.km}km</span>
+            {d.label} <span className={selectedCity === d.label ? "text-primary-foreground/80" : "text-muted-foreground"}>· {d.km}km</span>
           </button>
         ))}
       </div>
@@ -171,7 +175,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
           inputMode="numeric"
           min={1}
           value={km}
-          onChange={(e) => setKm(e.target.value)}
+          onChange={(e) => { setKm(e.target.value); setSelectedCity(null); }}
           placeholder="O ingresa los km del viaje"
           className="flex-1 h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           aria-label="Kilómetros del viaje"
