@@ -31,6 +31,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     fuelLabel: string;
     cheapest: number;
     consumption: number;
+    units: number;
   } | null>(null);
   const [pending, setPending] = useState(false);
   const [usingFallback, setUsingFallback] = useState(false);
@@ -152,8 +153,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const n = Number(km);
-          if (n > 0) run(n, null);
+          handleCalculate();
         }}
         className="flex gap-2"
       >
@@ -192,8 +192,14 @@ export default function WhereToGoWidget({ userLocation }: Props) {
         <div className="rounded-xl bg-primary/5 border border-primary/20 px-3 py-2.5 text-sm text-foreground animate-fade-in">
           Tu viaje{result.label ? ` a ${result.label}` : ""} (~{formatInt(result.km)} km) costará aproximadamente{" "}
           <span className="font-bold text-primary">{formatPrice(result.total)}</span> con {result.fuelLabel}.
+          <div className="text-xs mt-1">
+            Litros necesarios: <span className="font-semibold">{result.units.toFixed(1)} L</span>
+            {" · "}Costo estimado: <span className="font-semibold">{formatPrice(result.total)}</span>
+          </div>
           <div className="text-[11px] text-muted-foreground mt-0.5">
-            Estimado con {result.consumption} km/L y {formatPrice(result.cheapest)} (más barato cercano).
+            {usingFallback
+              ? `Usando precio promedio nacional ${formatPrice(result.cheapest)} · rendimiento ${result.consumption} km/L.`
+              : `Estimado con ${result.consumption} km/L y ${formatPrice(result.cheapest)} (más barato cercano).`}
           </div>
         </div>
       )}
