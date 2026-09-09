@@ -208,14 +208,17 @@ const Drive = () => {
     } catch {}
   }, [isNight]);
 
-  // Geolocation: refresh every 60s
+  // Geolocation: refresh every 60s, Santiago fallback on error/denial
+  const SANTIAGO = { lat: -33.4489, lng: -70.6693 };
+  const [gpsRetry, setGpsRetry] = useState(0);
   useEffect(() => {
     let cancelled = false;
+    if (!("geolocation" in navigator)) {
+      setPos(SANTIAGO);
+      setPosError(null);
+      return;
+    }
     const fetchPos = () => {
-      if (!("geolocation" in navigator)) {
-        setPosError("Geolocalización no disponible");
-        return;
-      }
       navigator.geolocation.getCurrentPosition(
         (p) => {
           if (cancelled) return;
@@ -224,15 +227,18 @@ const Drive = () => {
         },
         (e) => {
           if (cancelled) return;
-          setPosError(e.message || "Activa la ubicación para ver estaciones cercanas");
+          console.warn("Drive GPS error:", e);
+          setPos((prev) => prev ?? SANTIAGO);
+          toast("Usando ubicación aproximada");
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
       );
     };
     fetchPos();
     const id = window.setInterval(fetchPos, 60_000);
     return () => { cancelled = true; clearInterval(id); };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gpsRetry]);
 
   // Usual station — most-frequent station in fuel_logs
   const usualStationId = useMemo(() => {
@@ -543,8 +549,18 @@ const Drive = () => {
           </div>
         )}
         {pos && !isLoading && top5.length === 0 && (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <p className="text-xl font-bold">Sin estaciones cercanas con precio disponible.</p>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center space-y-3">
+            <Fuel className="w-10 h-10 mx-auto opacity-50" />
+            <p className="text-xl font-bold">Sin estaciones cercanas</p>
+            <p className="text-sm text-white/70">
+              No hay estaciones con precios disponibles en 10 km.
+            </p>
+            <button
+              onClick={() => { setPos(null); setGpsRetry((n) => n + 1); }}
+              className="px-4 py-2 bg-white/20 rounded-full text-sm active:bg-white/30"
+            >
+              Reintentar
+            </button>
           </div>
         )}
 

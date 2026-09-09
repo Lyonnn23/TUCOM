@@ -24,6 +24,7 @@ const FUEL_LABEL: Record<FuelTypeKey, string> = {
  */
 export default function WhereToGoWidget({ userLocation }: Props) {
   const [km, setKm] = useState("");
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [result, setResult] = useState<{
     km: number;
     label: string | null;
@@ -74,6 +75,12 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     return Math.min(...prices);
   }, [nearby]);
 
+  const cheapestStationName = useMemo(() => {
+    if (cheapest == null) return null;
+    const s = (nearby ?? []).find((st) => st.price === cheapest);
+    return s ? `${s.brand} ${s.name}` : null;
+  }, [nearby, cheapest]);
+
   const compute = (tripKm: number, label: string | null, price: number, fallback = false) => {
     const units = tripKm / consumption;
     const total = Math.round(units * price);
@@ -114,6 +121,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
   const run = (tripKm: number, label: string | null) => {
     if (!tripKm || tripKm <= 0) return;
     setKm(String(tripKm));
+    setSelectedCity(label);
     if (cheapest) {
       compute(tripKm, label, cheapest);
       return;
@@ -128,7 +136,8 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       toast.error("Ingresa los kilómetros del viaje");
       return;
     }
-    run(n, null);
+    if (selectedCity && String(n) !== km) setSelectedCity(null);
+    run(n, selectedCity);
   };
 
   const noLocation = !userLocation;
@@ -144,9 +153,13 @@ export default function WhereToGoWidget({ userLocation }: Props) {
           <button
             key={d.id}
             onClick={() => run(d.km, d.label)}
-            className="text-[11px] rounded-full border border-border bg-muted/40 px-2.5 py-1 text-foreground hover:bg-primary/10 hover:border-primary/40 transition"
+            className={`text-[11px] rounded-full px-2.5 py-1 transition border ${
+              selectedCity === d.label
+                ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/50"
+                : "border-border bg-muted/40 text-foreground hover:bg-primary/10 hover:border-primary/40"
+            }`}
           >
-            {d.label} <span className="text-muted-foreground">· {d.km}km</span>
+            {d.label} <span className={selectedCity === d.label ? "text-primary-foreground/80" : "text-muted-foreground"}>· {d.km}km</span>
           </button>
         ))}
       </div>
@@ -162,7 +175,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
           inputMode="numeric"
           min={1}
           value={km}
-          onChange={(e) => setKm(e.target.value)}
+          onChange={(e) => { setKm(e.target.value); setSelectedCity(null); }}
           placeholder="O ingresa los km del viaje"
           className="flex-1 h-10 rounded-xl border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           aria-label="Kilómetros del viaje"
@@ -200,6 +213,9 @@ export default function WhereToGoWidget({ userLocation }: Props) {
             {usingFallback
               ? `Usando precio promedio nacional ${formatPrice(result.cheapest)} · rendimiento ${result.consumption} km/L.`
               : `Estimado con ${result.consumption} km/L y ${formatPrice(result.cheapest)} (más barato cercano).`}
+            {!usingFallback && cheapestStationName && (
+              <> 📍 Precio en: <span className="font-medium">{cheapestStationName}</span></>
+            )}
           </div>
         </div>
       )}

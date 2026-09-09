@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { QUICK_DESTINATIONS } from "@/lib/tripCalc";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
@@ -113,6 +114,8 @@ const Calculadora = () => {
   const [origin, setOrigin] = useState<Place | null>(() => loadPlace(LS_ORIGIN));
   const [dest, setDest] = useState<Place | null>(() => loadPlace(LS_DEST));
   const [loadingTrip, setLoadingTrip] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [kmValue, setKmValue] = useState<string>("");
   const [tripResult, setTripResult] = useState<null | {
     distanceKm: number;
     liters: number;
@@ -121,6 +124,34 @@ const Calculadora = () => {
     savings: number;
     isElectric: boolean;
   }>(null);
+
+  // Local km-based trip calculation (city pills / manual km, no routing needed)
+  const calculateTripKm = (km: number, label: string | null = null) => {
+    if (!km || km <= 0) return;
+    if (!Number.isFinite(consumption) || consumption < 3.3 || consumption > 33.3) {
+      toast.error("Rendimiento inválido (debe ser 3,3 a 33,3 km/L)");
+      return;
+    }
+    const units = km / Math.max(consumption, 0.1);
+    const costCheap = Math.round(units * cheapestPrice);
+    const costAvg = Math.round(units * avgPrice);
+    setTripResult({
+      distanceKm: km,
+      liters: Math.round(units * 10) / 10,
+      costCheap,
+      costAvg,
+      savings: Math.max(0, costAvg - costCheap),
+      isElectric: fuelType === "electric",
+    });
+    if (label) setDest({ lat: 0, lng: 0, label });
+    import("@/lib/analytics").then((m) => m.analytics.calculateTrip(fuelType, km)).catch(() => {});
+  };
+
+  const handleCityPill = (city: { label: string; km: number }) => {
+    setSelectedCity(city.label);
+    setKmValue(String(city.km));
+    calculateTripKm(city.km, city.label);
+  };
 
   // Deep-link handoff from StationDetail.tsx ("/calculadora?km=X&dest=Y"): preload a
   // trip result with the pre-computed km so the user sees the estimated cost immediately
@@ -449,8 +480,51 @@ const Calculadora = () => {
                     placeholder="¿A dónde vas?"
                     initialValue={dest?.label ?? ""}
                     bias={origin ?? gps ?? undefined}
-                    onSelect={(p) => setDest(p)}
+                    onSelect={(p) => { setDest(p); setSelectedCity(null); }}
                   />
+                </div>
+              </div>
+
+              {/* City shortcuts + direct km */}
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {QUICK_DESTINATIONS.slice(0, 5).map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => handleCityPill(c)}
+                      style={{ touchAction: "manipulation", minHeight: 36 }}
+                      className={`text-[11px] font-semibold px-2.5 rounded-full transition-colors ${
+                        selectedCity === c.label
+                          ? "bg-primary text-primary-foreground ring-2 ring-primary/50"
+                          : "bg-primary/15 text-primary hover:bg-primary/25"
+                      }`}
+                    >
+                      {c.label} · {c.km}km
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    value={kmValue}
+                    onChange={(e) => { setKmValue(e.target.value); setSelectedCity(null); }}
+                    onKeyDown={(e) => e.key === "Enter" && calculateTripKm(Number(kmValue), selectedCity)}
+                    placeholder="Distancia aproximada (km)"
+                    aria-label="Distancia aproximada en kilómetros"
+                    className="h-11 rounded-xl flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => calculateTripKm(Number(kmValue), selectedCity)}
+                    disabled={!kmValue || Number(kmValue) <= 0}
+                    className="h-11 rounded-xl bg-primary text-primary-foreground"
+                    style={{ touchAction: "manipulation" }}
+                  >
+                    Calcular
+                  </Button>
                 </div>
               </div>
             </section>
