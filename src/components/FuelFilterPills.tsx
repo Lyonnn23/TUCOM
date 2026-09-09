@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useNavigate } from "react-router-dom";
 import { analytics } from "@/lib/analytics";
 
 export type FuelFilterKey =
