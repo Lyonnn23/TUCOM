@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useNavigate } from "react-router-dom";
 import { analytics } from "@/lib/analytics";
 
 export type FuelFilterKey =
@@ -25,6 +26,7 @@ interface Props {
 }
 
 const FuelFilterPills = ({ value, onChange, className }: Props) => {
+  const navigate = useNavigate();
   return (
     <div
       role="tablist"
@@ -54,6 +56,15 @@ const FuelFilterPills = ({ value, onChange, className }: Props) => {
           </button>
         );
       })}
+      <button
+        type="button"
+        onClick={() => navigate("/parafina")}
+        aria-label="Ver precios de parafina (kerosene)"
+        style={{ touchAction: "manipulation", minHeight: 44 }}
+        className="shrink-0 text-xs font-semibold px-4 rounded-full transition-colors border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/40 hover:bg-amber-500/20"
+      >
+        🔥 Parafina
+      </button>
     </div>
   );
 };
