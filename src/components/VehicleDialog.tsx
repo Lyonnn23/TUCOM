@@ -213,14 +213,22 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
               <div>
                 <Label className="text-xs">Marca</Label>
                 {(() => {
-                  const BRANDS = ["Toyota","Hyundai","Kia","Chevrolet","Suzuki","Nissan","Mazda","Honda","Ford","Subaru","Volkswagen","Mitsubishi","Mercedes","BMW","Audi"];
                   const isOther = brand !== "" && !BRANDS.includes(brand);
                   const selectVal = brand === "" ? "" : isOther ? "Otra" : brand;
+                  const handleBrand = (v: string) => {
+                    const next = v === "Otra" ? "" : v;
+                    setBrand(next);
+                    if (EV_BRANDS.has(next)) {
+                      setFuelType("electric");
+                      setCons("6");
+                      if (!tank || tank === "50") setTank("60");
+                    }
+                  };
                   return (
                     <>
-                      <Select value={selectVal} onValueChange={(v) => setBrand(v === "Otra" ? "" : v)}>
+                      <Select value={selectVal} onValueChange={handleBrand}>
                         <SelectTrigger className="mt-1"><SelectValue placeholder="Elige marca" /></SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-72">
                           {BRANDS.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
                           <SelectItem value="Otra">Otra…</SelectItem>
                         </SelectContent>
@@ -234,7 +242,17 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
               </div>
               <div>
                 <Label className="text-xs">Modelo</Label>
-                <Input value={model} onChange={(e) => setModel(e.target.value)} className="mt-1" />
+                <Input
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  className="mt-1"
+                  list={MODEL_SUGGESTIONS[brand] ? "model-suggestions" : undefined}
+                />
+                {MODEL_SUGGESTIONS[brand] && (
+                  <datalist id="model-suggestions">
+                    {MODEL_SUGGESTIONS[brand].map((m) => (<option key={m} value={m} />))}
+                  </datalist>
+                )}
               </div>
             </div>
 
