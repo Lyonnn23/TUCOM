@@ -113,6 +113,8 @@ const Calculadora = () => {
   const [origin, setOrigin] = useState<Place | null>(() => loadPlace(LS_ORIGIN));
   const [dest, setDest] = useState<Place | null>(() => loadPlace(LS_DEST));
   const [loadingTrip, setLoadingTrip] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [kmValue, setKmValue] = useState<string>("");
   const [tripResult, setTripResult] = useState<null | {
     distanceKm: number;
     liters: number;
@@ -121,6 +123,34 @@ const Calculadora = () => {
     savings: number;
     isElectric: boolean;
   }>(null);
+
+  // Local km-based trip calculation (city pills / manual km, no routing needed)
+  const calculateTripKm = (km: number, label: string | null = null) => {
+    if (!km || km <= 0) return;
+    if (!Number.isFinite(consumption) || consumption < 3.3 || consumption > 33.3) {
+      toast.error("Rendimiento inválido (debe ser 3,3 a 33,3 km/L)");
+      return;
+    }
+    const units = km / Math.max(consumption, 0.1);
+    const costCheap = Math.round(units * cheapestPrice);
+    const costAvg = Math.round(units * avgPrice);
+    setTripResult({
+      distanceKm: km,
+      liters: Math.round(units * 10) / 10,
+      costCheap,
+      costAvg,
+      savings: Math.max(0, costAvg - costCheap),
+      isElectric: fuelType === "electric",
+    });
+    if (label) setDest({ lat: 0, lng: 0, label });
+    import("@/lib/analytics").then((m) => m.analytics.calculateTrip(fuelType, km)).catch(() => {});
+  };
+
+  const handleCityPill = (city: { label: string; km: number }) => {
+    setSelectedCity(city.label);
+    setKmValue(String(city.km));
+    calculateTripKm(city.km, city.label);
+  };
 
   // Deep-link handoff from StationDetail.tsx ("/calculadora?km=X&dest=Y"): preload a
   // trip result with the pre-computed km so the user sees the estimated cost immediately
