@@ -26,6 +26,7 @@ interface Props {
 }
 
 const FuelFilterPills = ({ value, onChange, className }: Props) => {
+  const navigate = useNavigate();
   return (
     <div
       role="tablist"
