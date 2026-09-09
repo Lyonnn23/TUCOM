@@ -24,6 +24,7 @@ const FUEL_LABEL: Record<FuelTypeKey, string> = {
  */
 export default function WhereToGoWidget({ userLocation }: Props) {
   const [km, setKm] = useState("");
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [result, setResult] = useState<{
     km: number;
     label: string | null;
@@ -73,6 +74,12 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     if (!prices.length) return null;
     return Math.min(...prices);
   }, [nearby]);
+
+  const cheapestStationName = useMemo(() => {
+    if (cheapest == null) return null;
+    const s = (nearby ?? []).find((st) => st.price === cheapest);
+    return s ? `${s.brand} ${s.name}` : null;
+  }, [nearby, cheapest]);
 
   const compute = (tripKm: number, label: string | null, price: number, fallback = false) => {
     const units = tripKm / consumption;
