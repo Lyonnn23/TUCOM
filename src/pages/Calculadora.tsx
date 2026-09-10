@@ -1,20 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { QUICK_DESTINATIONS } from "@/lib/tripCalc";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
-  Calculator,
   Car,
   Share2,
-  MapPin,
   Fuel,
   Gauge,
-  LocateFixed,
   AlertTriangle,
   Sparkles,
-  Loader2,
-  Navigation,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,18 +16,15 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PlacesAutocomplete from "@/components/PlacesAutocomplete";
+import TripPlanner from "@/components/calculadora/TripPlanner";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useCheapestStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
-import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/format";
-import { shareStation } from "@/lib/share";
 import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
 
 type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
-type Place = { lat: number; lng: number; label: string };
 
 const FUEL_OPTIONS: { key: FuelKey; label: string }[] = [
   { key: "gasoline93", label: "93" },
@@ -45,23 +36,6 @@ const FUEL_OPTIONS: { key: FuelKey; label: string }[] = [
 
 const fuelLabel = (k: FuelKey) => FUEL_OPTIONS.find((f) => f.key === k)?.label ?? k;
 
-const LS_ORIGIN = "calc_last_origin";
-const LS_DEST = "calc_last_dest";
-
-const loadPlace = (k: string): Place | null => {
-  try {
-    const v = window.localStorage.getItem(k);
-    if (!v) return null;
-    const p = JSON.parse(v);
-    if (typeof p?.lat === "number" && typeof p?.lng === "number") return p;
-    return null;
-  } catch {
-    return null;
-  }
-};
-const savePlace = (k: string, p: Place) => {
-  try { window.localStorage.setItem(k, JSON.stringify(p)); } catch { /* noop */ }
-};
 
 const Calculadora = () => {
   const navigate = useNavigate();
@@ -110,174 +84,9 @@ const Calculadora = () => {
   }, [fuelPrices.data, fuelType]);
   const cheapestPrice = cheapestStation?.price ?? avgPrice;
 
-  // === MODO VIAJE ===
-  const [origin, setOrigin] = useState<Place | null>(() => loadPlace(LS_ORIGIN));
-  const [dest, setDest] = useState<Place | null>(() => loadPlace(LS_DEST));
-  const [loadingTrip, setLoadingTrip] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [kmValue, setKmValue] = useState<string>("");
-  const [tripResult, setTripResult] = useState<null | {
-    distanceKm: number;
-    liters: number;
-    costCheap: number;
-    costAvg: number;
-    savings: number;
-    isElectric: boolean;
-  }>(null);
+  // === MODO VIAJE === (ver src/components/calculadora/TripPlanner.tsx)
 
-  // Local km-based trip calculation (city pills / manual km, no routing needed)
-  const calculateTripKm = (km: number, label: string | null = null) => {
-    if (!km || km <= 0) return;
-    if (!Number.isFinite(consumption) || consumption < 3.3 || consumption > 33.3) {
-      toast.error("Rendimiento inválido (debe ser 3,3 a 33,3 km/L)");
-      return;
-    }
-    const units = km / Math.max(consumption, 0.1);
-    const costCheap = Math.round(units * cheapestPrice);
-    const costAvg = Math.round(units * avgPrice);
-    setTripResult({
-      distanceKm: km,
-      liters: Math.round(units * 10) / 10,
-      costCheap,
-      costAvg,
-      savings: Math.max(0, costAvg - costCheap),
-      isElectric: fuelType === "electric",
-    });
-    if (label) setDest({ lat: 0, lng: 0, label });
-    import("@/lib/analytics").then((m) => m.analytics.calculateTrip(fuelType, km)).catch(() => {});
-  };
 
-  const handleCityPill = (city: { label: string; km: number }) => {
-    setSelectedCity(city.label);
-    setKmValue(String(city.km));
-    calculateTripKm(city.km, city.label);
-  };
-
-  // Deep-link handoff from StationDetail.tsx ("/calculadora?km=X&dest=Y"): preload a
-  // trip result with the pre-computed km so the user sees the estimated cost immediately
-  // without having to fill origin/destination via PlacesAutocomplete.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const destLabel = params.get("dest");
-    const kmStr = params.get("km");
-    const km = kmStr ? Number(kmStr) : NaN;
-    if (destLabel) {
-      // lat/lng unknown from the deep link — label is enough to display the destination.
-      setDest({ lat: 0, lng: 0, label: destLabel });
-    }
-    if (Number.isFinite(km) && km > 0) {
-      const cons = consumption > 0 ? consumption : 12;
-      const units = km / Math.max(cons, 0.1);
-      const priceCheap = cheapestPrice || avgPrice;
-      const priceAvg = avgPrice || priceCheap;
-      const costCheap = Math.round(units * priceCheap);
-      const costAvg = Math.round(units * priceAvg);
-      setTripResult({
-        distanceKm: km,
-        liters: Math.round(units * 10) / 10,
-        costCheap,
-        costAvg,
-        savings: Math.max(0, costAvg - costCheap),
-        isElectric: fuelType === "electric",
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const useMyLocation = () => {
-    if (!gps) {
-      toast.error("Activa el GPS primero");
-      return;
-    }
-    setOrigin({ lat: gps.lat, lng: gps.lng, label: "Mi ubicación" });
-  };
-
-  const calcViaje = async () => {
-    if (!origin || !dest) {
-      toast.error("Indica origen y destino");
-      return;
-    }
-    // Input validation: consumption 3.3–33.3 km/L (≈ 3–30 L/100km)
-    if (!Number.isFinite(consumption) || consumption < 3.3 || consumption > 33.3) {
-      toast.error("Rendimiento inválido (debe ser 3,3 a 33,3 km/L)");
-      return;
-    }
-    setLoadingTrip(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("trip-calculator", {
-        body: {
-          origin: { lat: origin.lat, lng: origin.lng },
-          destination: { lat: dest.lat, lng: dest.lng },
-          vehicle: { consumption_kml: consumption, fuel_type: fuelType },
-        },
-      });
-      if (error) throw error;
-      const r0 = (data as any)?.routes?.[0];
-      if (!r0) throw new Error("no_route");
-      const distanceKm = Number(r0.distance_km) || 0;
-      if (distanceKm <= 0) {
-        toast.error("Distancia inválida");
-        setLoadingTrip(false);
-        return;
-      }
-      const units = distanceKm / Math.max(consumption, 0.1);
-      const costCheap = Math.round(units * cheapestPrice);
-      const costAvg = Math.round(units * avgPrice);
-      const savings = Math.max(0, costAvg - costCheap);
-      setTripResult({
-        distanceKm,
-        liters: Math.round(units * 10) / 10,
-        costCheap,
-        costAvg,
-        savings,
-        isElectric: fuelType === "electric",
-      });
-      savePlace(LS_ORIGIN, origin);
-      savePlace(LS_DEST, dest);
-      import("@/lib/analytics").then((m) => m.analytics.calculateTrip(fuelType, distanceKm)).catch(() => {});
-    } catch (err) {
-      console.error("trip calc error", err);
-      toast.error("No se pudo calcular la distancia");
-    } finally {
-      setLoadingTrip(false);
-    }
-  };
-
-  const shareTrip = async () => {
-    if (!tripResult || !origin || !dest) return;
-    if (cheapestStation) {
-      await shareStation({
-        stationId: cheapestStation.id,
-        stationName: `${cheapestStation.brand} ${cheapestStation.name}`,
-        brand: cheapestStation.brand,
-        fuelType: fuelType as any,
-        price: cheapestStation.price ?? cheapestPrice,
-      });
-      return;
-    }
-    const text = `Mi viaje ${origin.label} → ${dest.label} costará ${formatPrice(tripResult.costCheap)} en ${fuelLabel(fuelType)}. Calculado con TÜcom.`;
-    try {
-      if (navigator.share) { await navigator.share({ title: "Mi viaje · TÜcom", text }); return; }
-      await navigator.clipboard.writeText(text);
-      toast.success("¡Copiado!");
-    } catch { /* cancelled */ }
-  };
-
-  const goRouteMode = () => {
-    if (!cheapestStation || !origin) return;
-    // Hand off to the in-app Modo Ruta on the map view.
-    try {
-      sessionStorage.setItem(
-        "tucom_route_mode_init",
-        JSON.stringify({
-          origin: { lat: origin.lat, lng: origin.lng, label: origin.label },
-          destination: { lat: cheapestStation.lat, lng: cheapestStation.lng, label: `${cheapestStation.brand} ${cheapestStation.name}` },
-          stationId: cheapestStation.id,
-        }),
-      );
-    } catch { /* noop */ }
-    navigate("/?ruta=1#map");
-  };
 
   // === MODO ESTANQUE ===
   const [pct, setPct] = useState<number>(50);
@@ -446,88 +255,14 @@ const Calculadora = () => {
 
           {/* ============== MODO VIAJE ============== */}
           <TabsContent value="viaje" className="space-y-4 mt-4">
-            <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
-              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" aria-hidden="true" /> Tu viaje
-              </h2>
+            <TripPlanner
+              fuelType={fuelType}
+              fuelLabel={fuelLabel(fuelType)}
+              consumption={consumption}
+              pricePerUnit={cheapestPrice}
+              vehicleName={primaryVehicle?.nickname ?? (primaryVehicle ? `${primaryVehicle.brand} ${primaryVehicle.model}` : null)}
+            />
 
-              <div>
-                <Label className="text-xs">Origen</Label>
-                <div className="mt-1 space-y-2">
-                  <PlacesAutocomplete
-                    placeholder="¿Desde dónde sales?"
-                    initialValue={origin?.label ?? ""}
-                    bias={gps ?? undefined}
-                    onSelect={(p) => setOrigin(p)}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={useMyLocation}
-                    className="rounded-xl h-9"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    <LocateFixed className="w-3.5 h-3.5 mr-1" /> Usar mi ubicación
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs">Destino</Label>
-                <div className="mt-1">
-                  <PlacesAutocomplete
-                    placeholder="¿A dónde vas?"
-                    initialValue={dest?.label ?? ""}
-                    bias={origin ?? gps ?? undefined}
-                    onSelect={(p) => { setDest(p); setSelectedCity(null); }}
-                  />
-                </div>
-              </div>
-
-              {/* City shortcuts + direct km */}
-              <div className="space-y-2">
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_DESTINATIONS.slice(0, 5).map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => handleCityPill(c)}
-                      style={{ touchAction: "manipulation", minHeight: 36 }}
-                      className={`text-[11px] font-semibold px-2.5 rounded-full transition-colors ${
-                        selectedCity === c.label
-                          ? "bg-primary text-primary-foreground ring-2 ring-primary/50"
-                          : "bg-primary/15 text-primary hover:bg-primary/25"
-                      }`}
-                    >
-                      {c.label} · {c.km}km
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    value={kmValue}
-                    onChange={(e) => { setKmValue(e.target.value); setSelectedCity(null); }}
-                    onKeyDown={(e) => e.key === "Enter" && calculateTripKm(Number(kmValue), selectedCity)}
-                    placeholder="Distancia aproximada (km)"
-                    aria-label="Distancia aproximada en kilómetros"
-                    className="h-11 rounded-xl flex-1"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => calculateTripKm(Number(kmValue), selectedCity)}
-                    disabled={!kmValue || Number(kmValue) <= 0}
-                    className="h-11 rounded-xl bg-primary text-primary-foreground"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    Calcular
-                  </Button>
-                </div>
-              </div>
-            </section>
 
             <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
               <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
@@ -576,74 +311,6 @@ const Calculadora = () => {
               </div>
             </section>
 
-            <Button
-              onClick={calcViaje}
-              disabled={!origin || !dest || consumption <= 0 || loadingTrip}
-              className="w-full h-12 rounded-xl bg-gradient-primary text-white font-semibold shadow-glow"
-              style={{ touchAction: "manipulation" }}
-            >
-              {loadingTrip ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Calculator className="w-4 h-4 mr-2" />}
-              Calcular costo del viaje
-            </Button>
-
-            {tripResult && (
-              <section className="space-y-3 animate-scale-in">
-                <div className="rounded-3xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] text-white p-5 shadow-glow space-y-2">
-                  <p className="text-[10px] uppercase tracking-wider text-white/85 font-bold">Costo con la más barata cerca</p>
-                  <p className="font-heading font-extrabold text-4xl tabular-nums leading-none">{formatPrice(tripResult.costCheap)}</p>
-                  <p className="text-xs text-white/85 tabular-nums">
-                    {tripResult.distanceKm.toFixed(1)} km · {tripResult.liters.toFixed(1)} {tripResult.isElectric ? "kWh" : "L"} · {fuelLabel(fuelType)}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Distancia</p>
-                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{tripResult.distanceKm.toFixed(1)} km</p>
-                  </div>
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{tripResult.isElectric ? "Energía" : "Litros"}</p>
-                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{tripResult.liters.toFixed(1)} {tripResult.isElectric ? "kWh" : "L"}</p>
-                  </div>
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Costo promedio</p>
-                    <p className="font-heading font-bold text-foreground text-lg tabular-nums">{formatPrice(tripResult.costAvg)}</p>
-                  </div>
-                  <div className="rounded-2xl bg-card border border-border p-3">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Ahorro potencial</p>
-                    <p className={`font-heading font-bold text-lg tabular-nums ${tripResult.savings > 0 ? "text-fuel-green" : "text-muted-foreground"}`}>
-                      {tripResult.savings > 0 ? `−${formatPrice(tripResult.savings)}` : "—"}
-                    </p>
-                  </div>
-                </div>
-
-                {cheapestStation && (
-                  <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-3 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Estación más barata cerca</p>
-                      <p className="font-semibold text-foreground truncate">{cheapestStation.brand} · {cheapestStation.name}</p>
-                      <p className="text-[11px] text-muted-foreground tabular-nums">{formatPrice(cheapestStation.price ?? 0)} / {tripResult.isElectric ? "kWh" : "L"}</p>
-                    </div>
-                    <Button
-                      onClick={goRouteMode}
-                      className="rounded-xl bg-primary text-primary-foreground"
-                      style={{ touchAction: "manipulation", minHeight: 44 }}
-                    >
-                      <Navigation className="w-4 h-4 mr-1" /> Ir a la más barata
-                    </Button>
-                  </div>
-                )}
-
-                <Button
-                  variant="outline"
-                  className="w-full rounded-xl"
-                  onClick={shareTrip}
-                  style={{ touchAction: "manipulation", minHeight: 44 }}
-                >
-                  <Share2 className="w-4 h-4 mr-1" /> Compartir cálculo
-                </Button>
-              </section>
-            )}
           </TabsContent>
 
           {/* ============== MODO ESTANQUE ============== */}
