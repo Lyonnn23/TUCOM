@@ -585,7 +585,7 @@ const Calculadora = () => {
             </section>
 
             {/* Result */}
-            <section className="rounded-3xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] text-white p-5 shadow-glow space-y-3">
+            <section className="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-5 shadow-xl shadow-emerald-500/30 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-white/80 font-bold">Costo {labelA}</p>
@@ -596,10 +596,9 @@ const Calculadora = () => {
                   <p className="font-heading font-extrabold text-2xl tabular-nums">{formatPrice(costB)}</p>
                 </div>
               </div>
-              <div className="border-t border-white/20 pt-2">
-                <p className="text-[11px] text-white/85">Diferencia por estanque</p>
-                <p className="font-heading font-extrabold text-xl tabular-nums">
-                  {tankDiff === 0
+              <div className="border-t border-white/20 pt-2 text-center">
+                <p className="font-bold">
+                  💡 Diferencia: {tankDiff === 0
                     ? "Mismo costo"
                     : `${formatPrice(Math.abs(tankDiff))} más ${tankDiff > 0 ? "caro" : "barato"} usar ${labelB}`}
                 </p>
