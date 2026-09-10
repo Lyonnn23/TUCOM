@@ -578,7 +578,7 @@ const PlanCard = () => {
     return (
       <button
         onClick={() => navigate("/planes")}
-        className="w-full text-left bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] text-primary-foreground rounded-2xl p-5 shadow-soft hover-scale"
+        className="card-interactive cursor-pointer w-full text-left bg-gradient-primary text-primary-foreground rounded-2xl p-5 shadow-elegant"
       >
         <div className="flex items-center gap-3">
           <Crown className="w-6 h-6" />
@@ -601,7 +601,7 @@ const PlanCard = () => {
       className="w-full text-left bg-card border-2 border-primary/30 rounded-2xl p-5 shadow-soft hover-scale"
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] flex items-center justify-center text-primary-foreground shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground shrink-0">
           <SparklesIcon className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-0">

@@ -1,7 +1,6 @@
 import { memo, useMemo, useState } from "react";
 import { Trophy, MapPin, Navigation, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
-import { formatRelativeTime } from "@/hooks/useGasStations";
 import BrandLogo from "./BrandLogo";
 import FreshnessIndicator from "./FreshnessIndicator";
 
