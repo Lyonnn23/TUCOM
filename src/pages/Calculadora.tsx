@@ -1,20 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { QUICK_DESTINATIONS } from "@/lib/tripCalc";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
-  Calculator,
   Car,
   Share2,
-  MapPin,
   Fuel,
   Gauge,
-  LocateFixed,
   AlertTriangle,
   Sparkles,
-  Loader2,
-  Navigation,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,18 +16,15 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PlacesAutocomplete from "@/components/PlacesAutocomplete";
+import TripPlanner from "@/components/calculadora/TripPlanner";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useCheapestStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
-import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/format";
-import { shareStation } from "@/lib/share";
 import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
 
 type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
-type Place = { lat: number; lng: number; label: string };
 
 const FUEL_OPTIONS: { key: FuelKey; label: string }[] = [
   { key: "gasoline93", label: "93" },
@@ -45,23 +36,6 @@ const FUEL_OPTIONS: { key: FuelKey; label: string }[] = [
 
 const fuelLabel = (k: FuelKey) => FUEL_OPTIONS.find((f) => f.key === k)?.label ?? k;
 
-const LS_ORIGIN = "calc_last_origin";
-const LS_DEST = "calc_last_dest";
-
-const loadPlace = (k: string): Place | null => {
-  try {
-    const v = window.localStorage.getItem(k);
-    if (!v) return null;
-    const p = JSON.parse(v);
-    if (typeof p?.lat === "number" && typeof p?.lng === "number") return p;
-    return null;
-  } catch {
-    return null;
-  }
-};
-const savePlace = (k: string, p: Place) => {
-  try { window.localStorage.setItem(k, JSON.stringify(p)); } catch { /* noop */ }
-};
 
 const Calculadora = () => {
   const navigate = useNavigate();
