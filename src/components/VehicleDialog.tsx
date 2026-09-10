@@ -37,7 +37,9 @@ const BRANDS_RAW = [
 ];
 const BRANDS = [...new Set(BRANDS_RAW)].sort((a, b) => a.localeCompare(b, "es"));
 
-const EV_BRANDS = new Set(["Tesla", "BYD", "NIO", "Zeekr", "Ora"]);
+// Marcas 100% eléctricas: solo estas sugieren automáticamente configuración EV.
+// BYD y otras venden versiones a combustión/híbridas, así que no se fuerza nada.
+const EV_BRANDS = new Set(["Tesla", "NIO", "Zeekr", "Ora"]);
 
 const MODEL_SUGGESTIONS: Record<string, string[]> = {
   Tesla: ["Model 3", "Model Y", "Model S", "Model X", "Cybertruck"],
@@ -218,7 +220,8 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                   const handleBrand = (v: string) => {
                     const next = v === "Otra" ? "" : v;
                     setBrand(next);
-                    if (EV_BRANDS.has(next)) {
+                    // Nunca sobrescribir datos ya guardados al editar un vehículo
+                    if (!vehicle && EV_BRANDS.has(next)) {
                       setFuelType("electric");
                       setCons("6");
                       if (!tank || tank === "50") setTank("60");
