@@ -6,6 +6,7 @@ import { useNearbyStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { formatPrice, formatInt } from "@/lib/format";
+import FreshnessIndicator from "@/components/FreshnessIndicator";
 
 interface Props {
   userLocation?: { lat: number; lng: number } | null;
@@ -62,7 +63,7 @@ export default function WhereToGoWidget({ userLocation }: Props) {
   const { data: nearby, isFetching } = useNearbyStations(
     userLocation?.lat ?? null,
     userLocation?.lng ?? null,
-    15000,
+    10000,
     fuelType,
     20,
   );
@@ -79,6 +80,10 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     if (cheapest == null) return null;
     const s = (nearby ?? []).find((st) => st.price === cheapest);
     return s ? `${s.brand} ${s.name}` : null;
+  }, [nearby, cheapest]);
+  const cheapestUpdatedAt = useMemo(() => {
+    if (cheapest == null) return null;
+    return (nearby ?? []).find((station) => station.price === cheapest)?.price_updated_at ?? null;
   }, [nearby, cheapest]);
 
   const compute = (tripKm: number, label: string | null, price: number, fallback = false) => {
@@ -202,21 +207,22 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       )}
 
       {result && (
-        <div className="rounded-xl bg-primary/5 border border-primary/20 px-3 py-2.5 text-sm text-foreground animate-fade-in">
+        <div className="rounded-2xl bg-gradient-success px-4 py-3 text-sm text-primary-foreground shadow-elegant animate-fade-in">
           Tu viaje{result.label ? ` a ${result.label}` : ""} (~{formatInt(result.km)} km) costará aproximadamente{" "}
-          <span className="font-bold text-primary">{formatPrice(result.total)}</span> con {result.fuelLabel}.
+          <span className="font-black tabular-nums">{formatPrice(result.total)}</span> con {result.fuelLabel}.
           <div className="text-xs mt-1">
             Litros necesarios: <span className="font-semibold">{result.units.toFixed(1)} L</span>
             {" · "}Costo estimado: <span className="font-semibold">{formatPrice(result.total)}</span>
           </div>
-          <div className="text-[11px] text-muted-foreground mt-0.5">
+          <div className="text-[11px] text-primary-foreground/80 mt-0.5">
             {usingFallback
               ? `Usando precio promedio nacional ${formatPrice(result.cheapest)} · rendimiento ${result.consumption} km/L.`
               : `Estimado con ${result.consumption} km/L y ${formatPrice(result.cheapest)} (más barato cercano).`}
             {!usingFallback && cheapestStationName && (
-              <> 📍 Precio en: <span className="font-medium">{cheapestStationName}</span></>
+               <> Precio en: <span className="font-medium">{cheapestStationName}</span></>
             )}
           </div>
+          {!usingFallback && <FreshnessIndicator updatedAt={cheapestUpdatedAt} inverse className="mt-1" />}
         </div>
       )}
     </section>

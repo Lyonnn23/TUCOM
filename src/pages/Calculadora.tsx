@@ -9,6 +9,8 @@ import {
   Gauge,
   AlertTriangle,
   Sparkles,
+  CalendarDays,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -216,7 +218,7 @@ const Calculadora = () => {
       </Helmet>
 
       {/* Header */}
-      <header className="bg-gradient-to-r from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">
+      <header className="bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">
         <div className="max-w-3xl mx-auto py-3">
           <div className="flex items-center gap-3">
             <button
@@ -491,8 +493,8 @@ const Calculadora = () => {
             {/* Prices */}
             <section className="grid grid-cols-[1fr_auto_1fr] gap-2 items-stretch">
               {/* Card A */}
-              <div className="bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-2xl p-4 shadow-lg shadow-violet-500/30 flex flex-col justify-center text-center">
-                <p className="text-white/80 text-xs font-bold tracking-widest uppercase">⛽ Combustible A · {labelA}</p>
+               <div className="bg-gradient-primary text-primary-foreground rounded-2xl p-4 shadow-glow flex flex-col justify-center text-center">
+                 <p className="text-primary-foreground/80 text-xs font-bold uppercase tracking-wide flex items-center justify-center gap-1"><Fuel className="h-3.5 w-3.5" /> Combustible A · {labelA}</p>
                 {editingA ? (
                   <Input
                     autoFocus
@@ -518,7 +520,7 @@ const Calculadora = () => {
                   {priceAOverride != null ? (
                     <button type="button" onClick={() => setPriceAOverride(null)} className="underline">Volver al automático</button>
                   ) : (
-                    "📍 Estación más barata cercana"
+                     <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Estación más barata cercana</span>
                   )}
                 </p>
               </div>
@@ -531,8 +533,8 @@ const Calculadora = () => {
               </div>
 
               {/* Card B */}
-              <div className="bg-gradient-to-br from-orange-500 to-rose-500 text-white rounded-2xl p-4 shadow-lg shadow-orange-500/30 flex flex-col justify-center text-center">
-                <p className="text-white/80 text-xs font-bold tracking-widest uppercase">⛽ Combustible B · {labelB}</p>
+               <div className="bg-gradient-urgent text-primary-foreground rounded-2xl p-4 shadow-elegant flex flex-col justify-center text-center">
+                 <p className="text-primary-foreground/80 text-xs font-bold uppercase tracking-wide flex items-center justify-center gap-1"><Fuel className="h-3.5 w-3.5" /> Combustible B · {labelB}</p>
                 {editingB ? (
                   <Input
                     autoFocus
@@ -558,7 +560,7 @@ const Calculadora = () => {
                   {priceBOverride != null ? (
                     <button type="button" onClick={() => setPriceBOverride(null)} className="underline">Volver al automático</button>
                   ) : (
-                    "📍 Estación más barata cercana"
+                     <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> Estación más barata cercana</span>
                   )}
                 </p>
               </div>
@@ -585,7 +587,7 @@ const Calculadora = () => {
             </section>
 
             {/* Result */}
-            <section className="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-5 shadow-xl shadow-emerald-500/30 space-y-3">
+            <section className="rounded-2xl bg-gradient-success text-primary-foreground p-5 shadow-elegant space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-white/80 font-bold">Costo {labelA}</p>
@@ -598,7 +600,7 @@ const Calculadora = () => {
               </div>
               <div className="border-t border-white/20 pt-2 text-center">
                 <p className="font-bold">
-                  💡 Diferencia: {tankDiff === 0
+                  Diferencia: {tankDiff === 0
                     ? "Mismo costo"
                     : `${formatPrice(Math.abs(tankDiff))} más ${tankDiff > 0 ? "caro" : "barato"} usar ${labelB}`}
                 </p>
@@ -627,8 +629,8 @@ const Calculadora = () => {
                   <p className="font-heading font-bold text-foreground tabular-nums">{formatPrice(annualB)}</p>
                 </div>
               </div>
-              <div className="bg-gradient-to-r from-amber-400 to-orange-400 text-white rounded-2xl p-3 text-center shadow-md mt-2">
-                <p className="font-bold">📅 En un año ahorras: {formatPrice(annualDiff)}</p>
+              <div className="bg-gradient-attention text-accent-foreground rounded-2xl p-3 text-center shadow-md mt-2">
+                <p className="font-bold flex items-center justify-center gap-2"><CalendarDays className="h-4 w-4" /> En un año ahorras: {formatPrice(annualDiff)}</p>
               </div>
             </section>
 

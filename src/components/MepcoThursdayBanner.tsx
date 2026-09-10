@@ -94,7 +94,7 @@ const MepcoThursdayBanner = () => {
         <DirIcon className="w-5 h-5 text-white animate-pulse motion-reduce:animate-none" />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-bold text-white">⛽ Precios MEPCO actualizados hoy</p>
+        <p className="text-sm font-bold text-white">Precios MEPCO actualizados hoy</p>
         <p className="text-xs text-white/85">
           {avgChange > 0
             ? `Variación promedio de $${Math.round(avgChange)} por litro esta semana`
