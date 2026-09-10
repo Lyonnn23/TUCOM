@@ -7,7 +7,7 @@ const MONTH_NAMES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "se
 const MonthlySpendChart = () => {
   const { data, isLoading } = useMonthlySpend(6);
 
-  if (isLoading) return <div className="h-48 rounded-2xl bg-muted animate-pulse" />;
+  if (isLoading) return <div className="h-48 rounded-2xl skeleton-shimmer" />;
   if (!data || data.length === 0) return null;
 
   const chartData = data.map((d) => {

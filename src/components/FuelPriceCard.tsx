@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { TrendingDown, TrendingUp, Minus, Zap, ArrowDown, ArrowUp, Fuel } from "lucide-react";
 import type { FuelPrice } from "@/hooks/useFuelPrices";
 import { formatPrice } from "@/lib/format";
+import FreshnessIndicator from "./FreshnessIndicator";
 
 const LAST_WEEK_KEY = "mepco_last_week";
 
@@ -111,6 +112,7 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
               {formatPrice(fuel.price)}
             </p>
             <p className="text-[10px] text-muted-foreground">{fuel.unit}</p>
+            <FreshnessIndicator updatedAt={fuel.updatedAt} className="mt-1" />
           </div>
         </div>
         <div

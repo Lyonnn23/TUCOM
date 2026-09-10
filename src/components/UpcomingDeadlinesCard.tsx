@@ -33,7 +33,7 @@ export default function UpcomingDeadlinesCard() {
           <Link
             key={`${d.vehicle_id}-${d.doc_type}-${i}`}
             to={`/profile/vehicle/${d.vehicle_id}`}
-            className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 hover:bg-accent transition-colors"
+            className="card-interactive cursor-pointer flex items-center justify-between gap-2 rounded-xl border border-border px-3 py-2 hover:bg-muted/50"
           >
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{LABELS[d.doc_type]}</p>

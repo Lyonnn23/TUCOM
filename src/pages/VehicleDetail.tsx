@@ -14,12 +14,12 @@ export default function VehicleDetail() {
   const vehicle = vehicles.find((v) => v.id === id);
 
   if (isLoading) {
-    return <div className="p-4"><div className="h-40 rounded-2xl bg-muted animate-pulse" /></div>;
+    return <div className="min-h-screen bg-background p-4"><div className="h-40 rounded-2xl skeleton-shimmer" /></div>;
   }
 
   if (!vehicle) {
     return (
-      <div className="p-4 space-y-4 max-w-2xl mx-auto">
+      <div className="min-h-screen bg-background p-4 space-y-5 max-w-2xl mx-auto">
         <Button variant="ghost" onClick={() => navigate("/perfil")}>
           <ArrowLeft className="h-4 w-4 mr-2" />Volver al perfil
         </Button>
@@ -31,7 +31,7 @@ export default function VehicleDetail() {
   }
 
   return (
-    <div className="p-4 space-y-4 max-w-2xl mx-auto pb-24">
+    <div className="min-h-screen bg-background p-4 space-y-5 max-w-2xl mx-auto pb-24">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" asChild aria-label="Volver">
           <Link to="/perfil"><ArrowLeft className="h-4 w-4" /></Link>
@@ -44,7 +44,7 @@ export default function VehicleDetail() {
             <Car className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-semibold text-lg leading-tight truncate">
+            <h1 className="font-heading font-bold text-xl leading-tight truncate">
               {vehicle.nickname || `${vehicle.brand} ${vehicle.model}`}
             </h1>
             <p className="text-xs text-muted-foreground truncate">

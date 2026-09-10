@@ -230,7 +230,7 @@ const Calculadora = () => {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="font-heading font-extrabold text-white text-lg leading-tight">Calculadora</h1>
+              <h1 className="font-heading font-bold text-white text-xl leading-tight">Calculadora</h1>
               <p className="text-[11px] text-white/85">Viaje · Estanque · Comparar</p>
             </div>
           </div>

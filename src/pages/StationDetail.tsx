@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, ExternalLink, Calculator } from "lucide-react";
 import { shareStation, shareViaWhatsApp } from "@/lib/share";
 import { supabase } from "@/integrations/supabase/client";
-import { useGasStations, formatRelativeTime, type GasStation } from "@/hooks/useGasStations";
+import { useGasStations, type GasStation } from "@/hooks/useGasStations";
 import { useAuth } from "@/hooks/useAuth";
 import FavoriteButton from "@/components/FavoriteButton";
 import BrandLogo from "@/components/BrandLogo";
@@ -208,7 +208,7 @@ const StationDetail = () => {
     return (
       <div className="min-h-screen bg-background p-4 space-y-3">
         <Skeleton className="h-12 w-32 rounded-xl" />
-        <Skeleton className="h-40 rounded-3xl" />
+        <Skeleton className="h-40 rounded-2xl skeleton-shimmer" />
         <Skeleton className="h-64 rounded-2xl" />
       </div>
     );

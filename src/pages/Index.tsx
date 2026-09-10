@@ -64,6 +64,7 @@ import { Helmet } from "react-helmet-async";
 import SectionLabel from "@/components/SectionLabel";
 import ProfileCompletionCard from "@/components/ProfileCompletionCard";
 import FreshnessIndicator from "@/components/FreshnessIndicator";
+import { NoStationsFound } from "@/components/EmptyState";
 
 // Google encoded polyline decoder — mirrors the one in RouteModePanel.tsx.
 // Used to rehydrate a route from Calculadora's "tucom_route_mode_init" handoff.
@@ -1250,15 +1251,7 @@ const Index = () => {
               }
               if (filtered.length === 0) {
                 return (
-                  <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
-                    <div className="w-20 h-20 rounded-3xl bg-gradient-primary/10 flex items-center justify-center mb-4">
-                      <Fuel className="w-10 h-10 text-primary" />
-                    </div>
-                    <p className="font-heading font-bold text-foreground">No encontramos estaciones</p>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                      Ajusta los filtros, amplía el radio o intenta otra búsqueda.
-                    </p>
-                  </div>
+                  <NoStationsFound onRetry={() => { setSelectedBrand("all"); setSearchQuery(""); setStationKind("all"); requestLocation(false); }} />
                 );
               }
               if (stationKind === "ev") {
@@ -1305,7 +1298,7 @@ const Index = () => {
                     <div className="mt-4 flex justify-center">
                       <button
                         onClick={() => setStationsLimit((n) => n + 20)}
-                        className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity min-h-11"
+                        className="btn-primary px-5 py-2.5 rounded-xl text-primary-foreground font-semibold text-sm min-h-11"
                         style={{ touchAction: "manipulation" }}
                       >
                         Cargar más ({filtered.length - visible.length} restantes)

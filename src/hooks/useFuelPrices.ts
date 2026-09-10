@@ -8,6 +8,7 @@ export interface FuelPrice {
   unit: string;
   trend: string;
   change: number;
+  updatedAt: string | null;
 }
 
 const FUEL_ORDER: Record<string, number> = {
@@ -33,6 +34,7 @@ export function useFuelPrices() {
           unit: row.unit,
           trend: row.trend || "stable",
           change: Number(row.change_percent) || 0,
+          updatedAt: row.updated_at ?? row.created_at ?? null,
         }))
         .sort((a, b) => (FUEL_ORDER[a.type] ?? 99) - (FUEL_ORDER[b.type] ?? 99));
     },
