@@ -289,8 +289,9 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
       {
         origins: [{ lat: originPlace.lat, lng: originPlace.lng }],
         destinations: [{ lat: destPlace.lat, lng: destPlace.lng }],
-        travelMode: google.maps.TravelMode.DRIVING,
-        unitSystem: google.maps.UnitSystem.METRIC,
+        travelMode: (window as any).google.maps.TravelMode.DRIVING,
+        unitSystem: (window as any).google.maps.UnitSystem.METRIC,
+
       },
       (response, status) => {
         setCalculating(false);
