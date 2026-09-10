@@ -1,8 +1,9 @@
 import { memo, useMemo, useState } from "react";
-import { Trophy, MapPin, Navigation, Fuel, ChevronDown, ChevronUp, Zap, Clock } from "lucide-react";
+import { Trophy, MapPin, Navigation, ChevronDown, ChevronUp, Zap } from "lucide-react";
 import type { GasStation } from "@/hooks/useGasStations";
 import { formatRelativeTime } from "@/hooks/useGasStations";
 import BrandLogo from "./BrandLogo";
+import FreshnessIndicator from "./FreshnessIndicator";
 
 const FUEL_TYPES = [
   { key: "gasoline93" as const, label: "Bencina 93", short: "93" },
@@ -141,16 +142,13 @@ const NearbyRanking = ({ stations, userLocation, onNavigate }: NearbyRankingProp
                           </span>
                         )}
                         {station.lastUpdated && (
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 shrink-0">
-                            <Clock className="w-2.5 h-2.5" />
-                            {formatRelativeTime(station.lastUpdated)}
-                          </span>
+                          <FreshnessIndicator updatedAt={station.lastUpdated} />
                         )}
                       </div>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <p className={`text-sm font-bold ${idx === 0 ? "text-[hsl(var(--fuel-green))]" : "text-foreground"}`}>
+                      <p className={`text-sm font-black tabular-nums ${idx === 0 ? "text-[hsl(var(--fuel-green))]" : "text-foreground"}`}>
                         ${station.prices[activeFuel]}
                       </p>
                       <p className="text-[9px] text-muted-foreground">

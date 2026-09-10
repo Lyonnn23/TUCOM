@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import NavigateSheet from "./NavigateSheet";
 import { getPreferredNavApp, openNavApp } from "@/lib/navigateApp";
-import { MapPin, Navigation, Star, Zap, Clock, CreditCard } from "lucide-react";
+import { MapPin, Navigation, Star, Zap, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
@@ -15,6 +15,7 @@ import { useStationDiscounts } from "@/hooks/useStationDiscounts";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { getBestDiscount, DISCOUNT_DISCLAIMER } from "@/lib/discounts";
+import FreshnessIndicator from "./FreshnessIndicator";
 
 export type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
 export type PriceTier = "low" | "mid" | "high";
@@ -111,7 +112,7 @@ const headline =
           navigate(`/station/${station.id}`);
         }
       }}
-      className={`group relative rounded-2xl bg-card/80 backdrop-blur-sm ring-1 ring-border/50 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.99] overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+      className={`card-interactive group relative rounded-2xl bg-card border border-border shadow-soft overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
         featured ? `ring-1 ${style.ring}` : ""
       }`}
     >
@@ -248,27 +249,7 @@ const headline =
               <span className="opacity-70 ml-0.5">({rating.count})</span>
             </span>
           )}
-          {station.lastUpdated && (() => {
-            const ageDays = Math.floor(
-              (Date.now() - new Date(station.lastUpdated).getTime()) / 86_400_000,
-            );
-            const ageClass =
-              ageDays > 14
-                ? "text-fuel-red"
-                : ageDays > 7
-                  ? "text-fuel-amber"
-                  : "text-muted-foreground";
-            const label =
-              ageDays <= 0
-                ? "Actualizado hoy"
-                : `Actualizado: hace ${ageDays} ${ageDays === 1 ? "día" : "días"}`;
-            return (
-              <span className={`inline-flex items-center gap-1 text-[10px] ml-auto ${ageClass}`}>
-                <Clock className="w-2.5 h-2.5" aria-hidden="true" />
-                <span>{label}</span>
-              </span>
-            );
-          })()}
+          <FreshnessIndicator updatedAt={station.lastUpdated} className="ml-auto" />
         {lastCommunityReport && (
           <div className="mt-2">
             <CommunityReportBadge reportedAt={lastCommunityReport} />

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, Clock, ExternalLink, Calculator } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation, Share2, Zap, Star, ExternalLink, Calculator } from "lucide-react";
 import { shareStation, shareViaWhatsApp } from "@/lib/share";
 import { supabase } from "@/integrations/supabase/client";
 import { useGasStations, formatRelativeTime, type GasStation } from "@/hooks/useGasStations";
@@ -20,6 +20,8 @@ import { toast } from "sonner";
 import PriceTrendChart from "@/components/macro/PriceTrendChart";
 import NavigateSheet from "@/components/NavigateSheet";
 import { getPreferredNavApp, openNavApp } from "@/lib/navigateApp";
+import FreshnessIndicator from "@/components/FreshnessIndicator";
+import EmptyState from "@/components/EmptyState";
 
 import {
   LineChart,
@@ -215,11 +217,7 @@ const StationDetail = () => {
   if (!station) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center">
-        <p className="font-heading font-bold text-foreground text-lg">Estación no encontrada</p>
-        <p className="text-sm text-muted-foreground mt-1 mb-4">
-          Es posible que ya no esté disponible.
-        </p>
-        <Button onClick={() => navigate("/")}>Volver al inicio</Button>
+        <EmptyState title="Estación no encontrada" description="Es posible que ya no esté disponible." action={{ label: "Volver al inicio", onClick: () => navigate("/") }} />
       </div>
     );
   }
@@ -363,9 +361,7 @@ const StationDetail = () => {
               </span>
             )}
             {station.lastUpdated && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-white/80 ml-auto">
-                <Clock className="w-3 h-3" /> {formatRelativeTime(station.lastUpdated)}
-              </span>
+              <FreshnessIndicator updatedAt={station.lastUpdated} inverse className="ml-auto" />
             )}
           </div>
 
@@ -408,7 +404,7 @@ const StationDetail = () => {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+      <main className="max-w-3xl mx-auto px-4 py-5 space-y-5 animate-fade-in">
         {/* Map preview + distance */}
         <section className="bg-card border border-border rounded-2xl shadow-soft p-4 space-y-3">
           <StationStaticMap
@@ -428,7 +424,7 @@ const StationDetail = () => {
         {/* Prices table */}
         <section className="bg-card border border-border rounded-2xl shadow-soft overflow-hidden">
           <div className="px-5 py-4 border-b border-border">
-            <h2 className="font-heading font-bold text-foreground">Precios por combustible</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Precios por combustible</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Precio por litro · CLP</p>
           </div>
           <div className="divide-y divide-border">
@@ -442,9 +438,10 @@ const StationDetail = () => {
                     </div>
                     <span className="text-sm font-medium text-foreground">Gasolina {row.label}</span>
                   </div>
-                  <span className="font-heading font-extrabold text-2xl tabular-nums text-accent">
-                    ${price || "—"}
-                  </span>
+                   <div className="text-right">
+                     <span className="font-heading font-black text-2xl tabular-nums text-accent">${price || "—"}</span>
+                     <FreshnessIndicator updatedAt={station.lastUpdated} className="justify-end mt-0.5" />
+                   </div>
                 </div>
               );
             })}
