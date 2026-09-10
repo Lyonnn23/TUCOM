@@ -446,88 +446,14 @@ const Calculadora = () => {
 
           {/* ============== MODO VIAJE ============== */}
           <TabsContent value="viaje" className="space-y-4 mt-4">
-            <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
-              <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" aria-hidden="true" /> Tu viaje
-              </h2>
+            <TripPlanner
+              fuelType={fuelType}
+              fuelLabel={fuelLabel(fuelType)}
+              consumption={consumption}
+              pricePerUnit={cheapestPrice}
+              vehicleName={primaryVehicle?.nickname ?? (primaryVehicle ? `${primaryVehicle.brand} ${primaryVehicle.model}` : null)}
+            />
 
-              <div>
-                <Label className="text-xs">Origen</Label>
-                <div className="mt-1 space-y-2">
-                  <PlacesAutocomplete
-                    placeholder="¿Desde dónde sales?"
-                    initialValue={origin?.label ?? ""}
-                    bias={gps ?? undefined}
-                    onSelect={(p) => setOrigin(p)}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={useMyLocation}
-                    className="rounded-xl h-9"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    <LocateFixed className="w-3.5 h-3.5 mr-1" /> Usar mi ubicación
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs">Destino</Label>
-                <div className="mt-1">
-                  <PlacesAutocomplete
-                    placeholder="¿A dónde vas?"
-                    initialValue={dest?.label ?? ""}
-                    bias={origin ?? gps ?? undefined}
-                    onSelect={(p) => { setDest(p); setSelectedCity(null); }}
-                  />
-                </div>
-              </div>
-
-              {/* City shortcuts + direct km */}
-              <div className="space-y-2">
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_DESTINATIONS.slice(0, 5).map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => handleCityPill(c)}
-                      style={{ touchAction: "manipulation", minHeight: 36 }}
-                      className={`text-[11px] font-semibold px-2.5 rounded-full transition-colors ${
-                        selectedCity === c.label
-                          ? "bg-primary text-primary-foreground ring-2 ring-primary/50"
-                          : "bg-primary/15 text-primary hover:bg-primary/25"
-                      }`}
-                    >
-                      {c.label} · {c.km}km
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    value={kmValue}
-                    onChange={(e) => { setKmValue(e.target.value); setSelectedCity(null); }}
-                    onKeyDown={(e) => e.key === "Enter" && calculateTripKm(Number(kmValue), selectedCity)}
-                    placeholder="Distancia aproximada (km)"
-                    aria-label="Distancia aproximada en kilómetros"
-                    className="h-11 rounded-xl flex-1"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => calculateTripKm(Number(kmValue), selectedCity)}
-                    disabled={!kmValue || Number(kmValue) <= 0}
-                    className="h-11 rounded-xl bg-primary text-primary-foreground"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    Calcular
-                  </Button>
-                </div>
-              </div>
-            </section>
 
             <section className="bg-card border border-border rounded-2xl p-4 space-y-3 shadow-soft">
               <h2 className="font-heading font-bold text-foreground text-sm flex items-center gap-2">
