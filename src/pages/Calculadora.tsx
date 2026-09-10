@@ -489,43 +489,79 @@ const Calculadora = () => {
             </section>
 
             {/* Prices */}
-            <section className="grid grid-cols-2 gap-2">
-              {[
-                { side: "A" as const, label: labelA, price: priceA, editing: editingA, setEditing: setEditingA, override: priceAOverride, setOverride: setPriceAOverride, auto: autoPriceA },
-                { side: "B" as const, label: labelB, price: priceB, editing: editingB, setEditing: setEditingB, override: priceBOverride, setOverride: setPriceBOverride, auto: autoPriceB },
-              ].map((p) => (
-                <div key={p.side} className={`rounded-2xl p-3 text-center border ${p.side === "A" ? "bg-card border-border" : "bg-primary/5 border-primary/30"}`}>
-                  <p className={`text-[10px] uppercase tracking-wider font-bold ${p.side === "A" ? "text-muted-foreground" : "text-primary"}`}>Precio {p.side} · {p.label}</p>
-                  {p.editing ? (
-                    <Input
-                      autoFocus
-                      type="number"
-                      inputMode="numeric"
-                      value={p.price || ""}
-                      onChange={(e) => p.setOverride(Number(e.target.value) || 0)}
-                      onBlur={() => p.setEditing(false)}
-                      onKeyDown={(e) => { if (e.key === "Enter") p.setEditing(false); }}
-                      className="h-10 mt-1 rounded-xl text-center tabular-nums"
-                    />
+            <section className="grid grid-cols-[1fr_auto_1fr] gap-2 items-stretch">
+              {/* Card A */}
+              <div className="bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-2xl p-4 shadow-lg shadow-violet-500/30 flex flex-col justify-center text-center">
+                <p className="text-white/80 text-xs font-bold tracking-widest uppercase">⛽ Combustible A · {labelA}</p>
+                {editingA ? (
+                  <Input
+                    autoFocus
+                    type="number"
+                    inputMode="numeric"
+                    value={priceA || ""}
+                    onChange={(e) => setPriceAOverride(Number(e.target.value) || 0)}
+                    onBlur={() => setEditingA(false)}
+                    onKeyDown={(e) => { if (e.key === "Enter") setEditingA(false); }}
+                    className="h-10 mt-1 rounded-xl text-center tabular-nums bg-white/20 border-white/30 text-white placeholder:text-white/50"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditingA(true)}
+                    className="block w-full font-heading font-black text-3xl tabular-nums text-white mt-1 hover:opacity-90"
+                    aria-label="Editar precio A"
+                  >
+                    {formatPrice(priceA)}<span className="text-xs text-white/70 font-normal">/L</span>
+                  </button>
+                )}
+                <p className="text-white/70 text-xs mt-1">
+                  {priceAOverride != null ? (
+                    <button type="button" onClick={() => setPriceAOverride(null)} className="underline">Volver al automático</button>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => p.setEditing(true)}
-                      className="block w-full font-heading font-extrabold text-2xl tabular-nums text-foreground mt-1 hover:opacity-80"
-                      aria-label={`Editar precio ${p.side}`}
-                    >
-                      {formatPrice(p.price)}<span className="text-xs text-muted-foreground font-normal">/L</span>
-                    </button>
+                    "📍 Estación más barata cercana"
                   )}
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    {p.override != null ? (
-                      <button type="button" onClick={() => p.setOverride(null)} className="underline">Volver al automático</button>
-                    ) : (
-                      "Estación más barata cercana"
-                    )}
-                  </p>
-                </div>
-              ))}
+                </p>
+              </div>
+
+              {/* VS badge */}
+              <div className="flex items-center justify-center">
+                <span className="bg-background border-2 border-border rounded-full w-8 h-8 flex items-center justify-center text-xs font-black text-muted-foreground shadow-sm">
+                  VS
+                </span>
+              </div>
+
+              {/* Card B */}
+              <div className="bg-gradient-to-br from-orange-500 to-rose-500 text-white rounded-2xl p-4 shadow-lg shadow-orange-500/30 flex flex-col justify-center text-center">
+                <p className="text-white/80 text-xs font-bold tracking-widest uppercase">⛽ Combustible B · {labelB}</p>
+                {editingB ? (
+                  <Input
+                    autoFocus
+                    type="number"
+                    inputMode="numeric"
+                    value={priceB || ""}
+                    onChange={(e) => setPriceBOverride(Number(e.target.value) || 0)}
+                    onBlur={() => setEditingB(false)}
+                    onKeyDown={(e) => { if (e.key === "Enter") setEditingB(false); }}
+                    className="h-10 mt-1 rounded-xl text-center tabular-nums bg-white/20 border-white/30 text-white placeholder:text-white/50"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditingB(true)}
+                    className="block w-full font-heading font-black text-3xl tabular-nums text-white mt-1 hover:opacity-90"
+                    aria-label="Editar precio B"
+                  >
+                    {formatPrice(priceB)}<span className="text-xs text-white/70 font-normal">/L</span>
+                  </button>
+                )}
+                <p className="text-white/70 text-xs mt-1">
+                  {priceBOverride != null ? (
+                    <button type="button" onClick={() => setPriceBOverride(null)} className="underline">Volver al automático</button>
+                  ) : (
+                    "📍 Estación más barata cercana"
+                  )}
+                </p>
+              </div>
             </section>
 
             {/* Litros input */}
@@ -549,7 +585,7 @@ const Calculadora = () => {
             </section>
 
             {/* Result */}
-            <section className="rounded-3xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(238_84%_67%)] text-white p-5 shadow-glow space-y-3">
+            <section className="rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-5 shadow-xl shadow-emerald-500/30 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-white/80 font-bold">Costo {labelA}</p>
@@ -560,10 +596,9 @@ const Calculadora = () => {
                   <p className="font-heading font-extrabold text-2xl tabular-nums">{formatPrice(costB)}</p>
                 </div>
               </div>
-              <div className="border-t border-white/20 pt-2">
-                <p className="text-[11px] text-white/85">Diferencia por estanque</p>
-                <p className="font-heading font-extrabold text-xl tabular-nums">
-                  {tankDiff === 0
+              <div className="border-t border-white/20 pt-2 text-center">
+                <p className="font-bold">
+                  💡 Diferencia: {tankDiff === 0
                     ? "Mismo costo"
                     : `${formatPrice(Math.abs(tankDiff))} más ${tankDiff > 0 ? "caro" : "barato"} usar ${labelB}`}
                 </p>
@@ -592,9 +627,8 @@ const Calculadora = () => {
                   <p className="font-heading font-bold text-foreground tabular-nums">{formatPrice(annualB)}</p>
                 </div>
               </div>
-              <div className="rounded-xl bg-primary/10 border border-primary/30 p-3 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Diferencia anual</p>
-                <p className="font-heading font-extrabold text-2xl tabular-nums text-primary">{formatPrice(annualDiff)}</p>
+              <div className="bg-gradient-to-r from-amber-400 to-orange-400 text-white rounded-2xl p-3 text-center shadow-md mt-2">
+                <p className="font-bold">📅 En un año ahorras: {formatPrice(annualDiff)}</p>
               </div>
             </section>
 
