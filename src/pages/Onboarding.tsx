@@ -1,18 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Fuel, MapPin, Bell, Check, Car, CreditCard } from "lucide-react";
+import { Fuel, MapPin, Check, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { useUserVehicles } from "@/hooks/useUserVehicles";
-import { VEHICLE_PRESETS, VEHICLE_COLORS } from "@/lib/vehiclePresets";
 import { cn } from "@/lib/utils";
-import PaymentMethodsPicker from "@/components/PaymentMethodsPicker";
 
 const FUELS = [
   { key: "gasoline93", label: "93", desc: "Bencina 93" },
@@ -25,14 +18,10 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { preferences, save, defaults } = useUserPreferences();
-  const { create: createVehicle, vehicles } = useUserVehicles();
-
   const [step, setStep] = useState(0);
   const [fuel, setFuel] = useState(defaults.preferred_fuel);
-  const [radius, setRadius] = useState(defaults.search_radius_km);
-  const [vehiclePresetIdx, setVehiclePresetIdx] = useState<string>("skip");
-  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [requestingLocation, setRequestingLocation] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate("/welcome", { replace: true });
@@ -42,38 +31,13 @@ const Onboarding = () => {
     if (preferences?.onboarding_completed) navigate("/", { replace: true });
   }, [preferences, navigate]);
 
-  const saveVehicleIfSelected = async () => {
-    if (vehiclePresetIdx === "skip") return;
-    if ((vehicles?.length ?? 0) > 0) return;
-    const preset = VEHICLE_PRESETS[Number(vehiclePresetIdx)];
-    if (!preset) return;
-    try {
-      await createVehicle.mutateAsync({
-        nickname: null,
-        brand: preset.brand,
-        model: preset.model,
-        year: null,
-        fuel_type: preset.fuel_type,
-        tank_size_l: preset.tank_size_l,
-        consumption_kml: preset.consumption_kml,
-        color: VEHICLE_COLORS[0],
-        is_primary: true,
-      });
-    } catch {
-      // no bloquear el onboarding si falla
-    }
-  };
-
-  const finish = async (notificationsEnabled: boolean) => {
+  const finish = async () => {
     setSaving(true);
     try {
-      await saveVehicleIfSelected();
       await save({
         preferred_fuel: fuel,
-        search_radius_km: radius,
-        notifications_enabled: notificationsEnabled,
+        search_radius_km: 10,
         onboarding_completed: true,
-        payment_methods: paymentMethods,
       });
       toast.success("¡Listo! Mostrándote las más baratas cerca tuyo");
       navigate("/", { replace: true });
@@ -84,24 +48,27 @@ const Onboarding = () => {
     }
   };
 
-  const requestNotifications = async () => {
-    let granted = false;
-    try {
-      if ("Notification" in window) {
-        const permission = await Notification.requestPermission();
-        granted = permission === "granted";
-      }
-    } catch {}
-    if (granted) toast.success("Notificaciones activadas");
-    await finish(granted);
+  const requestLocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.info("Puedes activar tu ubicación más tarde desde Inicio");
+      return;
+    }
+    setRequestingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        setRequestingLocation(false);
+        toast.success("Ubicación activada");
+      },
+      () => {
+        setRequestingLocation(false);
+        toast.info("Puedes activarla más tarde desde Inicio");
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+    );
   };
 
-  const TOTAL_STEPS = 5;
+  const TOTAL_STEPS = 2;
   const next = () => setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1));
-  const skip = () => {
-    if (step < TOTAL_STEPS - 1) next();
-    else finish(false);
-  };
 
   const steps = [
     {
@@ -111,23 +78,8 @@ const Onboarding = () => {
     },
     {
       icon: MapPin,
-      title: "¿Cuánto radio quieres buscar?",
-      subtitle: "Te mostraremos estaciones dentro de esta distancia.",
-    },
-    {
-      icon: Car,
-      title: "¿Cuál es tu auto?",
-      subtitle: "Lo usaremos para calcular el costo de tus viajes.",
-    },
-    {
-      icon: CreditCard,
-      title: "¿Qué tarjetas o apps usas?",
-      subtitle: "Te mostraremos el precio real con tu mejor descuento.",
-    },
-    {
-      icon: Bell,
-      title: "Activa notificaciones",
-      subtitle: "Avísate cuando bajen los precios cerca de ti.",
+      title: "Encuentra lo más barato cerca",
+      subtitle: "Tu ubicación se usa solo para ordenar estaciones y calcular distancias. Nunca se comparte.",
     },
   ];
 
@@ -141,12 +93,7 @@ const Onboarding = () => {
         <span className="text-xs font-medium text-muted-foreground">
           Paso {step + 1} de {TOTAL_STEPS}
         </span>
-        <button
-          onClick={skip}
-          className="text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Omitir
-        </button>
+        <span className="text-xs font-semibold text-primary">Configuración esencial</span>
       </div>
 
       {/* Content */}
@@ -192,64 +139,16 @@ const Onboarding = () => {
         )}
 
         {step === 1 && (
-          <div className="w-full">
-            <div className="text-center mb-6">
-              <div className="text-5xl font-extrabold font-heading text-gradient-primary tabular-nums">
-                {radius}
-                <span className="text-xl text-muted-foreground ml-1">km</span>
-              </div>
+          <div className="w-full bg-card border border-border rounded-2xl p-5 text-center space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+              <LocateFixed className="w-6 h-6" />
             </div>
-            <Slider
-              value={[radius]}
-              min={1}
-              max={50}
-              step={1}
-              onValueChange={(v) => setRadius(v[0])}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>1 km</span>
-              <span>50 km</span>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="w-full space-y-3">
-            <Select value={vehiclePresetIdx} onValueChange={setVehiclePresetIdx}>
-              <SelectTrigger className="h-12 rounded-xl">
-                <SelectValue placeholder="Selecciona tu auto" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="skip">Prefiero configurarlo después</SelectItem>
-                {VEHICLE_PRESETS.map((p, i) => (
-                  <SelectItem key={`${p.brand}-${p.model}-${i}`} value={String(i)}>
-                    {p.brand} {p.model} · {p.consumption_kml} km/L
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground text-center">
-              Podrás editarlo o agregar más autos desde tu perfil.
-            </p>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="w-full space-y-3">
-            <PaymentMethodsPicker value={paymentMethods} onChange={setPaymentMethods} />
-            <p className="text-xs text-muted-foreground text-center">
-              Puedes cambiar esto en tu perfil cuando quieras.
-            </p>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="w-full rounded-2xl border border-border bg-card p-5 text-center">
-            <p className="text-sm text-muted-foreground">
-              Te enviaremos alertas cuando alguna estación cercana baje de tu precio objetivo.
-              Puedes cambiarlo cuando quieras.
-            </p>
+            <p className="text-sm text-foreground">Usaremos un radio fijo de 10 km para mostrar precios relevantes y cercanos.</p>
+            <Button type="button" variant="outline" onClick={requestLocation} disabled={requestingLocation} className="w-full h-11 rounded-xl">
+              <MapPin className="w-4 h-4" />
+              {requestingLocation ? "Buscando ubicación…" : "Activar ubicación"}
+            </Button>
+            <p className="text-xs text-muted-foreground">También puedes continuar y activarla después.</p>
           </div>
         )}
       </div>
@@ -268,31 +167,17 @@ const Onboarding = () => {
           ))}
         </div>
 
-        {step < TOTAL_STEPS - 1 ? (
+        {step === 0 ? (
           <Button
             onClick={next}
-            className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant hover-scale"
+            className="btn-primary w-full h-12 rounded-xl"
           >
             Siguiente
           </Button>
         ) : (
-          <div className="space-y-2">
-            <Button
-              onClick={requestNotifications}
-              disabled={saving}
-              className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant hover-scale"
-            >
-              {saving ? "Guardando..." : "Activar notificaciones"}
-            </Button>
-            <Button
-              onClick={() => finish(false)}
-              variant="ghost"
-              disabled={saving}
-              className="w-full h-11 rounded-xl"
-            >
-              Ahora no
-            </Button>
-          </div>
+          <Button onClick={finish} disabled={saving} className="btn-primary w-full h-12 rounded-xl">
+            {saving ? "Guardando…" : "Listo, ¡a ahorrar!"}
+          </Button>
         )}
       </div>
     </div>

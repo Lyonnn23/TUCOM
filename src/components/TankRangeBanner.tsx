@@ -1,36 +1,31 @@
-import { Fuel } from "lucide-react";
+import { AlertTriangle, X } from "lucide-react";
 import { useTankRange } from "@/hooks/useTankRange";
-import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 
-const TankRangeBanner = () => {
+const TankRangeBanner = ({ onActivate }: { onActivate?: () => void }) => {
   const range = useTankRange();
-  const { preferences } = useUserPreferences();
-  const threshold = preferences?.low_fuel_threshold_km ?? 80;
+  const [dismissed, setDismissed] = useState(false);
 
-  if (!range) return null;
-  if (range.remainingKm > threshold) return null;
+  if (!range || range.remainingKm >= 50 || dismissed) return null;
 
   return (
-    <Link
-      to="/?tab=stations&sort=price"
-      className="block bg-gradient-primary text-primary-foreground rounded-2xl p-4 shadow-elegant press-scale"
+    <div
+      className="relative bg-gradient-to-r from-orange-500 to-rose-500 text-primary-foreground rounded-2xl p-4 pr-12 shadow-elegant"
       aria-label="Te queda poco combustible, ver estaciones cercanas"
     >
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-          <Fuel className="w-5 h-5" aria-hidden="true" />
+      <button type="button" onClick={onActivate} className="card-interactive w-full cursor-pointer text-left flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-primary-foreground/15 flex items-center justify-center">
+          <AlertTriangle className="w-5 h-5" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold">
-            Te quedan ~{range.remainingKm} km estimados
-          </p>
-          <p className="text-xs opacity-90">
-            Toca para ver estaciones más baratas cerca tuyo.
-          </p>
+          <p className="text-sm font-semibold">Bencina baja · ~{range.remainingKm} km</p>
+          <p className="text-xs opacity-90">Ver estaciones cercanas ahora</p>
         </div>
-      </div>
-    </Link>
+      </button>
+      <button type="button" onClick={() => setDismissed(true)} className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl hover:bg-primary-foreground/15" aria-label="Ocultar aviso durante esta sesión">
+        <X className="h-4 w-4 mx-auto" />
+      </button>
+    </div>
   );
 };
 

@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/format";
 import { brandColor } from "@/lib/brandColors";
 import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Calculator, Car, CheckCircle2, Clock3, Fuel, Loader2, LocateFixed, MapPin, Navigation, Route } from "lucide-react";
 
 export type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
 
@@ -312,7 +312,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
     <div className="space-y-3">
       {/* ORIGEN */}
       <div className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white rounded-2xl p-4 shadow-lg space-y-3">
-        <h3 className="font-bold text-white">📍 ¿Desde dónde sales?</h3>
+        <h3 className="text-base font-semibold text-white flex items-center gap-2"><MapPin className="h-4 w-4" /> ¿Desde dónde sales?</h3>
         <PlaceField
           placeholder="Dirección, comuna o lugar"
           value={originText}
@@ -322,10 +322,10 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
         <button
           type="button"
           onClick={useMyLocation}
-          className="bg-white text-violet-600 font-bold rounded-full px-4 py-2 text-sm shadow-md active:scale-95 transition-transform"
+          className="bg-primary-foreground text-primary font-bold rounded-xl px-4 py-2 text-sm shadow-md press-scale inline-flex items-center gap-2"
           style={{ touchAction: "manipulation" }}
         >
-          🎯 Usar mi ubicación
+          <LocateFixed className="h-4 w-4" /> Usar mi ubicación
         </button>
       </div>
 
@@ -333,14 +333,14 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
       <div className="flex items-center justify-center py-1">
         <div className="flex flex-col items-center gap-1">
           <div className="w-0.5 h-4 bg-border" />
-          <span className="text-xl">🚗</span>
+          <Car className="h-5 w-5 text-primary" />
           <div className="w-0.5 h-4 bg-border" />
         </div>
       </div>
 
       {/* DESTINO */}
       <div className="bg-gradient-to-br from-orange-500 to-rose-500 text-white rounded-2xl p-4 shadow-lg space-y-3">
-        <h3 className="font-bold text-white">🏁 ¿A dónde vas?</h3>
+        <h3 className="text-base font-semibold text-white flex items-center gap-2"><Navigation className="h-4 w-4" /> ¿A dónde vas?</h3>
         <PlaceField
           placeholder="Dirección, comuna o lugar"
           value={destText}
@@ -352,7 +352,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
 
       {/* PILLS */}
       <div>
-        <p className="text-sm font-semibold text-muted-foreground mb-2">⚡ Rutas rápidas desde Santiago</p>
+        <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Rutas rápidas desde Santiago</p>
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
           {CHILE_CITIES.map((c) => (
             <button
@@ -378,37 +378,37 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
         onClick={calculateRealDistance}
         disabled={calculating || !originPlace || !destPlace}
         style={{ touchAction: "manipulation" }}
-        className="w-full bg-gradient-to-r from-violet-600 to-orange-500 text-white font-bold rounded-2xl py-4 text-base shadow-lg shadow-violet-500/30 active:scale-[0.98] transition-transform disabled:opacity-50"
+        className="btn-primary w-full text-primary-foreground font-bold rounded-2xl py-4 text-base disabled:opacity-50 inline-flex items-center justify-center gap-2"
       >
-        {calculating ? "Calculando..." : "⚡ Calcular ruta"}
+        {calculating ? <><Loader2 className="h-4 w-4 animate-spin" /> Calculando…</> : <><Calculator className="h-4 w-4" /> Calcular ruta</>}
       </button>
 
       {/* RESULTADO */}
       {result && (
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl p-5 shadow-xl shadow-emerald-500/30 mt-4 animate-scale-in">
-          <h3 className="font-bold text-lg mb-4">✅ Tu ruta calculada</h3>
+        <div className="bg-gradient-success text-primary-foreground rounded-2xl p-5 shadow-elegant mt-4 animate-scale-in">
+          <h3 className="text-base font-semibold mb-4 flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /> Tu ruta calculada</h3>
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-white/20 rounded-xl p-3 text-center">
-              <div className="text-xl">🛣️</div>
-              <div className="font-bold tabular-nums">{result.km.toLocaleString("es-CL")} km</div>
-              <div className="text-xs text-white/80">kilómetros</div>
+              <Route className="h-5 w-5 mx-auto mb-1" />
+              <div className="font-black tabular-nums">{result.km.toLocaleString("es-CL")} km</div>
+              <div className="text-xs text-primary-foreground/80">kilómetros</div>
             </div>
             <div className="bg-white/20 rounded-xl p-3 text-center">
-              <div className="text-xl">⏱️</div>
-              <div className="font-bold tabular-nums">
+              <Clock3 className="h-5 w-5 mx-auto mb-1" />
+              <div className="font-black tabular-nums">
                 {result.hours != null ? `${result.hours}h ${result.mins}min` : "—"}
               </div>
-              <div className="text-xs text-white/80">tiempo estimado</div>
+              <div className="text-xs text-primary-foreground/80">tiempo estimado</div>
             </div>
             <div className="bg-white/20 rounded-xl p-3 text-center">
-              <div className="text-xl">⛽</div>
-              <div className="font-bold tabular-nums">{result.liters.toFixed(1)} {unit}</div>
-              <div className="text-xs text-white/80">{isElectric ? "energía necesaria" : "litros necesarios"}</div>
+              <Fuel className="h-5 w-5 mx-auto mb-1" />
+              <div className="font-black tabular-nums">{result.liters.toFixed(1)} {unit}</div>
+              <div className="text-xs text-primary-foreground/80">{isElectric ? "energía necesaria" : "litros necesarios"}</div>
             </div>
             <div className="bg-white/20 rounded-xl p-3 text-center">
-              <div className="text-xl">💰</div>
-              <div className="font-bold tabular-nums">{formatPrice(result.cost)}</div>
-              <div className="text-xs text-white/80">costo total</div>
+              <Calculator className="h-5 w-5 mx-auto mb-1" />
+              <div className="font-black tabular-nums">{formatPrice(result.cost)}</div>
+              <div className="text-xs text-primary-foreground/80">costo total</div>
             </div>
           </div>
           <p className="text-white/70 text-xs text-center mt-2">
@@ -423,7 +423,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
       {/* ESTACIÓN EN DESTINO */}
       {result && destPlace && (
         <div className="bg-card border border-border rounded-2xl p-4 mt-3">
-          <h4 className="font-semibold text-sm mb-2">⛽ Estación más barata en destino</h4>
+          <h4 className="text-base font-semibold mb-2 flex items-center gap-2"><Fuel className="h-4 w-4 text-primary" /> Estación más barata en destino</h4>
           {stationLoading ? (
             <p className="text-muted-foreground text-sm text-center">Buscando…</p>
           ) : destStation ? (
@@ -454,14 +454,14 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
                   )
                 }
                 style={{ touchAction: "manipulation" }}
-                className="w-full mt-2 bg-primary text-primary-foreground rounded-full px-4 py-2 text-sm font-semibold active:scale-95 transition-transform"
+                className="btn-primary w-full mt-3 text-primary-foreground rounded-xl px-4 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2"
               >
-                Cómo llegar 🗺️
+                <Navigation className="h-4 w-4" /> Cómo llegar
               </button>
             </>
           ) : (
             <p className="text-muted-foreground text-sm text-center">
-              📍 Busca estaciones al llegar a destino
+              Busca estaciones al llegar a destino
             </p>
           )}
         </div>
@@ -485,7 +485,7 @@ const TripPlanner = (props: Props) => {
 
   if (!apiKey) {
     return (
-      <div className="rounded-2xl bg-muted/40 h-64 animate-pulse" aria-label="Cargando calculadora de viaje" />
+      <div className="rounded-2xl h-64 skeleton-shimmer" aria-label="Cargando calculadora de viaje" />
     );
   }
 

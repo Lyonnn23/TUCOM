@@ -44,6 +44,9 @@
     --gradient-primary-soft: linear-gradient(135deg, hsl(262 83% 58% / 0.92), hsl(239 84% 67% / 0.92));
     --gradient-hero: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(250 84% 62%) 50%, hsl(239 84% 67%) 100%);
     --gradient-amber: linear-gradient(135deg, hsl(38 92% 50%), hsl(28 95% 55%));
+    --gradient-success: linear-gradient(135deg, hsl(158 65% 42%), hsl(173 75% 34%));
+    --gradient-attention: linear-gradient(135deg, hsl(43 96% 56%), hsl(28 95% 55%));
+    --gradient-urgent: linear-gradient(135deg, hsl(25 95% 53%), hsl(347 77% 50%));
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(222 25% 12% / 0.04);
@@ -146,7 +149,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    letter-spacing: -0.015em;
+    letter-spacing: 0;
   }
 
   .tabular-nums { font-variant-numeric: tabular-nums; }
@@ -156,6 +159,9 @@
   .bg-gradient-primary { background-image: var(--gradient-primary); }
   .bg-gradient-hero { background-image: var(--gradient-hero); }
   .bg-gradient-amber { background-image: var(--gradient-amber); }
+  .bg-gradient-success { background-image: var(--gradient-success); }
+  .bg-gradient-attention { background-image: var(--gradient-attention); }
+  .bg-gradient-urgent { background-image: var(--gradient-urgent); }
   .text-gradient-primary {
     background-image: var(--gradient-primary);
     -webkit-background-clip: text;
@@ -169,7 +175,8 @@
 
   /* Interactive */
   .hover-scale { @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.96]; }
-  .press-scale { @apply transition-transform duration-150 hover:scale-[1.02] active:scale-[0.96]; }
+  .press-scale { @apply transition-transform duration-150 active:scale-[0.96]; }
+  .card-interactive { @apply cursor-pointer transition-transform duration-150 active:scale-[0.98]; }
   .tap-feedback { @apply transition-transform duration-100 active:scale-[0.96]; }
 
   /* Staggered list item entrance: use with style={{ animationDelay }} */
@@ -326,7 +333,7 @@ button, a, [role="button"] {
 /* ---- Global interaction polish ------------------------------------------ */
 
 /* Spring physics for interactive elements (transform/opacity only) */
-button, a, [role="button"], [role="tab"] {
+button, a[role="button"], [role="button"], [role="tab"], .card-interactive {
   transition:
     transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 150ms ease,
@@ -335,7 +342,7 @@ button, a, [role="button"], [role="tab"] {
 }
 button:not(:disabled):active,
 [role="button"]:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 button:disabled { cursor: not-allowed; }
 
@@ -371,7 +378,7 @@ input:focus, textarea:focus, select:focus {
 
 /* Primary button gradient + glow */
 .btn-primary,
-button[class*="bg-primary"] {
+.btn-primary {
   background-image: var(--gradient-primary);
   box-shadow: 0 4px 15px hsl(var(--primary) / 0.3);
   transition:
@@ -379,11 +386,11 @@ button[class*="bg-primary"] {
     transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .btn-primary:hover,
-button[class*="bg-primary"]:hover {
+.btn-primary:hover {
   box-shadow: 0 6px 25px hsl(var(--primary) / 0.45);
 }
 .btn-primary:not(:disabled):active,
-button[class*="bg-primary"]:not(:disabled):active {
+.btn-primary:not(:disabled):active {
   transform: scale(0.97);
   box-shadow: 0 2px 8px hsl(var(--primary) / 0.3);
 }

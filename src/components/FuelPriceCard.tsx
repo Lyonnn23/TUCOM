@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from "react";
-import { TrendingDown, TrendingUp, Minus, Zap, ArrowDown, ArrowUp } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, Zap, ArrowDown, ArrowUp, Fuel } from "lucide-react";
 import type { FuelPrice } from "@/hooks/useFuelPrices";
 import { formatPrice } from "@/lib/format";
+import FreshnessIndicator from "./FreshnessIndicator";
 
 const LAST_WEEK_KEY = "mepco_last_week";
 
@@ -28,26 +29,9 @@ interface FuelPriceCardProps {
   fuel: FuelPrice;
 }
 
-const fuelColors: Record<string, string> = {
-  gasoline93: "from-fuel-cyan/20 to-fuel-blue/10 border-fuel-cyan/30",
-  gasoline95: "from-fuel-purple/20 to-fuel-pink/10 border-fuel-purple/30",
-  gasoline97: "from-fuel-pink/20 to-fuel-amber/10 border-fuel-pink/30",
-  diesel: "from-fuel-green/20 to-fuel-cyan/10 border-fuel-green/30",
-  electric: "from-[hsl(142,70%,45%)]/20 to-[hsl(160,60%,40%)]/10 border-[hsl(142,70%,45%)]/30",
-};
-
-const fuelEmoji: Record<string, string | null> = {
-  gasoline93: "⛽",
-  gasoline95: "⛽",
-  gasoline97: "⛽",
-  diesel: "🛢️",
-  electric: null, // Use icon instead
-};
-
 const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
   const trendUp = fuel.trend === "up";
   const trendDown = fuel.trend === "down";
-  const colorClass = fuelColors[fuel.type] ?? "from-muted to-muted border-border";
   const isElectric = fuel.type === "electric";
 
   const trendLabel = trendUp ? "Subió" : trendDown ? "Bajó" : "Estable";
@@ -104,7 +88,7 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
 
   return (
     <article
-      className={`bg-gradient-to-br ${colorClass} backdrop-blur-sm rounded-2xl p-4 border border-black/5 dark:border-white/10 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-elegant`}
+      className="bg-card rounded-2xl p-4 border border-border flex flex-col gap-2 shadow-soft"
       aria-label={`${fuel.name}: ${formatPrice(fuel.price)} por litro. Tendencia: ${trendLabel}.`}
     >
       <div className="flex items-center justify-between">
@@ -114,7 +98,9 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
               <Zap className="w-5 h-5 text-[hsl(142,70%,45%)]" />
             </div>
           ) : (
-            <span className="text-2xl" aria-hidden="true">{fuelEmoji[fuel.type] ?? "⛽"}</span>
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center" aria-hidden="true">
+              <Fuel className="w-5 h-5 text-primary" />
+            </div>
           )}
           <div>
             <p className="text-xs font-semibold text-foreground tracking-wide">{fuel.name}</p>
@@ -126,6 +112,7 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
               {formatPrice(fuel.price)}
             </p>
             <p className="text-[10px] text-muted-foreground">{fuel.unit}</p>
+            <FreshnessIndicator updatedAt={fuel.updatedAt} className="mt-1" />
           </div>
         </div>
         <div

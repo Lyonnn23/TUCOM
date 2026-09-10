@@ -22,10 +22,11 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useUserPoints, useUserBadges, getLevel, BADGE_META, type BadgeKey } from "@/hooks/useGamification";
+import { useUserPoints, useUserBadges, useMonthlyLeaderboard, getLevel, BADGE_META, type BadgeKey } from "@/hooks/useGamification";
 import { Crown, Sparkles as SparklesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import ProfileCompletionCard from "@/components/ProfileCompletionCard";
 
 const DRIVER_FAB_KEY = "tucom_driver_fab_enabled";
 const DRIVER_AUTO_KEY = "tucom_driver_auto";
@@ -98,6 +99,7 @@ const Profile = () => {
   const { preferences, save, defaults } = useUserPreferences();
   const { alerts, remove } = usePriceAlerts();
   const { favorites } = useFavorites();
+  const { data: leaderboard = [] } = useMonthlyLeaderboard();
 
   const [fuel, setFuel] = useState(defaults.preferred_fuel);
   const [radius, setRadius] = useState(defaults.search_radius_km);
@@ -129,6 +131,7 @@ const Profile = () => {
     (user.user_metadata?.picture as string) ||
     "";
   const initials = displayName.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  const monthlyRank = leaderboard.findIndex((row) => row.user_id === user.id) + 1;
 
   const onSave = async () => {
     setSaving(true);
@@ -163,7 +166,7 @@ const Profile = () => {
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <h1 className="font-heading font-extrabold text-white text-lg">Mi cuenta</h1>
+          <h1 className="font-heading font-bold text-white text-xl">Mi cuenta</h1>
         </div>
       </header>
 
@@ -182,8 +185,15 @@ const Profile = () => {
               <ProBadge />
             </div>
             <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+            {monthlyRank > 0 && (
+              <button onClick={() => navigate("/ranking")} className="card-interactive mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                <Trophy className="h-3.5 w-3.5" /> Puesto #{monthlyRank} este mes
+              </button>
+            )}
           </div>
         </section>
+
+        <ProfileCompletionCard />
 
         <PlanCard />
 
@@ -568,7 +578,7 @@ const PlanCard = () => {
     return (
       <button
         onClick={() => navigate("/planes")}
-        className="w-full text-left bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] text-primary-foreground rounded-2xl p-5 shadow-soft hover-scale"
+        className="card-interactive cursor-pointer w-full text-left bg-gradient-primary text-primary-foreground rounded-2xl p-5 shadow-elegant"
       >
         <div className="flex items-center gap-3">
           <Crown className="w-6 h-6" />
@@ -591,7 +601,7 @@ const PlanCard = () => {
       className="w-full text-left bg-card border-2 border-primary/30 rounded-2xl p-5 shadow-soft hover-scale"
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-[hsl(245,75%,60%)] flex items-center justify-center text-primary-foreground shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground shrink-0">
           <SparklesIcon className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-0">

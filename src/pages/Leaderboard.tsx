@@ -29,11 +29,11 @@ const Leaderboard = () => {
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <h1 className="font-heading font-extrabold text-white text-lg">Ranking del mes</h1>
+          <h1 className="font-heading font-bold text-white text-xl">Ranking del mes</h1>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-5 space-y-3">
+      <main className="max-w-2xl mx-auto px-4 py-5 space-y-5">
         <p className="text-sm text-muted-foreground">
           Top 10 colaboradores con más reportes verificados este mes. Puedes desactivar tu
           aparición desde tu perfil.

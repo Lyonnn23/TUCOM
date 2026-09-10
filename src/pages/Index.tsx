@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, ArrowUpDown, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown, Heart, Bell, Calculator, WifiOff } from "lucide-react";
+import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown, Bell, Calculator, WifiOff, Lightbulb, ChevronRight } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import AlertsBell from "@/components/AlertsBell";
 import NearbyRanking from "@/components/NearbyRanking";
@@ -61,6 +61,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Helmet } from "react-helmet-async";
+import SectionLabel from "@/components/SectionLabel";
+import ProfileCompletionCard from "@/components/ProfileCompletionCard";
+import FreshnessIndicator from "@/components/FreshnessIndicator";
+import { NoStationsFound } from "@/components/EmptyState";
 
 // Google encoded polyline decoder — mirrors the one in RouteModePanel.tsx.
 // Used to rehydrate a route from Calculadora's "tucom_route_mode_init" handoff.
@@ -746,6 +750,22 @@ const Index = () => {
             <span>Sin conexión · mostrando últimas estaciones guardadas</span>
           </div>
         )}
+        {activeTab === "prices" && (
+          <section className="space-y-3 mb-5">
+            <SectionLabel>Tu ubicación</SectionLabel>
+            <TankRangeBanner
+              onActivate={() => {
+                setActiveTab("stations");
+                setSortByFuel(preferredFuel !== "all" ? preferredFuel : "distance");
+                if (!userLocation) requestLocation(false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+            {user && <ProfileCompletionCard dismissible />}
+            <VehicleMiniWidget />
+          </section>
+        )}
+        {activeTab === "prices" && <SectionLabel className="mb-3">Precios cercanos</SectionLabel>}
         {/* Hero: lowest local price */}
         {activeTab === "prices" && (() => {
           const heroFuel: "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric" =
@@ -762,9 +782,7 @@ const Index = () => {
             .sort((a, b) => (a.prices[heroFuel] ?? 99999) - (b.prices[heroFuel] ?? 99999))[0];
           if (!cheapest) return null;
           return (
-            <div id="cheapest-station" data-cheapest="true" className="mb-5 rounded-3xl bg-gradient-hero p-5 shadow-glow text-white relative overflow-hidden animate-scale-in scroll-mt-20">
-              <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
-              <div className="absolute right-10 bottom-0 w-24 h-24 rounded-full bg-accent/30 blur-2xl" />
+            <div id="cheapest-station" data-cheapest="true" className="mb-5 rounded-2xl bg-gradient-primary p-5 shadow-glow text-primary-foreground relative overflow-hidden animate-scale-in scroll-mt-20">
               <div className="relative">
                 <div className="absolute top-0 right-0">
                   <ShareStationButton
@@ -788,14 +806,15 @@ const Index = () => {
                 <div className="flex items-end justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-base truncate">{cheapest.name}</p>
-                    <p className="text-[11px] text-white/80 truncate">{cheapest.brand} · {cheapest.address}</p>
+                    <p className="text-[11px] text-primary-foreground/80 truncate">{cheapest.brand} · {cheapest.address}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[10px] text-white/75 uppercase tracking-wider">{heroLabel[heroFuel]}</p>
-                    <p className="font-heading tabular-nums font-extrabold text-4xl leading-none">
+                    <p className="text-[10px] text-primary-foreground/75 uppercase tracking-wider">{heroLabel[heroFuel]}</p>
+                    <p className="font-heading tabular-nums font-black text-4xl leading-none">
                       ${cheapest.prices[heroFuel]}
                     </p>
-                    <p className="text-[10px] text-white/70 mt-0.5">por litro</p>
+                    <p className="text-[10px] text-primary-foreground/70 mt-0.5">por litro</p>
+                    <FreshnessIndicator updatedAt={cheapest.lastUpdated} inverse className="justify-end mt-1" />
                   </div>
                 </div>
                 <button
@@ -806,7 +825,7 @@ const Index = () => {
                 </button>
                 <button
                   onClick={() => navigate("/calculadora")}
-                  className="mt-2 w-full bg-white/15 hover:bg-white/25 text-white font-semibold text-sm rounded-xl py-2.5 press-scale flex items-center justify-center gap-2 border border-white/30"
+                  className="mt-2 w-full bg-primary-foreground/15 hover:bg-primary-foreground/25 text-primary-foreground font-semibold text-sm rounded-xl py-2.5 press-scale flex items-center justify-center gap-2 border border-primary-foreground/30"
                 >
                   ¿Cuánto cuesta tu viaje?
                 </button>
@@ -814,10 +833,9 @@ const Index = () => {
             </div>
           );
         })()}
-        {activeTab === "prices" && <VehicleMiniWidget />}
-        {activeTab === "prices" && <div className="mb-4"><TankRangeBanner /></div>}
         {activeTab === "prices" && <div className="mb-4"><WhereToGoWidget userLocation={userLocation} /></div>}
         {activeTab === "prices" && <div className="mb-4"><UpcomingDeadlinesCard /></div>}
+        {activeTab === "prices" && <SectionLabel className="mb-3">Mercado hoy</SectionLabel>}
         {activeTab === "prices" && <MacroWidgets />}
 
         <UnofficialBanner className="mb-4" />
@@ -826,7 +844,7 @@ const Index = () => {
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <h2 className="font-heading font-bold text-foreground text-lg leading-tight truncate">Precio promedio actual</h2>
+                <h2 className="text-base font-semibold text-foreground leading-tight truncate">Precio promedio actual</h2>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
                   {isLocalAvg
                     ? `Promedio en 10 km · ${sampleSize} estaciones`
@@ -872,7 +890,7 @@ const Index = () => {
             {/* Report Button */}
             <button
               onClick={() => navigate("/reporte")}
-              className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-2xl p-4 flex items-center justify-between shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="btn-primary w-full text-primary-foreground rounded-2xl p-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -883,13 +901,13 @@ const Index = () => {
                   <p className="text-[10px] text-white/80">Precios por zona, promedios y comparativas</p>
                 </div>
               </div>
-              <div className="text-white/60">→</div>
+              <ChevronRight className="w-4 h-4 text-primary-foreground/60" />
             </button>
 
             {/* History Button */}
             <button
               onClick={() => navigate("/historial")}
-              className="w-full bg-card border border-border text-foreground rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all hover:scale-[1.01] active:scale-[0.99]"
+              className="card-interactive w-full cursor-pointer bg-card border border-border text-foreground rounded-2xl p-4 flex items-center justify-between shadow-soft"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -900,12 +918,12 @@ const Index = () => {
                   <p className="text-[10px] text-muted-foreground">Evolución semanal con gráficos</p>
                 </div>
               </div>
-              <div className="text-muted-foreground">→</div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
 
-            <div className="bg-gradient-to-r from-fuel-amber/15 to-fuel-pink/10 rounded-2xl p-4 border border-fuel-amber/20">
-              <h3 className="font-heading font-semibold text-foreground text-sm mb-1.5">
-                💡 Consejo del día
+            <div className="bg-card rounded-2xl p-4 border border-border">
+              <h3 className="font-semibold text-foreground text-base mb-1.5 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-accent" /> Consejo del día
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Los precios de la bencina suelen bajar los jueves por la noche cuando ENAP publica las nuevas tarifas semanales. ¡Planifica tu carga!
@@ -1233,15 +1251,7 @@ const Index = () => {
               }
               if (filtered.length === 0) {
                 return (
-                  <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
-                    <div className="w-20 h-20 rounded-3xl bg-gradient-primary/10 flex items-center justify-center mb-4">
-                      <Fuel className="w-10 h-10 text-primary" />
-                    </div>
-                    <p className="font-heading font-bold text-foreground">No encontramos estaciones</p>
-                    <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                      Ajusta los filtros, amplía el radio o intenta otra búsqueda.
-                    </p>
-                  </div>
+                  <NoStationsFound onRetry={() => { setSelectedBrand("all"); setSearchQuery(""); setStationKind("all"); requestLocation(false); }} />
                 );
               }
               if (stationKind === "ev") {
@@ -1288,7 +1298,7 @@ const Index = () => {
                     <div className="mt-4 flex justify-center">
                       <button
                         onClick={() => setStationsLimit((n) => n + 20)}
-                        className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity min-h-11"
+                        className="btn-primary px-5 py-2.5 rounded-xl text-primary-foreground font-semibold text-sm min-h-11"
                         style={{ touchAction: "manipulation" }}
                       >
                         Cargar más ({filtered.length - visible.length} restantes)

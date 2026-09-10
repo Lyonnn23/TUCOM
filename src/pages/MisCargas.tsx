@@ -153,7 +153,7 @@ const MisCargas = () => {
           {isLoading ? (
             <div className="p-5 space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />
+                <div key={i} className="h-16 rounded-2xl skeleton-shimmer" />
               ))}
             </div>
           ) : logs.length === 0 ? (
