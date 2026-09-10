@@ -220,7 +220,8 @@ const VehicleDialog = ({ open, onOpenChange, vehicle }: Props) => {
                   const handleBrand = (v: string) => {
                     const next = v === "Otra" ? "" : v;
                     setBrand(next);
-                    if (EV_BRANDS.has(next)) {
+                    // Nunca sobrescribir datos ya guardados al editar un vehículo
+                    if (!vehicle && EV_BRANDS.has(next)) {
                       setFuelType("electric");
                       setCons("6");
                       if (!tank || tank === "50") setTank("60");
