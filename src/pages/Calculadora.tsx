@@ -628,9 +628,8 @@ const Calculadora = () => {
                   <p className="font-heading font-bold text-foreground tabular-nums">{formatPrice(annualB)}</p>
                 </div>
               </div>
-              <div className="rounded-xl bg-primary/10 border border-primary/30 p-3 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-primary font-bold">Diferencia anual</p>
-                <p className="font-heading font-extrabold text-2xl tabular-nums text-primary">{formatPrice(annualDiff)}</p>
+              <div className="bg-gradient-to-r from-amber-400 to-orange-400 text-white rounded-2xl p-3 text-center shadow-md mt-2">
+                <p className="font-bold">📅 En un año ahorras: {formatPrice(annualDiff)}</p>
               </div>
             </section>
 
