@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
@@ -22,6 +22,7 @@ import TripPlanner from "@/components/calculadora/TripPlanner";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useCheapestStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { formatPrice } from "@/lib/format";
 import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
@@ -41,7 +42,11 @@ const fuelLabel = (k: FuelKey) => FUEL_OPTIONS.find((f) => f.key === k)?.label ?
 
 const Calculadora = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { primary: primaryVehicle } = useUserVehicles();
+  const { preferences } = useUserPreferences();
+  const initialKm = Number(searchParams.get("km") || 0) || undefined;
+  const initialDest = searchParams.get("dest") || undefined;
   const fuelPrices = useFuelPrices();
 
   // GPS
@@ -96,7 +101,7 @@ const Calculadora = () => {
   const rangeKm = Math.round(currentL * Math.max(consumption, 0.1));
   const toFillL = Math.max(0, tankSize - currentL);
   const fillCost = Math.round(toFillL * cheapestPrice);
-  const lowFuel = rangeKm < 50;
+  const lowFuel = rangeKm < (preferences?.low_fuel_threshold_km ?? 80);
 
   const shareTank = async () => {
     const text = `Con ${pct}% de estanque me quedan ${rangeKm} km. Llenar el estanque cuesta ${formatPrice(fillCost)} (${fuelLabel(fuelType)}). · TÜcom`;
@@ -263,6 +268,8 @@ const Calculadora = () => {
               consumption={consumption}
               pricePerUnit={cheapestPrice}
               vehicleName={primaryVehicle?.nickname ?? (primaryVehicle ? `${primaryVehicle.brand} ${primaryVehicle.model}` : null)}
+              initialKm={initialKm}
+              initialDest={initialDest}
             />
 
 

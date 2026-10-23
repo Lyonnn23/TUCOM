@@ -18,6 +18,8 @@ interface Props {
   consumption: number;
   pricePerUnit: number;
   vehicleName?: string | null;
+  initialKm?: number | null;
+  initialDest?: string | null;
 }
 
 type Place = { lat: number; lng: number; name: string };
@@ -189,7 +191,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
   const routesLib = useMapsLibrary("routes");
 
   const [originText, setOriginText] = useState("");
-  const [destText, setDestText] = useState("");
+  const [destText, setDestText] = useState(initialDest ?? "");
   const [originPlace, setOriginPlace] = useState<Place | null>(null);
   const [destPlace, setDestPlace] = useState<Place | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
