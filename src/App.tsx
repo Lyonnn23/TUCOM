@@ -91,6 +91,9 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
 
 const HomeRoute = () => {
   const { user, loading } = useAuth();
+  // Suscribirse a la ubicación hace que este componente se vuelva a evaluar cuando
+  // "Abrir app" cambia la URL (isGuest() se lee de sessionStorage, no de un estado).
+  useLocation();
   if (loading) return null;
   if (!user && !isGuest()) return <Landing />;
   return <RequireOnboarded><Index /></RequireOnboarded>;

@@ -50,16 +50,8 @@ export default defineConfig(({ mode }) => ({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          // Google Maps tiles & static map assets
-          {
-            urlPattern: /^https:\/\/maps\.(?:googleapis|gstatic)\.com\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "google-maps-tiles",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
+          // Google Maps NO se cachea aqui: una respuesta opaca/errónea del cargador quedaba
+          // guardada 7 días y dejaba el mapa en blanco (y los términos de Google no permiten cachear teselas).
           // Last-viewed stations / app data
           {
             urlPattern: /^https:\/.*\.supabase\.co\/rest\/v1\/(gas_stations|station_prices|fuel_prices|fuel_benefits).*/i,

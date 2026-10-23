@@ -25,6 +25,12 @@ if ("serviceWorker" in navigator && !isPreviewHost && !isInIframe) {
   });
 }
 
+// Limpieza única: versiones anteriores guardaban el cargador de Google Maps en caché
+// (respuesta opaca por 7 días), lo que dejaba el mapa en blanco.
+if ("caches" in window) {
+  caches.delete("google-maps-tiles").catch(() => {});
+}
+
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
   environment: import.meta.env.MODE,
