@@ -1,6 +1,7 @@
 // Modo Viaje: origen/destino con Google Places (Chile), pills de ciudades,
 // Distance Matrix para km reales y estación más barata en el destino.
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/lib/format";
@@ -182,6 +183,8 @@ const PlaceField = ({
 };
 
 const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehicleName }: Props) => {
+  const [searchParams] = useSearchParams();
+  const handoffOverridden = useRef(false);
   const geocodingLib = useMapsLibrary("geocoding");
   const routesLib = useMapsLibrary("routes");
 
@@ -199,7 +202,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
   const unit = isElectric ? "kWh" : "L";
   const fallbackPrice = DEFAULT_PRICES[fuelType] ?? DEFAULT_PRICES.gasoline95;
 
-  const calculateTrip = (km: number, durationMin?: number) => {
+  const calculateTrip = useCallback((km: number, durationMin?: number) => {
     const cons = consumption > 0 ? consumption : 10;
     const price = pricePerUnit > 0 ? pricePerUnit : fallbackPrice;
     const liters = Math.round((km / cons) * 10) / 10;
@@ -212,7 +215,19 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
       mins: durationMin != null ? durationMin % 60 : null,
     });
     import("@/lib/analytics").then((m) => m.analytics.calculateTrip(fuelType, km)).catch(() => {});
-  };
+  }, [consumption, pricePerUnit, fallbackPrice, fuelType]);
+
+  // Preserve the station handoff, including prices/vehicle data arriving later.
+  useEffect(() => {
+    handoffOverridden.current = false;
+    setDestText(searchParams.get("dest") ?? "");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const km = Number(searchParams.get("km"));
+    if (handoffOverridden.current || !Number.isFinite(km) || km <= 0) return;
+    calculateTrip(km);
+  }, [searchParams, calculateTrip]);
 
   // Estación más barata cerca del destino
   useEffect(() => {
@@ -268,6 +283,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
   };
 
   const handleCity = (city: (typeof CHILE_CITIES)[number]) => {
+    handoffOverridden.current = true;
     setSelectedCity(city.label);
     setDestPlace({ lat: city.lat, lng: city.lng, name: city.label });
     setDestText(city.label);
@@ -283,6 +299,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
       toast.error("Mapa cargando, intenta de nuevo");
       return;
     }
+    handoffOverridden.current = true;
     setCalculating(true);
     const service = new routesLib.DistanceMatrixService();
     service.getDistanceMatrix(
@@ -344,7 +361,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
         <PlaceField
           placeholder="Dirección, comuna o lugar"
           value={destText}
-          onValueChange={(v) => { setDestText(v); setSelectedCity(null); }}
+          onValueChange={(v) => { handoffOverridden.current = true; setDestText(v); setSelectedCity(null); }}
           onSelect={(p) => { setDestPlace(p); setSelectedCity(null); }}
           bias={originPlace ?? undefined}
         />
