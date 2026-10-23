@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import TripPlanner from "@/components/calculadora/TripPlanner";
@@ -43,7 +43,9 @@ describe("station calculator handoff", () => {
   it("does not restore handoff distance after selecting another trip", async () => {
     const view = render(<MemoryRouter initialEntries={["/calculadora?km=24&dest=Copec"]}><TripPlanner {...props} /></MemoryRouter>);
     await screen.findByText("24 km");
-    fireEvent.click(screen.getByRole("button", { name: /Rancagua/ }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /Rancagua/ }));
+    });
     expect(screen.getByText("87 km")).toBeInTheDocument();
     view.rerender(<MemoryRouter initialEntries={["/calculadora?km=24&dest=Copec"]}><TripPlanner {...props} pricePerUnit={1500} /></MemoryRouter>);
     expect(screen.queryByText("24 km")).not.toBeInTheDocument();
