@@ -365,7 +365,7 @@ const Calculadora = () => {
               <div>
                 <Label className="text-xs">Combustible</Label>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {FUEL_OPTIONS.map((o) => (
+                  {FUEL_OPTIONS.filter((o) => o.key !== "electric").map((o) => (
                     <button
                       key={o.key}
                       type="button"

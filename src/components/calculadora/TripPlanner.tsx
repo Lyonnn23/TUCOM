@@ -150,7 +150,7 @@ const PlaceField = ({
         value={value}
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onBlur={() => setTimeout(() => setOpen(false), 200)}
         placeholder={placeholder}
         aria-label={placeholder}
         className="w-full bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/60 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/50 text-base"
@@ -184,7 +184,7 @@ const PlaceField = ({
   );
 };
 
-const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehicleName }: Props) => {
+const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehicleName, initialKm, initialDest }: Props) => {
   const [searchParams] = useSearchParams();
   const handoffOverridden = useRef(false);
   const geocodingLib = useMapsLibrary("geocoding");
@@ -221,7 +221,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
 
   // Preserve the station handoff, including prices/vehicle data arriving later.
   useEffect(() => {
-    handoffOverridden.current = false;
+    // Don't reset handoffOverridden here — user may have already typed a destination.
     setDestText(searchParams.get("dest") ?? "");
   }, [searchParams]);
 
@@ -303,7 +303,7 @@ const TripPlannerInner = ({ fuelType, fuelLabel, consumption, pricePerUnit, vehi
     }
     handoffOverridden.current = true;
     setCalculating(true);
-    const service = new routesLib.DistanceMatrixService();
+    const service = new (window as any).google.maps.DistanceMatrixService();
     service.getDistanceMatrix(
       {
         origins: [{ lat: originPlace.lat, lng: originPlace.lng }],

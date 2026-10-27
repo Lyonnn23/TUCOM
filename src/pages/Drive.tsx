@@ -116,7 +116,12 @@ const Drive = () => {
   const { favorites } = useFavorites();
   const { logs } = useFuelLogs();
   const tankRange = useTankRange();
-  const preferredFuel = preferences?.preferred_fuel ?? "gasoline95";
+  const VALID_FUEL_TYPES = ["gasoline93", "gasoline95", "gasoline97", "diesel", "electric"] as const;
+  type ValidFuel = typeof VALID_FUEL_TYPES[number];
+  const rawFuel = preferences?.preferred_fuel ?? "gasoline95";
+  const preferredFuel: ValidFuel = VALID_FUEL_TYPES.includes(rawFuel as ValidFuel)
+    ? (rawFuel as ValidFuel)
+    : "gasoline95";
 
   const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null);
   const [posError, setPosError] = useState<string | null>(null);
@@ -138,7 +143,7 @@ const Drive = () => {
     pos?.lat ?? null,
     pos?.lng ?? null,
     10000,
-    preferredFuel as any,
+    preferredFuel,
     20
   );
 
@@ -147,7 +152,7 @@ const Drive = () => {
     pos?.lat ?? null,
     pos?.lng ?? null,
     15000,
-    preferredFuel as any,
+    preferredFuel,
     100
   );
 
