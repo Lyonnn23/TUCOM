@@ -28,6 +28,7 @@ import { Crown, Sparkles as SparklesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import ProfileCompletionCard from "@/components/ProfileCompletionCard";
+import ShareAppCard from "@/components/ShareAppCard";
 
 const DRIVER_FAB_KEY = "tucom_driver_fab_enabled";
 const DRIVER_AUTO_KEY = "tucom_driver_auto";
@@ -561,6 +562,9 @@ const Profile = () => {
             </li>
           </ul>
         </section>
+
+        {/* Share */}
+        <ShareAppCard />
 
         {/* Sign out */}
         <Button
