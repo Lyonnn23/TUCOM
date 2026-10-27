@@ -29,7 +29,7 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
         boxShadow: "0 -4px 24px hsl(var(--background) / 0.8)",
         borderTop: "1px solid hsl(var(--border) / 0.08)",
       }}
-      className="fixed bottom-0 left-0 right-0 bg-card/85 px-2 pb-[env(safe-area-inset-bottom)] z-[9999]"
+      className="fixed bottom-0 left-0 right-0 bg-card/85 px-2 pb-[env(safe-area-inset-bottom)] z-[9999] lg:hidden"
     >
       <div className="flex items-center justify-around max-w-md mx-auto">
         {tabs.map((tab) => {

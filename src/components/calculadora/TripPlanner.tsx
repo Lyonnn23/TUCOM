@@ -10,7 +10,7 @@ import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
 import { Calculator, Car, CheckCircle2, Clock3, Fuel, Loader2, LocateFixed, MapPin, Navigation, Route } from "lucide-react";
 
-export type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
+export type { FuelKey } from "@/lib/fuel";
 
 interface Props {
   fuelType: FuelKey;

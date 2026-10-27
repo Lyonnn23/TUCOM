@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import SideNav from "@/components/SideNav";
 import {
   ArrowLeft,
   Navigation,
@@ -460,8 +461,10 @@ const Drive = () => {
   // ---- Render -------------------------------------------------------------
 
   return (
+    <div className="lg:flex min-h-screen">
+      <SideNav active={"prices" as any} onChange={() => {}} />
     <div
-      className="min-h-screen text-white pb-[env(safe-area-inset-bottom)] motion-reduce:transition-none"
+      className="flex-1 min-h-screen text-white pb-[env(safe-area-inset-bottom)] motion-reduce:transition-none lg:ml-56"
       style={{ backgroundColor: "#0A0A0A" }}
     >
       <style>{`
@@ -767,6 +770,7 @@ const Drive = () => {
       >
         <Volume2 className="w-6 h-6" />
       </button>
+    </div>
     </div>
   );
 };

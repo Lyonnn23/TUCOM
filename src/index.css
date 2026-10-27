@@ -139,12 +139,22 @@
 @layer base {
   * { @apply border-border; }
 
-  html { -webkit-tap-highlight-color: transparent; }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    /* Prevent iOS rubber-band overscroll bleed */
+    overscroll-behavior: none;
+  }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "cv11", "ss01";
+    overscroll-behavior: none;
+  }
+
+  /* Prevent iOS input zoom: all inputs must be at least 16px */
+  input, textarea, select {
+    font-size: max(16px, 1em);
   }
 
   h1, h2, h3, h4, h5, h6 {

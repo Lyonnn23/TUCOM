@@ -21,6 +21,8 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import FavoritesTab from "@/components/FavoritesTab";
 import UnofficialBanner from "@/components/UnofficialBanner";
 import BottomNav, { type TabType } from "@/components/BottomNav";
+import SideNav from "@/components/SideNav";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import FuelLogFAB from "@/components/FuelLogFAB";
 import DriverModeFAB from "@/components/DriverModeFAB";
 import TankRangeBanner from "@/components/TankRangeBanner";
@@ -331,6 +333,12 @@ const Index = () => {
   const { data: recentReports } = useRecentReports();
   const { data: stationRatings } = useStationRatings();
 
+  // Pull-to-refresh (mobile)
+  const { pullProgress } = usePullToRefresh(() => {
+    refetchStations();
+    refetchPrices();
+  });
+
   // Once `stations` are loaded, resolve any pending route-mode handoff (see mount effect
   // above) into a full RouteCorridor by calling trip-calculator + decoding the polyline,
   // mirroring the corridor logic in RouteModePanel.tsx (2 km default corridor).
@@ -585,10 +593,26 @@ const Index = () => {
   const meta = titleByTab[activeTab] ?? titleByTab.prices;
 
   return (
-    <div
-      className="min-h-screen bg-background"
-      style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
-    >
+    <div className="min-h-screen bg-background lg:flex">
+      {/* Desktop sidebar — hidden on mobile */}
+      <SideNav active={activeTab} onChange={setActiveTab} />
+
+      {/* Pull-to-refresh indicator */}
+      {pullProgress > 0 && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[9998] flex justify-center pt-2 pointer-events-none lg:left-56"
+          style={{ opacity: pullProgress }}
+        >
+          <div className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+            {pullProgress >= 1 ? "↑ Suelta para actualizar" : "↓ Desliza para actualizar"}
+          </div>
+        </div>
+      )}
+
+      <div
+        className="flex-1 min-w-0 lg:ml-56"
+        style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
+      >
       <Helmet>
         <title>{meta.title}</title>
         <meta name="description" content={meta.description} />
@@ -1330,6 +1354,7 @@ const Index = () => {
         )}
       </main>
 
+      {/* Bottom nav — hidden on desktop (uses SideNav instead) */}
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <FuelLogFAB />
       <DriverModeFAB />
@@ -1350,6 +1375,7 @@ const Index = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div> {/* end lg:ml-56 wrapper */}
     </div>
 
   );

@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { FuelKey } from "@/lib/fuel";
 
-export type FuelTypeKey =
-  | "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
+/** @deprecated Use FuelKey from @/lib/fuel */
+export type FuelTypeKey = FuelKey;
 
 export interface NearbyStationRow {
   id: string;

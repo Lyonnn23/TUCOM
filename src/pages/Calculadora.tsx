@@ -27,17 +27,10 @@ import { formatPrice } from "@/lib/format";
 import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
 
-type FuelKey = "gasoline93" | "gasoline95" | "gasoline97" | "diesel" | "electric";
+import type { FuelKey } from "@/lib/fuel";
+import { FUEL_OPTIONS, FUEL_OPTIONS_NO_EV, FUEL_LABEL } from "@/lib/fuel";
 
-const FUEL_OPTIONS: { key: FuelKey; label: string }[] = [
-  { key: "gasoline93", label: "93" },
-  { key: "gasoline95", label: "95" },
-  { key: "gasoline97", label: "97" },
-  { key: "diesel", label: "Diésel" },
-  { key: "electric", label: "⚡ EV" },
-];
-
-const fuelLabel = (k: FuelKey) => FUEL_OPTIONS.find((f) => f.key === k)?.label ?? k;
+const fuelLabel = (k: FuelKey) => FUEL_LABEL[k] ?? k;
 
 
 const Calculadora = () => {
@@ -212,7 +205,7 @@ const Calculadora = () => {
 
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 lg:pl-56">
       <Helmet>
         <title>Calculadora de combustible | TÜcom</title>
         <meta
@@ -365,7 +358,7 @@ const Calculadora = () => {
               <div>
                 <Label className="text-xs">Combustible</Label>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {FUEL_OPTIONS.filter((o) => o.key !== "electric").map((o) => (
+                  {FUEL_OPTIONS_NO_EV.map((o) => (
                     <button
                       key={o.key}
                       type="button"

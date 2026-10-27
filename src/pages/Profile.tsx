@@ -92,7 +92,7 @@ const FUEL_LABEL: Record<string, string> = {
   electric: "EV",
 };
 
-const APP_VERSION = "1.0.0";
+const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
 const Profile = () => {
   const navigate = useNavigate();
