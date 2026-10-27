@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TrendingDown, TrendingUp, Minus, Zap, ArrowDown, ArrowUp, Fuel } from "lucide-react";
 import type { FuelPrice } from "@/hooks/useFuelPrices";
 import { formatPrice } from "@/lib/format";
@@ -30,6 +30,19 @@ interface FuelPriceCardProps {
 }
 
 const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
+  // Flash animation when price changes
+  const prevPrice = useRef<number>(fuel.price);
+  const [flash, setFlash] = useState<"up" | "down" | null>(null);
+  useEffect(() => {
+    if (prevPrice.current !== fuel.price) {
+      const dir = fuel.price > prevPrice.current ? "up" : "down";
+      setFlash(dir);
+      prevPrice.current = fuel.price;
+      const t = setTimeout(() => setFlash(null), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [fuel.price]);
+
   const trendUp = fuel.trend === "up";
   const trendDown = fuel.trend === "down";
   const isElectric = fuel.type === "electric";
@@ -88,7 +101,13 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
 
   return (
     <article
-      className="bg-card rounded-2xl p-4 border border-border flex flex-col gap-2 shadow-soft"
+      className={`bg-card rounded-2xl p-4 border flex flex-col gap-2 shadow-soft transition-colors duration-700 ${
+        flash === "down"
+          ? "border-fuel-green/60 bg-fuel-green/5"
+          : flash === "up"
+          ? "border-fuel-red/60 bg-fuel-red/5"
+          : "border-border"
+      }`}
       aria-label={`${fuel.name}: ${formatPrice(fuel.price)} por litro. Tendencia: ${trendLabel}.`}
     >
       <div className="flex items-center justify-between">

@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import NavigateSheet from "./NavigateSheet";
 import { getPreferredNavApp, openNavApp } from "@/lib/navigateApp";
-import { MapPin, Navigation, Star, Zap, CreditCard } from "lucide-react";
+import { MapPin, Navigation, Star, Zap, CreditCard, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { GasStation } from "@/hooks/useGasStations";
 import ReportPriceDialog from "./ReportPriceDialog";
@@ -28,6 +28,8 @@ interface StationCardProps {
   rating?: { avg: number; count: number } | null;
   selectedFuel?: FuelKey | "all";
   priceTier?: PriceTier;
+  /** Badge "Más barata" destacado cuando es la estación con menor precio en la lista */
+  isCheapest?: boolean;
 }
 
 const FUEL_LABEL: Record<FuelKey, string> = {
@@ -64,7 +66,7 @@ const BRAND_STYLES: Record<string, { ring: string; accent: string; badge: string
 
 const isFeaturedBrand = (brand: string) => brand in BRAND_STYLES;
 
-const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport, rating, selectedFuel, priceTier }: StationCardProps) => {
+const StationCard = ({ station, onNavigate, onNavigateGoogle, lastCommunityReport, rating, selectedFuel, priceTier, isCheapest }: StationCardProps) => {
   const navigate = useNavigate();
   const [navOpen, setNavOpen] = useState(false);
   const featured = isFeaturedBrand(station.brand);
@@ -165,6 +167,12 @@ const headline =
                   role="img"
                   aria-label={station.isOpen ? "Estación abierta" : "Estación cerrada"}
                 />
+                {isCheapest && (
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-fuel-green/15 text-[hsl(var(--fuel-green))] text-[9px] font-bold uppercase tracking-wider leading-none">
+                    <Flame className="w-2.5 h-2.5" aria-hidden="true" />
+                    Más barata
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5 min-w-0" title={station.address}>
                 <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" />

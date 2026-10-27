@@ -6,6 +6,9 @@ import AlertsBell from "@/components/AlertsBell";
 import NearbyRanking from "@/components/NearbyRanking";
 import LocationPermissionGuide from "@/components/LocationPermissionGuide";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
+import CoachMarkFixed from "@/components/CoachMarkFixed";
+import MonthlySavingsCard from "@/components/MonthlySavingsCard";
+import HomeRouteWidget from "@/components/HomeRouteWidget";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import MepcoThursdayBanner from "@/components/MepcoThursdayBanner";
@@ -858,6 +861,8 @@ const Index = () => {
           );
         })()}
         {activeTab === "prices" && <div className="mb-4"><WhereToGoWidget userLocation={userLocation} /></div>}
+        {activeTab === "prices" && <div className="mb-4"><HomeRouteWidget userLocation={userLocation} stations={stationsWithDistance} preferredFuel={preferences?.preferred_fuel ?? "gasoline95"} /></div>}
+        {activeTab === "prices" && <div className="mb-4"><MonthlySavingsCard /></div>}
         {activeTab === "prices" && <div className="mb-4"><UpcomingDeadlinesCard /></div>}
         {activeTab === "prices" && <SectionLabel className="mb-3">Mercado hoy</SectionLabel>}
         {activeTab === "prices" && <MacroWidgets />}
@@ -1301,22 +1306,35 @@ const Index = () => {
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {visible.map((station) => {
-                      const fk = preferredFuel !== "all" ? (preferredFuel as keyof typeof station.prices) : null;
-                      const tier = fk ? tierFor(station.prices[fk] ?? 0) : undefined;
-                      return (
-                        <StationCard
-                          key={station.id}
-                          station={station}
-                          onNavigate={handleNavigate}
-                          onNavigateGoogle={handleNavigateGoogle}
-                          lastCommunityReport={recentReports?.get(station.id) ?? null}
-                          rating={stationRatings?.get(station.id) ?? null}
-                          selectedFuel={preferredFuel}
-                          priceTier={tier}
-                        />
-                      );
-                    })}
+                    {(() => {
+                      // Find cheapest station index for badge
+                      const fk = preferredFuel !== "all" ? preferredFuel : null;
+                      let cheapestIdx = -1;
+                      if (fk) {
+                        let minPrice = Infinity;
+                        visible.forEach((s, i) => {
+                          const p = (s.prices as Record<string, number>)?.[fk] ?? 0;
+                          if (p > 0 && p < minPrice) { minPrice = p; cheapestIdx = i; }
+                        });
+                      }
+                      return visible.map((station, idx) => {
+                        const fuelKey = preferredFuel !== "all" ? (preferredFuel as keyof typeof station.prices) : null;
+                        const tier = fuelKey ? tierFor(station.prices[fuelKey] ?? 0) : undefined;
+                        return (
+                          <StationCard
+                            key={station.id}
+                            station={station}
+                            onNavigate={handleNavigate}
+                            onNavigateGoogle={handleNavigateGoogle}
+                            lastCommunityReport={recentReports?.get(station.id) ?? null}
+                            rating={stationRatings?.get(station.id) ?? null}
+                            selectedFuel={preferredFuel}
+                            priceTier={tier}
+                            isCheapest={idx === cheapestIdx}
+                          />
+                        );
+                      });
+                    })()}
                   </div>
                   {hasMore && (
                     <div className="mt-4 flex justify-center">
@@ -1358,6 +1376,21 @@ const Index = () => {
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <FuelLogFAB />
       <DriverModeFAB />
+      {/* Coach marks for FABs */}
+      <CoachMarkFixed
+        id="fuel-log-fab"
+        message="Registra tus cargas para ver cuánto ahorras cada mes 💰"
+        bottom="10.5rem"
+        right="1.25rem"
+        autoDismissMs={5000}
+      />
+      <CoachMarkFixed
+        id="driver-mode-fab"
+        message="Modo conductor: ve bencineras baratas de camino a tu destino 🚗"
+        bottom="14.5rem"
+        right="1.25rem"
+        autoDismissMs={6500}
+      />
 
       <AlertDialog open={showLocationRationale} onOpenChange={(o) => !o && dismissLocationRationale()}>
         <AlertDialogContent>
