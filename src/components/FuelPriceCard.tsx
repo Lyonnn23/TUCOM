@@ -3,6 +3,7 @@ import { TrendingDown, TrendingUp, Minus, Zap, ArrowDown, ArrowUp, Fuel } from "
 import type { FuelPrice } from "@/hooks/useFuelPrices";
 import { formatPrice } from "@/lib/format";
 import FreshnessIndicator from "./FreshnessIndicator";
+import PricePerKmBadge from "./PricePerKmBadge";
 
 const LAST_WEEK_KEY = "mepco_last_week";
 
@@ -27,9 +28,11 @@ const readStore = (): Store | null => {
 
 interface FuelPriceCardProps {
   fuel: FuelPrice;
+  /** Consumo del vehículo primario en km/L para mostrar precio/km */
+  consumptionKml?: number;
 }
 
-const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
+const FuelPriceCard = ({ fuel, consumptionKml }: FuelPriceCardProps) => {
   // Flash animation when price changes
   const prevPrice = useRef<number>(fuel.price);
   const [flash, setFlash] = useState<"up" | "down" | null>(null);
@@ -131,6 +134,9 @@ const FuelPriceCard = ({ fuel }: FuelPriceCardProps) => {
               {formatPrice(fuel.price)}
             </p>
             <p className="text-[10px] text-muted-foreground">{fuel.unit}</p>
+            {consumptionKml && fuel.type !== "electric" && (
+              <PricePerKmBadge pricePerLiter={fuel.price} consumptionKml={consumptionKml} className="mt-1.5" />
+            )}
             <FreshnessIndicator updatedAt={fuel.updatedAt} className="mt-1" />
           </div>
         </div>

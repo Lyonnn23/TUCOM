@@ -904,7 +904,7 @@ const Index = () => {
             ) : (
               <div className="space-y-3">
                 {(displayedPrices ?? []).map((fuel) => (
-                  <FuelPriceCard key={fuel.type} fuel={fuel} />
+                  <FuelPriceCard key={fuel.type} fuel={fuel} consumptionKml={primaryVehicle?.consumption_kml} />
                 ))}
               </div>
             )}
