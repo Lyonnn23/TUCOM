@@ -4,9 +4,10 @@
  * en esa dirección. Si no hay ruta guardada, muestra CTA para configurarla.
  */
 import { useState } from "react";
-import { Home, Briefcase, MapPin, X, Fuel, ChevronRight, Navigation } from "lucide-react";
+import { Home, Briefcase, MapPin, X, Fuel, ChevronRight, Navigation, Loader2 } from "lucide-react";
 import { useHomeRoute } from "@/hooks/useHomeRoute";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import type { GasStation } from "@/hooks/useGasStations";
 
 interface Props {
@@ -68,14 +69,55 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
   const navigate = useNavigate();
   const { route, saveRoute, clearRoute } = useHomeRoute();
   const [setting, setSetting] = useState(false);
-  const [customLabel, setCustomLabel] = useState("");
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
 
-  // If setting mode — let user pick via Calculadora with pre-filled dest
+  /** Captura la ubicación actual del usuario como destino habitual */
+  const captureCurrentLocation = (label: string) => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Tu dispositivo no soporta geolocalización");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: destLat, longitude: destLng } = pos.coords;
+        // Reverse geocode con Nominatim para obtener nombre legible
+        fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${destLat}&lon=${destLng}&format=json&accept-language=es`,
+          { headers: { "User-Agent": "tucom-app/2.0" } }
+        )
+          .then((r) => r.json())
+          .then((data) => {
+            const road = data.address?.road ?? data.address?.suburb ?? "";
+            const city = data.address?.city ?? data.address?.town ?? "";
+            const destName = [road, city].filter(Boolean).join(", ") || "Mi ubicación";
+            saveRoute({ label, destName, destLat, destLng });
+            setSetting(false);
+            setSelectedLabel(null);
+            toast.success(`Ruta a ${label} guardada ✓`);
+            try { navigator.vibrate?.(15); } catch {}
+          })
+          .catch(() => {
+            // Si falla el geocoder, guardar igual con nombre genérico
+            saveRoute({ label, destName: label, destLat, destLng });
+            setSetting(false);
+            setSelectedLabel(null);
+            toast.success(`Ruta a ${label} guardada ✓`);
+          })
+          .finally(() => setLocating(false));
+      },
+      () => {
+        setLocating(false);
+        toast.error("No se pudo obtener tu ubicación. Actívala en Ajustes.");
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  };
+
   const handleQuickSet = (label: string) => {
-    // We navigate to Calculadora with a flag to save home route on completion
-    // For now, save approximate: prompt user to use Calculadora
-    setSetting(false);
-    navigate(`/calculadora?saveHomeRoute=${encodeURIComponent(label)}`);
+    setSelectedLabel(label);
+    captureCurrentLocation(label);
   };
 
   if (!route) {
@@ -93,17 +135,27 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
         {setting ? (
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground mb-2">¿A dónde vas habitualmente?</p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Pulsa el botón y usaremos tu ubicación actual como destino habitual:
+            </p>
             <div className="flex gap-2">
-              {QUICK_DESTINATIONS.map(({ label, icon: Icon }) => (
-                <button
-                  key={label}
-                  onClick={() => handleQuickSet(label)}
-                  className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border border-border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 transition-colors"
-                >
-                  <Icon className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-xs font-medium">{label}</span>
-                </button>
-              ))}
+              {QUICK_DESTINATIONS.map(({ label, icon: Icon }) => {
+                const isLoading = locating && selectedLabel === label;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => !locating && handleQuickSet(label)}
+                    disabled={locating}
+                    className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border border-border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 transition-colors disabled:opacity-60"
+                  >
+                    {isLoading
+                      ? <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                      : <Icon className="w-5 h-5 text-muted-foreground" />
+                    }
+                    <span className="text-xs font-medium">{isLoading ? "Localizando…" : label}</span>
+                  </button>
+                );
+              })}
             </div>
             <button
               onClick={() => setSetting(false)}
@@ -181,7 +233,7 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
                   <p className="text-[10px] text-muted-foreground truncate">{s.brand}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-xs font-black text-[hsl(var(--fuel-green))] tabular-nums">${price}</p>
+                  <p className="text-xs font-black text-[hsl(var(--fuel-green))] tabular-nums">${price.toLocaleString("es-CL")}</p>
                   <p className="text-[9px] text-muted-foreground">por litro</p>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />

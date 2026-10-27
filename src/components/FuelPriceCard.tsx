@@ -104,7 +104,7 @@ const FuelPriceCard = ({ fuel, consumptionKml }: FuelPriceCardProps) => {
 
   return (
     <article
-      className={`bg-card rounded-2xl p-4 border flex flex-col gap-2 shadow-soft transition-colors duration-700 ${
+      className={`bg-card rounded-2xl p-4 border flex flex-col gap-2 shadow-soft transition-colors duration-700 motion-reduce:transition-none ${
         flash === "down"
           ? "border-fuel-green/60 bg-fuel-green/5"
           : flash === "up"

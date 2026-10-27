@@ -40,7 +40,14 @@ export const ShareAppCard = ({
 
   const shareWhatsApp = () => {
     const text = encodeURIComponent(buildText());
-    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+    // Usar <a> programático en lugar de window.open — funciona en iOS PWA standalone
+    const a = document.createElement("a");
+    a.href = `https://wa.me/?text=${text}`;
+    a.rel = "noopener noreferrer";
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     try { navigator.vibrate?.(10); } catch {}
   };
 

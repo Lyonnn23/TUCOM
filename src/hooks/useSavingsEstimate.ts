@@ -7,6 +7,7 @@
 import { useMemo } from "react";
 import { useMonthlySpend } from "@/hooks/useFuelStats";
 import { useFuelPrices } from "@/hooks/useFuelPrices";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 
 export interface SavingsEstimate {
   /** Ahorro estimado en CLP este mes (puede ser negativo = gastó más que el promedio) */
@@ -24,6 +25,7 @@ export interface SavingsEstimate {
 export function useSavingsEstimate(): SavingsEstimate | null {
   const { data: monthlySpend } = useMonthlySpend(1);
   const { data: prices } = useFuelPrices();
+  const { preferences } = useUserPreferences();
 
   return useMemo(() => {
     if (!monthlySpend || monthlySpend.length === 0) return null;
@@ -32,8 +34,11 @@ export function useSavingsEstimate(): SavingsEstimate | null {
     const thisMonth = monthlySpend[0];
     if (!thisMonth || thisMonth.liters < 5) return null; // menos de 5 L — no mostrar
 
-    const g95 = prices.find((p) => p.type === "gasoline95");
-    const nationalAvg = g95?.price ?? 0;
+    // Usar el precio del combustible preferido del usuario como referencia nacional
+    // (no siempre G95 — puede ser G93, Diesel, etc.)
+    const userFuel = preferences?.preferred_fuel ?? "gasoline95";
+    const fuelRef = prices.find((p) => p.type === userFuel) ?? prices.find((p) => p.type === "gasoline95");
+    const nationalAvg = fuelRef?.price ?? 0;
     if (!nationalAvg) return null;
 
     const avgPricePaid = thisMonth.avg_price ?? thisMonth.total_clp / thisMonth.liters;

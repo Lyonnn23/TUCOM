@@ -32,6 +32,8 @@ interface Props {
   right: string;
   autoDismissMs?: number;
   enabled?: boolean;
+  /** Extra ms to wait before showing (for staggering multiple coach marks) */
+  delayMs?: number;
 }
 
 const CoachMarkFixed = ({
@@ -41,22 +43,22 @@ const CoachMarkFixed = ({
   right,
   autoDismissMs = 5000,
   enabled = true,
+  delayMs = 600,
 }: Props) => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
     if (getSeen().has(id)) return;
-    const t = setTimeout(() => setOpen(true), 600);
+    const t = setTimeout(() => setOpen(true), delayMs);
     return () => clearTimeout(t);
-  }, [id, enabled]);
+  }, [id, enabled, delayMs]);
 
   useEffect(() => {
     if (!open || !autoDismissMs) return;
-    const t = setTimeout(() => dismiss(), autoDismissMs);
+    const t = setTimeout(() => { markSeen(id); setOpen(false); }, autoDismissMs);
     return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, autoDismissMs, id]);
 
   const dismiss = () => { markSeen(id); setOpen(false); };
 

@@ -1376,7 +1376,7 @@ const Index = () => {
       <BottomNav active={activeTab} onChange={setActiveTab} />
       <FuelLogFAB />
       <DriverModeFAB />
-      {/* Coach marks for FABs */}
+      {/* Coach marks para FABs — escalonados: el segundo espera al primero */}
       <CoachMarkFixed
         id="fuel-log-fab"
         message="Registra tus cargas para ver cuánto ahorras cada mes 💰"
@@ -1389,7 +1389,8 @@ const Index = () => {
         message="Modo conductor: ve bencineras baratas de camino a tu destino 🚗"
         bottom="14.5rem"
         right="1.25rem"
-        autoDismissMs={6500}
+        autoDismissMs={5000}
+        delayMs={7000}
       />
 
       <AlertDialog open={showLocationRationale} onOpenChange={(o) => !o && dismissLocationRationale()}>
