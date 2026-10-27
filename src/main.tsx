@@ -20,9 +20,7 @@ if (isPreviewHost || isInIframe) {
 
 // Register push notification service worker (production only)
 if ("serviceWorker" in navigator && !isPreviewHost && !isInIframe) {
-  navigator.serviceWorker.register("/sw-push.js").catch((err) => {
-    console.log("SW registration failed:", err);
-  });
+  navigator.serviceWorker.register("/sw-push.js").catch(() => {});
 }
 
 // Limpieza única: versiones anteriores guardaban el cargador de Google Maps en caché

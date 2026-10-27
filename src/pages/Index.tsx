@@ -328,11 +328,6 @@ const Index = () => {
     nationalPrices: fuelPrices,
     radiusKm: 10,
   });
-  // Search radius confirmation (CRITICAL FIX: 10km radius enforced)
-  if (typeof window !== "undefined" && !(window as any).__tucomRadiusLogged) {
-    (window as any).__tucomRadiusLogged = true;
-    console.log("[TÜcom] Station search radius:", { radius: 10000, radius_km: 10 });
-  }
   const { data: recentReports } = useRecentReports();
   const { data: stationRatings } = useStationRatings();
 
@@ -522,17 +517,17 @@ const Index = () => {
       .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => {
-        const featuredBrands = ["Copec", "Shell", "Aramco"];
-        const aFeat = featuredBrands.includes(a.brand) ? 0 : 1;
-        const bFeat = featuredBrands.includes(b.brand) ? 0 : 1;
-        if (aFeat !== bFeat) return aFeat - bFeat;
-
         if (sortByFuel !== "distance") {
           const fuelKey = sortByFuel as keyof typeof a.prices;
           const priceA = a.prices[fuelKey] || 99999;
           const priceB = b.prices[fuelKey] || 99999;
           if (priceA !== priceB) return priceA - priceB;
         }
+        // Featured brands only as tiebreaker (same price or sorting by distance)
+        const FEATURED = ["Copec", "Shell", "Aramco"];
+        const aFeat = FEATURED.includes(a.brand) ? 0 : 1;
+        const bFeat = FEATURED.includes(b.brand) ? 0 : 1;
+        if (aFeat !== bFeat) return aFeat - bFeat;
         return (a.distance ?? 999) - (b.distance ?? 999);
       });
   }, [stations, userLocation, debouncedSearch, selectedBrand, sortByFuel, radiusKm]);
@@ -600,6 +595,11 @@ const Index = () => {
         <link rel="canonical" href="https://tucombustible.cl/" />
         <meta property="og:title" content={meta.title} />
         <meta property="og:description" content={meta.description} />
+        <meta property="og:image" content="https://tucombustible.cl/og-image.jpg" />
+        <meta property="og:url" content="https://tucombustible.cl/" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://tucombustible.cl/og-image.jpg" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",

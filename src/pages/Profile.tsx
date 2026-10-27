@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft, Bell, Heart, LogOut, Mail, Save, Trash2, ChevronRight,
   Globe, Info, FileText, Shield, Bug, Fuel as FuelIcon, Trophy, Sparkles, Calculator, Car, ClipboardList,
@@ -156,6 +157,10 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <Helmet>
+        <title>Perfil · TÜcom</title>
+        <meta name="description" content="Configura tu vehículo, combustible preferido y preferencias de la app TÜcom." />
+      </Helmet>
       {/* Header */}
       <header className="bg-gradient-primary px-4 pt-[env(safe-area-inset-top)] sticky top-0 z-40 shadow-elegant">
         <div className="flex items-center gap-3 py-3 max-w-2xl mx-auto">

@@ -9,7 +9,7 @@ interface BIPEvent extends Event {
 }
 
 const DISMISS_KEY = "tucom-install-dismissed-at";
-const DISMISS_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
+const DISMISS_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 const IOS_HINT_KEY = "ios_hint_shown";
 const SHOW_DELAY_MS = 30000;
 const IOS_HINT_DELAY_MS = 5000;
@@ -103,7 +103,7 @@ export default function InstallBanner() {
             <div className="flex-1 min-w-0">
               <p className="font-heading font-bold text-sm">Instala TÜcom</p>
               <p className="text-xs text-white/85">
-                Instala TÜcom para mejor experiencia.
+                Acceso rápido desde tu pantalla de inicio.
               </p>
             </div>
             <Button

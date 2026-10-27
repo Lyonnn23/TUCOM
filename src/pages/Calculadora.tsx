@@ -45,7 +45,7 @@ const Calculadora = () => {
   const [searchParams] = useSearchParams();
   const { primary: primaryVehicle } = useUserVehicles();
   const { preferences } = useUserPreferences();
-  const initialKm = Number(searchParams.get("km") || 0) || undefined;
+  const initialKm = Number(searchParams.get("km")) || undefined;
   const initialDest = searchParams.get("dest") || undefined;
   const fuelPrices = useFuelPrices();
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
   ArrowLeft,
   Navigation,
@@ -232,7 +233,6 @@ const Drive = () => {
         },
         (e) => {
           if (cancelled) return;
-          console.warn("Drive GPS error:", e);
           setPos((prev) => prev ?? SANTIAGO);
           toast("Usando ubicación aproximada");
         },
@@ -475,6 +475,11 @@ const Drive = () => {
         }
       `}</style>
 
+      <Helmet>
+        <title>Modo Conductor · TÜcom</title>
+        <meta name="description" content="Encuentra estaciones de bencina baratas cerca de tu ubicación actual mientras conduces." />
+      </Helmet>
+
       {/* Header */}
       <header
         className="sticky top-0 z-30 px-4 pt-[env(safe-area-inset-top)] py-3 flex items-center gap-3 border-b border-white/10"
@@ -548,9 +553,10 @@ const Drive = () => {
           </div>
         )}
         {pos && isLoading && (
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 flex items-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none" />
-            <span className="text-xl font-semibold">Cargando estaciones…</span>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-3xl border border-white/10 bg-white/5 h-40 animate-pulse" />
+            ))}
           </div>
         )}
         {pos && !isLoading && top5.length === 0 && (
