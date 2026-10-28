@@ -3,7 +3,7 @@
  * Muestra resumen de gasto e litros cargados en los últimos 7 días.
  * Se oculta si no hay registros recientes. Dismissable por el usuario.
  */
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Flame, TrendingDown, TrendingUp, X } from "lucide-react";
 import { useFuelLogs } from "@/hooks/useFuelLogs";
 import CountUp from "./CountUp";
@@ -20,11 +20,8 @@ const isoWeek = (d = new Date()): string => {
   return `${t.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
 };
 
-const getDismissedWeek = (): string => {
+const readDismissedWeek = (): string => {
   try { return localStorage.getItem(DISMISS_KEY) ?? ""; } catch { return ""; }
-};
-const dismissCurrentWeek = () => {
-  try { localStorage.setItem(DISMISS_KEY, isoWeek()); } catch {}
 };
 
 interface Props {
@@ -32,10 +29,11 @@ interface Props {
 }
 
 const WeeklySummaryWidget = ({ className = "" }: Props) => {
-  const { list } = useFuelLogs();
-  const logs = list.data ?? [];
-
+  const { logs } = useFuelLogs();
   const week = isoWeek();
+
+  // Use state so dismissing causes a re-render
+  const [dismissed, setDismissed] = useState(() => readDismissedWeek() === week);
 
   // Sum logs from the past 7 days
   const { liters, spent, fills, vsLastWeek } = useMemo(() => {
@@ -73,7 +71,12 @@ const WeeklySummaryWidget = ({ className = "" }: Props) => {
   if (fills === 0) return null;
 
   // Hidden if user dismissed for this week
-  if (getDismissedWeek() === week) return null;
+  if (dismissed) return null;
+
+  const handleDismiss = () => {
+    try { localStorage.setItem(DISMISS_KEY, week); } catch {}
+    setDismissed(true);
+  };
 
   const changeLabel =
     vsLastWeek === null
@@ -98,7 +101,7 @@ const WeeklySummaryWidget = ({ className = "" }: Props) => {
       role="region"
       aria-label="Resumen semanal de combustible"
     >
-      {/* Decorative blobs */}
+      {/* Decorative blob */}
       <div className="pointer-events-none absolute -top-6 -right-6 w-24 h-24 rounded-full bg-primary/10 blur-2xl" aria-hidden="true" />
 
       {/* Header */}
@@ -110,7 +113,7 @@ const WeeklySummaryWidget = ({ className = "" }: Props) => {
           <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Esta semana</p>
         </div>
         <button
-          onClick={dismissCurrentWeek}
+          onClick={handleDismiss}
           className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
           aria-label="Cerrar resumen semanal"
         >
@@ -129,7 +132,8 @@ const WeeklySummaryWidget = ({ className = "" }: Props) => {
         <div className="flex-1 bg-card/60 rounded-xl p-3 border border-border/50">
           <p className="text-[10px] text-muted-foreground mb-0.5">Cargaste</p>
           <p className="text-lg font-black tabular-nums text-foreground leading-none">
-            <CountUp value={liters} format={(n) => n.toFixed(1)} /><span className="text-xs font-semibold text-muted-foreground ml-0.5">L</span>
+            <CountUp value={liters} format={(n) => n.toFixed(1)} />
+            <span className="text-xs font-semibold text-muted-foreground ml-0.5">L</span>
           </p>
         </div>
         <div className="flex-1 bg-card/60 rounded-xl p-3 border border-border/50">

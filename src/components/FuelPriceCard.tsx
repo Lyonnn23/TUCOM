@@ -68,15 +68,13 @@ const FuelPriceCard = ({ fuel, consumptionKml }: FuelPriceCardProps) => {
       const now = isoWeek();
       const store = readStore();
       if (!store || store.week !== now) {
-        const base = store && store.week === now ? store.prices : {};
+        // New week: start a fresh snapshot; carry over any prices already seeded this week
+        // (store.week !== now means it's a prior week, so we start fresh)
         const next: Store = {
           week: now,
-          prices: { ...base, [fuel.type]: fuel.price },
+          prices: { [fuel.type]: fuel.price },
         };
-        // Only overwrite snapshot when crossing a new week to keep WoW stable
-        if (!store || store.week !== now) {
-          localStorage.setItem(LAST_WEEK_KEY, JSON.stringify(next));
-        }
+        localStorage.setItem(LAST_WEEK_KEY, JSON.stringify(next));
       } else if (typeof store.prices?.[fuel.type] !== "number") {
         // Seed missing fuel within current week without overwriting others
         store.prices[fuel.type] = fuel.price;

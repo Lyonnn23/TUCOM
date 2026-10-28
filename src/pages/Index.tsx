@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Fuel, MapPin, RefreshCw, Zap, LogIn, LogOut, User, Download, Radar, BarChart3, TrendingUp, Shield, LocateFixed, TrendingDown, Bell, Calculator, WifiOff, Lightbulb, ChevronRight } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -475,23 +475,29 @@ const Index = () => {
   const RATIONALE_KEY = "tucom_location_rationale_seen_v1";
   const [showLocationRationale, setShowLocationRationale] = useState(false);
 
+  // Keep a ref to requestLocation so the interval always calls the latest version
+  // without needing it in the dependency array (which would reset the interval on every render)
+  const requestLocationRef = useRef(requestLocation);
+  useEffect(() => { requestLocationRef.current = requestLocation; });
+
   useEffect(() => {
     let seen = false;
     try { seen = localStorage.getItem(RATIONALE_KEY) === "1"; } catch { /* noop */ }
     if (!seen) {
       setShowLocationRationale(true);
     } else {
-      requestLocation();
+      requestLocationRef.current();
     }
     const interval = setInterval(() => {
       setLocationErrorType((current) => {
         if (current !== "denied" && current !== "unsupported") {
-          requestLocation(true);
+          requestLocationRef.current(true);
         }
         return current;
       });
     }, 120_000); // every 2 minutes
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const acceptLocationRationale = () => {
@@ -525,7 +531,7 @@ const Index = () => {
           ? calculateDistance(userLocation.lat, userLocation.lng, s.lat, s.lng)
           : undefined,
       }))
-      .filter((s) => radiusKm === null || (s.distance !== undefined && s.distance <= radiusKm))
+      .filter((s) => !userLocation || radiusKm === null || (s.distance !== undefined && s.distance <= radiusKm))
       .filter((s) => selectedBrand === "all" || s.brand === selectedBrand)
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.brand.toLowerCase().includes(q) || s.address.toLowerCase().includes(q))
       .sort((a, b) => {

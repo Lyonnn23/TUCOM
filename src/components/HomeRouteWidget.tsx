@@ -92,7 +92,7 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
             const road = data.address?.road ?? data.address?.suburb ?? "";
             const city = data.address?.city ?? data.address?.town ?? "";
             const destName = [road, city].filter(Boolean).join(", ") || "Mi ubicación";
-            saveRoute({ label, destName, destLat, destLng });
+            saveRoute({ label, destName, destLat, destLng, savedAt: new Date().toISOString() });
             setSetting(false);
             setSelectedLabel(null);
             toast.success(`Ruta a ${label} guardada ✓`);
@@ -100,7 +100,7 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
           })
           .catch(() => {
             // Si falla el geocoder, guardar igual con nombre genérico
-            saveRoute({ label, destName: label, destLat, destLng });
+            saveRoute({ label, destName: label, destLat, destLng, savedAt: new Date().toISOString() });
             setSetting(false);
             setSelectedLabel(null);
             toast.success(`Ruta a ${label} guardada ✓`);
