@@ -3,6 +3,7 @@ import { MapPin, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { QUICK_DESTINATIONS } from "@/lib/tripCalc";
 import { useNearbyStations, type FuelTypeKey } from "@/hooks/useNearbyStations";
+import { useFuelPrices } from "@/hooks/useFuelPrices";
 import { useUserVehicles } from "@/hooks/useUserVehicles";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { formatPrice, formatInt } from "@/lib/format";
@@ -39,17 +40,26 @@ export default function WhereToGoWidget({ userLocation }: Props) {
   const [usingFallback, setUsingFallback] = useState(false);
   const pendingRef = useRef<{ km: number; label: string | null } | null>(null);
 
-  // Fallback national average prices (CLP/L) when no nearby prices are found
-  const FALLBACK_PRICES: Record<FuelTypeKey, number> = {
-    gasoline93: 1050,
-    gasoline95: 1100,
-    gasoline97: 1180,
-    diesel: 980,
-    electric: 250,
-  };
+  // Fallback: usar precio MEPCO real del tipo de combustible, o hardcoded si API no ha cargado
+  const fallbackPrice = useMemo(() => {
+    if (nationalPrices && nationalPrices.length > 0) {
+      const match = nationalPrices.find((p) => p.type === fuelType) ?? nationalPrices.find((p) => p.type === "gasoline95");
+      if (match?.price) return match.price;
+    }
+    // Precios de respaldo actualizados (aprox. 2024 Chile)
+    const STATIC_FALLBACK: Record<FuelTypeKey, number> = {
+      gasoline93: 1090,
+      gasoline95: 1150,
+      gasoline97: 1230,
+      diesel: 1010,
+      electric: 270,
+    };
+    return STATIC_FALLBACK[fuelType] ?? 1150;
+  }, [nationalPrices, fuelType]);
 
   const { primary: primaryVehicle } = useUserVehicles();
   const { preferences } = useUserPreferences();
+  const { data: nationalPrices } = useFuelPrices();
 
   const fuelType: FuelTypeKey = useMemo(() => {
     const f = (primaryVehicle?.fuel_type ?? preferences?.preferred_fuel ?? "gasoline95") as FuelTypeKey;
@@ -117,11 +127,11 @@ export default function WhereToGoWidget({ userLocation }: Props) {
       pendingRef.current = null;
       setPending(false);
       toast.info("No se encontraron precios cercanos. Usando precio promedio nacional.");
-      compute(k, label, FALLBACK_PRICES[fuelType] ?? 1100, true);
+      compute(k, label, fallbackPrice, true);
     }, 8000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pending, cheapest, fuelType]);
+  }, [pending, cheapest, fuelType, fallbackPrice]);
 
   const run = (tripKm: number, label: string | null) => {
     if (!tripKm || tripKm <= 0) return;

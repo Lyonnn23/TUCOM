@@ -557,7 +557,7 @@ const Index = () => {
 
   const handleNavigate = useCallback((station: GasStation) => {
     const wazeUrl = `https://waze.com/ul?ll=${station.lat},${station.lng}&navigate=yes`;
-    window.open(wazeUrl, "_blank");
+    window.open(wazeUrl, "_blank", "noopener,noreferrer");
   }, []);
 
   // Reset pagination when filters change
@@ -838,7 +838,7 @@ const Index = () => {
                   <div className="text-right shrink-0">
                     <p className="text-[10px] text-primary-foreground/75 uppercase tracking-wider">{heroLabel[heroFuel]}</p>
                     <p className="font-heading tabular-nums font-black text-4xl leading-none">
-                      ${cheapest.prices[heroFuel]}
+                      ${(cheapest.prices[heroFuel] ?? 0).toLocaleString("es-CL")}
                     </p>
                     <p className="text-[10px] text-primary-foreground/70 mt-0.5">por litro</p>
                     <FreshnessIndicator updatedAt={cheapest.lastUpdated} inverse className="justify-end mt-1" />

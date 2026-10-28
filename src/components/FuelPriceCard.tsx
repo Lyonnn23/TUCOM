@@ -89,9 +89,9 @@ const FuelPriceCard = ({ fuel, consumptionKml }: FuelPriceCardProps) => {
     wow === null
       ? null
       : wow < 0
-        ? `$${Math.abs(Math.round(wow))} más barato que la semana pasada`
+        ? `$${Math.abs(Math.round(wow)).toLocaleString("es-CL")} más barato que la semana pasada`
         : wow > 0
-          ? `$${Math.round(wow)} más caro que la semana pasada`
+          ? `$${Math.round(wow).toLocaleString("es-CL")} más caro que la semana pasada`
           : "Sin cambio esta semana";
 
   const WowIcon = wow === null ? Minus : wow < 0 ? ArrowDown : wow > 0 ? ArrowUp : Minus;

@@ -27,14 +27,14 @@ export function useFuelPrices() {
       if (error) throw error;
 
       return (data ?? [])
-        .map((row: any) => ({
-          type: row.fuel_type,
-          name: row.name || row.fuel_type,
-          price: row.price,
-          unit: row.unit,
-          trend: row.trend || "stable",
+        .map((row: Record<string, unknown>) => ({
+          type: String(row.fuel_type ?? ""),
+          name: String(row.name || row.fuel_type || ""),
+          price: Number(row.price ?? 0),
+          unit: String(row.unit ?? "CLP/L"),
+          trend: String(row.trend || "stable"),
           change: Number(row.change_percent) || 0,
-          updatedAt: row.updated_at ?? row.created_at ?? null,
+          updatedAt: (row.updated_at ?? row.created_at ?? null) as string | null,
         }))
         .sort((a, b) => (FUEL_ORDER[a.type] ?? 99) - (FUEL_ORDER[b.type] ?? 99));
     },

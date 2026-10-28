@@ -198,7 +198,7 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => navigate(`/calculadora?dest=${encodeURIComponent(route.destName)}`)}
+            onClick={() => navigate(`/calculadora?destLat=${route.destLat}&destLng=${route.destLng}&destName=${encodeURIComponent(route.destName)}`)}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
             aria-label="Calcular ruta"
           >

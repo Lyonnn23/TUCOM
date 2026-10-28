@@ -76,7 +76,7 @@ const MonthlySavingsCard = () => {
           <div className="text-right">
             <Wallet className="w-4 h-4 text-muted-foreground mx-auto mb-0.5" />
             <p className="text-[9px] text-muted-foreground font-mono">
-              ${estimate.avgPricePaid}/L<br />pagado
+              ${estimate.avgPricePaid.toLocaleString("es-CL")}/L<br />pagado
             </p>
           </div>
           {/* Share trigger button */}
