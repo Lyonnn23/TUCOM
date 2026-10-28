@@ -51,5 +51,5 @@ export function useSavingsEstimate(): SavingsEstimate | null {
       nationalAvg,
       hasSavings: Math.abs(savedCLP) > 500, // solo mostrar si hay diferencia significativa
     };
-  }, [monthlySpend, prices]);
+  }, [monthlySpend, prices, preferences]);
 }

@@ -9,6 +9,7 @@ import PushNotificationToggle from "@/components/PushNotificationToggle";
 import CoachMarkFixed from "@/components/CoachMarkFixed";
 import MonthlySavingsCard from "@/components/MonthlySavingsCard";
 import HomeRouteWidget from "@/components/HomeRouteWidget";
+import WeeklySummaryWidget from "@/components/WeeklySummaryWidget";
 import { Input } from "@/components/ui/input";
 import FuelPriceCard from "@/components/FuelPriceCard";
 import MepcoThursdayBanner from "@/components/MepcoThursdayBanner";
@@ -862,6 +863,7 @@ const Index = () => {
         })()}
         {activeTab === "prices" && <div className="mb-4"><WhereToGoWidget userLocation={userLocation} /></div>}
         {activeTab === "prices" && <div className="mb-4"><HomeRouteWidget userLocation={userLocation} stations={stationsWithDistance} preferredFuel={preferences?.preferred_fuel ?? "gasoline95"} /></div>}
+        {activeTab === "prices" && <WeeklySummaryWidget className="mb-4" />}
         {activeTab === "prices" && <div className="mb-4"><MonthlySavingsCard /></div>}
         {activeTab === "prices" && <div className="mb-4"><UpcomingDeadlinesCard /></div>}
         {activeTab === "prices" && <SectionLabel className="mb-3">Mercado hoy</SectionLabel>}
