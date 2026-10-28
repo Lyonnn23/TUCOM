@@ -1,0 +1,430 @@
+/**
+ * Todas las comunas de Chile con coordenadas y distancia aproximada desde Santiago.
+ * Fuente: coordenadas del centroide de cada comuna.
+ * Distancia en km por carretera desde Plaza de Armas, Santiago.
+ */
+
+export interface Comuna {
+  nombre: string;
+  region: string;
+  lat: number;
+  lng: number;
+  /** km aproximados por carretera desde Santiago (centro) */
+  kmDesdeSantiago: number;
+}
+
+export const COMUNAS_CHILE: Comuna[] = [
+  // Región de Arica y Parinacota (XV)
+  { nombre: "Arica", region: "Arica y Parinacota", lat: -18.4783, lng: -70.3126, kmDesdeSantiago: 2050 },
+  { nombre: "Camarones", region: "Arica y Parinacota", lat: -19.0167, lng: -69.8333, kmDesdeSantiago: 2000 },
+  { nombre: "General Lagos", region: "Arica y Parinacota", lat: -17.5, lng: -69.5, kmDesdeSantiago: 2150 },
+  { nombre: "Putre", region: "Arica y Parinacota", lat: -18.1977, lng: -69.5631, kmDesdeSantiago: 2080 },
+
+  // Región de Tarapacá (I)
+  { nombre: "Iquique", region: "Tarapacá", lat: -20.2141, lng: -70.1522, kmDesdeSantiago: 1850 },
+  { nombre: "Alto Hospicio", region: "Tarapacá", lat: -20.2653, lng: -70.1035, kmDesdeSantiago: 1855 },
+  { nombre: "Camiña", region: "Tarapacá", lat: -19.3167, lng: -69.4167, kmDesdeSantiago: 1920 },
+  { nombre: "Colchane", region: "Tarapacá", lat: -19.2667, lng: -68.6333, kmDesdeSantiago: 1950 },
+  { nombre: "Huara", region: "Tarapacá", lat: -19.9833, lng: -69.7667, kmDesdeSantiago: 1870 },
+  { nombre: "Pica", region: "Tarapacá", lat: -20.4833, lng: -69.35, kmDesdeSantiago: 1810 },
+  { nombre: "Pozo Almonte", region: "Tarapacá", lat: -20.2333, lng: -69.8, kmDesdeSantiago: 1860 },
+
+  // Región de Antofagasta (II)
+  { nombre: "Antofagasta", region: "Antofagasta", lat: -23.6509, lng: -70.3975, kmDesdeSantiago: 1360 },
+  { nombre: "Mejillones", region: "Antofagasta", lat: -23.1, lng: -70.45, kmDesdeSantiago: 1400 },
+  { nombre: "Sierra Gorda", region: "Antofagasta", lat: -22.8833, lng: -69.3167, kmDesdeSantiago: 1380 },
+  { nombre: "Taltal", region: "Antofagasta", lat: -25.4, lng: -70.4833, kmDesdeSantiago: 1180 },
+  { nombre: "Calama", region: "Antofagasta", lat: -22.4667, lng: -68.9333, kmDesdeSantiago: 1540 },
+  { nombre: "Ollagüe", region: "Antofagasta", lat: -21.2167, lng: -68.25, kmDesdeSantiago: 1700 },
+  { nombre: "San Pedro de Atacama", region: "Antofagasta", lat: -22.9092, lng: -68.1997, kmDesdeSantiago: 1550 },
+  { nombre: "Tocopilla", region: "Antofagasta", lat: -22.0922, lng: -70.1961, kmDesdeSantiago: 1500 },
+  { nombre: "María Elena", region: "Antofagasta", lat: -22.35, lng: -69.6667, kmDesdeSantiago: 1480 },
+
+  // Región de Atacama (III)
+  { nombre: "Copiapó", region: "Atacama", lat: -27.3667, lng: -70.3333, kmDesdeSantiago: 807 },
+  { nombre: "Caldera", region: "Atacama", lat: -27.0667, lng: -70.8167, kmDesdeSantiago: 840 },
+  { nombre: "Tierra Amarilla", region: "Atacama", lat: -27.4833, lng: -70.2667, kmDesdeSantiago: 800 },
+  { nombre: "Chañaral", region: "Atacama", lat: -26.35, lng: -70.6167, kmDesdeSantiago: 960 },
+  { nombre: "Diego de Almagro", region: "Atacama", lat: -26.3667, lng: -70.05, kmDesdeSantiago: 970 },
+  { nombre: "Vallenar", region: "Atacama", lat: -28.5667, lng: -70.7583, kmDesdeSantiago: 670 },
+  { nombre: "Alto del Carmen", region: "Atacama", lat: -28.7667, lng: -70.4833, kmDesdeSantiago: 660 },
+  { nombre: "Freirina", region: "Atacama", lat: -28.5, lng: -71.0833, kmDesdeSantiago: 680 },
+  { nombre: "Huasco", region: "Atacama", lat: -28.4667, lng: -71.2167, kmDesdeSantiago: 690 },
+
+  // Región de Coquimbo (IV)
+  { nombre: "La Serena", region: "Coquimbo", lat: -29.9027, lng: -71.2519, kmDesdeSantiago: 470 },
+  { nombre: "Coquimbo", region: "Coquimbo", lat: -29.9533, lng: -73.3978, kmDesdeSantiago: 475 },
+  { nombre: "Andacollo", region: "Coquimbo", lat: -30.2333, lng: -71.0833, kmDesdeSantiago: 450 },
+  { nombre: "La Higuera", region: "Coquimbo", lat: -29.5, lng: -71.25, kmDesdeSantiago: 510 },
+  { nombre: "Paiguano", region: "Coquimbo", lat: -30.0167, lng: -70.5, kmDesdeSantiago: 440 },
+  { nombre: "Vicuña", region: "Coquimbo", lat: -30.0333, lng: -70.7167, kmDesdeSantiago: 455 },
+  { nombre: "Illapel", region: "Coquimbo", lat: -31.6333, lng: -71.1667, kmDesdeSantiago: 310 },
+  { nombre: "Canela", region: "Coquimbo", lat: -31.4, lng: -71.45, kmDesdeSantiago: 330 },
+  { nombre: "Los Vilos", region: "Coquimbo", lat: -31.9167, lng: -71.5, kmDesdeSantiago: 265 },
+  { nombre: "Salamanca", region: "Coquimbo", lat: -31.7833, lng: -70.9667, kmDesdeSantiago: 295 },
+  { nombre: "Ovalle", region: "Coquimbo", lat: -30.6, lng: -71.2, kmDesdeSantiago: 405 },
+  { nombre: "Combarbalá", region: "Coquimbo", lat: -31.1833, lng: -71.0167, kmDesdeSantiago: 360 },
+  { nombre: "Monte Patria", region: "Coquimbo", lat: -30.6833, lng: -70.9667, kmDesdeSantiago: 400 },
+  { nombre: "Punitaqui", region: "Coquimbo", lat: -30.8333, lng: -71.2667, kmDesdeSantiago: 390 },
+  { nombre: "Río Hurtado", region: "Coquimbo", lat: -30.45, lng: -70.7, kmDesdeSantiago: 430 },
+
+  // Región de Valparaíso (V)
+  { nombre: "Valparaíso", region: "Valparaíso", lat: -33.0458, lng: -71.6197, kmDesdeSantiago: 120 },
+  { nombre: "Viña del Mar", region: "Valparaíso", lat: -33.0245, lng: -71.5518, kmDesdeSantiago: 118 },
+  { nombre: "Concón", region: "Valparaíso", lat: -32.9215, lng: -71.5247, kmDesdeSantiago: 110 },
+  { nombre: "Quintero", region: "Valparaíso", lat: -32.7833, lng: -71.5333, kmDesdeSantiago: 130 },
+  { nombre: "Puchuncaví", region: "Valparaíso", lat: -32.7167, lng: -71.4167, kmDesdeSantiago: 140 },
+  { nombre: "Casablanca", region: "Valparaíso", lat: -33.3167, lng: -71.4167, kmDesdeSantiago: 85 },
+  { nombre: "Algarrobo", region: "Valparaíso", lat: -33.3667, lng: -71.65, kmDesdeSantiago: 105 },
+  { nombre: "Cartagena", region: "Valparaíso", lat: -33.55, lng: -71.6167, kmDesdeSantiago: 110 },
+  { nombre: "El Quisco", region: "Valparaíso", lat: -33.4, lng: -71.6833, kmDesdeSantiago: 102 },
+  { nombre: "El Tabo", region: "Valparaíso", lat: -33.4667, lng: -71.6667, kmDesdeSantiago: 106 },
+  { nombre: "San Antonio", region: "Valparaíso", lat: -33.5833, lng: -71.6, kmDesdeSantiago: 115 },
+  { nombre: "Santo Domingo", region: "Valparaíso", lat: -33.65, lng: -71.6167, kmDesdeSantiago: 120 },
+  { nombre: "Quillota", region: "Valparaíso", lat: -32.8833, lng: -71.25, kmDesdeSantiago: 110 },
+  { nombre: "Calera", region: "Valparaíso", lat: -32.7833, lng: -71.2, kmDesdeSantiago: 125 },
+  { nombre: "Hijuelas", region: "Valparaíso", lat: -32.8, lng: -71.15, kmDesdeSantiago: 118 },
+  { nombre: "La Cruz", region: "Valparaíso", lat: -32.8333, lng: -71.2667, kmDesdeSantiago: 112 },
+  { nombre: "Limache", region: "Valparaíso", lat: -33.0, lng: -71.15, kmDesdeSantiago: 100 },
+  { nombre: "Nogales", region: "Valparaíso", lat: -32.7333, lng: -71.2167, kmDesdeSantiago: 132 },
+  { nombre: "Olmué", region: "Valparaíso", lat: -33.0833, lng: -71.1833, kmDesdeSantiago: 98 },
+  { nombre: "San Felipe", region: "Valparaíso", lat: -32.75, lng: -70.7167, kmDesdeSantiago: 89 },
+  { nombre: "Catemu", region: "Valparaíso", lat: -32.7667, lng: -70.9333, kmDesdeSantiago: 85 },
+  { nombre: "Llaillay", region: "Valparaíso", lat: -32.85, lng: -70.9667, kmDesdeSantiago: 80 },
+  { nombre: "Panquehue", region: "Valparaíso", lat: -32.8, lng: -70.9, kmDesdeSantiago: 88 },
+  { nombre: "Putaendo", region: "Valparaíso", lat: -32.6333, lng: -70.7167, kmDesdeSantiago: 95 },
+  { nombre: "Santa María", region: "Valparaíso", lat: -32.75, lng: -70.6833, kmDesdeSantiago: 90 },
+  { nombre: "Los Andes", region: "Valparaíso", lat: -32.8333, lng: -70.5952, kmDesdeSantiago: 78 },
+  { nombre: "Calle Larga", region: "Valparaíso", lat: -32.85, lng: -70.6167, kmDesdeSantiago: 80 },
+  { nombre: "Rinconada", region: "Valparaíso", lat: -32.8167, lng: -70.6667, kmDesdeSantiago: 82 },
+  { nombre: "San Esteban", region: "Valparaíso", lat: -32.8167, lng: -70.55, kmDesdeSantiago: 76 },
+  { nombre: "La Ligua", region: "Valparaíso", lat: -32.45, lng: -71.2333, kmDesdeSantiago: 150 },
+  { nombre: "Cabildo", region: "Valparaíso", lat: -32.4167, lng: -71.0667, kmDesdeSantiago: 155 },
+  { nombre: "Papudo", region: "Valparaíso", lat: -32.5, lng: -71.4333, kmDesdeSantiago: 155 },
+  { nombre: "Petorca", region: "Valparaíso", lat: -32.25, lng: -70.9333, kmDesdeSantiago: 170 },
+  { nombre: "Zapallar", region: "Valparaíso", lat: -32.55, lng: -71.45, kmDesdeSantiago: 150 },
+  { nombre: "Isla de Pascua", region: "Valparaíso", lat: -27.1127, lng: -109.3497, kmDesdeSantiago: 3700 },
+  { nombre: "Juan Fernández", region: "Valparaíso", lat: -33.6236, lng: -78.8376, kmDesdeSantiago: 670 },
+
+  // Región Metropolitana (RM)
+  { nombre: "Santiago", region: "Metropolitana", lat: -33.4489, lng: -70.6693, kmDesdeSantiago: 0 },
+  { nombre: "Cerrillos", region: "Metropolitana", lat: -33.4902, lng: -70.7128, kmDesdeSantiago: 8 },
+  { nombre: "Cerro Navia", region: "Metropolitana", lat: -33.4333, lng: -70.7333, kmDesdeSantiago: 9 },
+  { nombre: "Conchalí", region: "Metropolitana", lat: -33.3833, lng: -70.65, kmDesdeSantiago: 6 },
+  { nombre: "El Bosque", region: "Metropolitana", lat: -33.5667, lng: -70.6667, kmDesdeSantiago: 13 },
+  { nombre: "Estación Central", region: "Metropolitana", lat: -33.4548, lng: -70.6783, kmDesdeSantiago: 2 },
+  { nombre: "Huechuraba", region: "Metropolitana", lat: -33.3667, lng: -70.65, kmDesdeSantiago: 9 },
+  { nombre: "Independencia", region: "Metropolitana", lat: -33.4167, lng: -70.65, kmDesdeSantiago: 4 },
+  { nombre: "La Cisterna", region: "Metropolitana", lat: -33.5333, lng: -70.6667, kmDesdeSantiago: 10 },
+  { nombre: "La Florida", region: "Metropolitana", lat: -33.5167, lng: -70.5833, kmDesdeSantiago: 11 },
+  { nombre: "La Granja", region: "Metropolitana", lat: -33.5333, lng: -70.6167, kmDesdeSantiago: 10 },
+  { nombre: "La Pintana", region: "Metropolitana", lat: -33.5833, lng: -70.6333, kmDesdeSantiago: 14 },
+  { nombre: "La Reina", region: "Metropolitana", lat: -33.45, lng: -70.5333, kmDesdeSantiago: 10 },
+  { nombre: "Las Condes", region: "Metropolitana", lat: -33.4167, lng: -70.5667, kmDesdeSantiago: 8 },
+  { nombre: "Lo Barnechea", region: "Metropolitana", lat: -33.35, lng: -70.5167, kmDesdeSantiago: 18 },
+  { nombre: "Lo Espejo", region: "Metropolitana", lat: -33.5167, lng: -70.6833, kmDesdeSantiago: 9 },
+  { nombre: "Lo Prado", region: "Metropolitana", lat: -33.45, lng: -70.7167, kmDesdeSantiago: 7 },
+  { nombre: "Macul", region: "Metropolitana", lat: -33.4833, lng: -70.5833, kmDesdeSantiago: 8 },
+  { nombre: "Maipú", region: "Metropolitana", lat: -33.5167, lng: -70.7667, kmDesdeSantiago: 12 },
+  { nombre: "Ñuñoa", region: "Metropolitana", lat: -33.45, lng: -70.6, kmDesdeSantiago: 5 },
+  { nombre: "Pedro Aguirre Cerda", region: "Metropolitana", lat: -33.5, lng: -70.6833, kmDesdeSantiago: 9 },
+  { nombre: "Peñalolén", region: "Metropolitana", lat: -33.4833, lng: -70.5333, kmDesdeSantiago: 11 },
+  { nombre: "Providencia", region: "Metropolitana", lat: -33.4333, lng: -70.6167, kmDesdeSantiago: 3 },
+  { nombre: "Pudahuel", region: "Metropolitana", lat: -33.4333, lng: -70.7667, kmDesdeSantiago: 11 },
+  { nombre: "Quilicura", region: "Metropolitana", lat: -33.3667, lng: -70.7333, kmDesdeSantiago: 12 },
+  { nombre: "Quinta Normal", region: "Metropolitana", lat: -33.4333, lng: -70.7, kmDesdeSantiago: 5 },
+  { nombre: "Recoleta", region: "Metropolitana", lat: -33.4, lng: -70.6333, kmDesdeSantiago: 4 },
+  { nombre: "Renca", region: "Metropolitana", lat: -33.4, lng: -70.7167, kmDesdeSantiago: 7 },
+  { nombre: "San Joaquín", region: "Metropolitana", lat: -33.5, lng: -70.6333, kmDesdeSantiago: 8 },
+  { nombre: "San Miguel", region: "Metropolitana", lat: -33.5, lng: -70.65, kmDesdeSantiago: 7 },
+  { nombre: "San Ramón", region: "Metropolitana", lat: -33.5333, lng: -70.65, kmDesdeSantiago: 11 },
+  { nombre: "Vitacura", region: "Metropolitana", lat: -33.3833, lng: -70.5833, kmDesdeSantiago: 9 },
+  { nombre: "Puente Alto", region: "Metropolitana", lat: -33.6167, lng: -70.5833, kmDesdeSantiago: 18 },
+  { nombre: "Pirque", region: "Metropolitana", lat: -33.6667, lng: -70.5667, kmDesdeSantiago: 22 },
+  { nombre: "San José de Maipo", region: "Metropolitana", lat: -33.6333, lng: -70.35, kmDesdeSantiago: 40 },
+  { nombre: "Colina", region: "Metropolitana", lat: -33.2, lng: -70.6667, kmDesdeSantiago: 35 },
+  { nombre: "Lampa", region: "Metropolitana", lat: -33.2833, lng: -70.8833, kmDesdeSantiago: 30 },
+  { nombre: "Tiltil", region: "Metropolitana", lat: -33.0833, lng: -70.9333, kmDesdeSantiago: 58 },
+  { nombre: "San Bernardo", region: "Metropolitana", lat: -33.5924, lng: -70.6993, kmDesdeSantiago: 18 },
+  { nombre: "Buin", region: "Metropolitana", lat: -33.7333, lng: -70.7333, kmDesdeSantiago: 38 },
+  { nombre: "Calera de Tango", region: "Metropolitana", lat: -33.6333, lng: -70.75, kmDesdeSantiago: 24 },
+  { nombre: "Paine", region: "Metropolitana", lat: -33.8167, lng: -70.7333, kmDesdeSantiago: 50 },
+  { nombre: "Melipilla", region: "Metropolitana", lat: -33.6833, lng: -71.2167, kmDesdeSantiago: 68 },
+  { nombre: "Alhué", region: "Metropolitana", lat: -34.0333, lng: -71.1, kmDesdeSantiago: 90 },
+  { nombre: "Curacaví", region: "Metropolitana", lat: -33.3833, lng: -71.1333, kmDesdeSantiago: 58 },
+  { nombre: "María Pinto", region: "Metropolitana", lat: -33.55, lng: -71.1167, kmDesdeSantiago: 62 },
+  { nombre: "San Pedro (RM)", region: "Metropolitana", lat: -33.8667, lng: -71.4833, kmDesdeSantiago: 92 },
+  { nombre: "Talagante", region: "Metropolitana", lat: -33.6667, lng: -70.9333, kmDesdeSantiago: 36 },
+  { nombre: "El Monte", region: "Metropolitana", lat: -33.6833, lng: -71.0167, kmDesdeSantiago: 42 },
+  { nombre: "Isla de Maipo", region: "Metropolitana", lat: -33.75, lng: -70.9, kmDesdeSantiago: 44 },
+  { nombre: "Padre Hurtado", region: "Metropolitana", lat: -33.5667, lng: -70.8333, kmDesdeSantiago: 22 },
+  { nombre: "Peñaflor", region: "Metropolitana", lat: -33.6, lng: -70.8833, kmDesdeSantiago: 28 },
+
+  // Región del Libertador General Bernardo O'Higgins (VI)
+  { nombre: "Rancagua", region: "O'Higgins", lat: -34.1703, lng: -70.7444, kmDesdeSantiago: 87 },
+  { nombre: "Codegua", region: "O'Higgins", lat: -34.0333, lng: -70.6833, kmDesdeSantiago: 72 },
+  { nombre: "Coinco", region: "O'Higgins", lat: -34.2833, lng: -70.95, kmDesdeSantiago: 100 },
+  { nombre: "Coltauco", region: "O'Higgins", lat: -34.3, lng: -71.0833, kmDesdeSantiago: 108 },
+  { nombre: "Doñihue", region: "O'Higgins", lat: -34.2333, lng: -70.9667, kmDesdeSantiago: 98 },
+  { nombre: "Graneros", region: "O'Higgins", lat: -34.0667, lng: -70.7333, kmDesdeSantiago: 78 },
+  { nombre: "Las Cabras", region: "O'Higgins", lat: -34.2833, lng: -71.3167, kmDesdeSantiago: 118 },
+  { nombre: "Machalí", region: "O'Higgins", lat: -34.1833, lng: -70.65, kmDesdeSantiago: 90 },
+  { nombre: "Malloa", region: "O'Higgins", lat: -34.35, lng: -70.9667, kmDesdeSantiago: 105 },
+  { nombre: "Mostazal", region: "O'Higgins", lat: -33.9833, lng: -70.7333, kmDesdeSantiago: 68 },
+  { nombre: "Olivar", region: "O'Higgins", lat: -34.2167, lng: -70.8, kmDesdeSantiago: 93 },
+  { nombre: "Peumo", region: "O'Higgins", lat: -34.3833, lng: -71.2, kmDesdeSantiago: 115 },
+  { nombre: "Pichidegua", region: "O'Higgins", lat: -34.4667, lng: -71.2833, kmDesdeSantiago: 125 },
+  { nombre: "Quinta de Tilcoco", region: "O'Higgins", lat: -34.3167, lng: -70.9833, kmDesdeSantiago: 105 },
+  { nombre: "Rengo", region: "O'Higgins", lat: -34.4, lng: -70.8667, kmDesdeSantiago: 107 },
+  { nombre: "Requínoa", region: "O'Higgins", lat: -34.2833, lng: -70.8167, kmDesdeSantiago: 98 },
+  { nombre: "San Vicente de Tagua Tagua", region: "O'Higgins", lat: -34.4417, lng: -71.0836, kmDesdeSantiago: 118 },
+  { nombre: "Pichilemu", region: "O'Higgins", lat: -34.3833, lng: -72.0, kmDesdeSantiago: 190 },
+  { nombre: "La Estrella", region: "O'Higgins", lat: -34.2167, lng: -71.6667, kmDesdeSantiago: 165 },
+  { nombre: "Litueche", region: "O'Higgins", lat: -34.1167, lng: -71.7333, kmDesdeSantiago: 170 },
+  { nombre: "Marchihue", region: "O'Higgins", lat: -34.3167, lng: -71.6333, kmDesdeSantiago: 175 },
+  { nombre: "Navidad", region: "O'Higgins", lat: -33.95, lng: -71.8333, kmDesdeSantiago: 165 },
+  { nombre: "Paredones", region: "O'Higgins", lat: -34.65, lng: -71.8833, kmDesdeSantiago: 200 },
+  { nombre: "San Fernando", region: "O'Higgins", lat: -34.5833, lng: -70.9833, kmDesdeSantiago: 143 },
+  { nombre: "Chépica", region: "O'Higgins", lat: -34.7333, lng: -71.2667, kmDesdeSantiago: 165 },
+  { nombre: "Chimbarongo", region: "O'Higgins", lat: -34.7167, lng: -71.0333, kmDesdeSantiago: 155 },
+  { nombre: "Lolol", region: "O'Higgins", lat: -34.7333, lng: -71.6167, kmDesdeSantiago: 185 },
+  { nombre: "Nancagua", region: "O'Higgins", lat: -34.6667, lng: -71.1833, kmDesdeSantiago: 160 },
+  { nombre: "Palmilla", region: "O'Higgins", lat: -34.5833, lng: -71.3167, kmDesdeSantiago: 162 },
+  { nombre: "Peralillo", region: "O'Higgins", lat: -34.4833, lng: -71.4833, kmDesdeSantiago: 170 },
+  { nombre: "Placilla", region: "O'Higgins", lat: -34.6167, lng: -71.3167, kmDesdeSantiago: 168 },
+  { nombre: "Pumanque", region: "O'Higgins", lat: -34.6333, lng: -71.5333, kmDesdeSantiago: 180 },
+  { nombre: "Santa Cruz", region: "O'Higgins", lat: -34.6333, lng: -71.3667, kmDesdeSantiago: 173 },
+
+  // Región del Maule (VII)
+  { nombre: "Talca", region: "Maule", lat: -35.4264, lng: -71.6554, kmDesdeSantiago: 255 },
+  { nombre: "Constitución", region: "Maule", lat: -35.3333, lng: -72.4167, kmDesdeSantiago: 330 },
+  { nombre: "Curepto", region: "Maule", lat: -35.0833, lng: -71.8833, kmDesdeSantiago: 295 },
+  { nombre: "Empedrado", region: "Maule", lat: -35.5833, lng: -72.2667, kmDesdeSantiago: 330 },
+  { nombre: "Maule", region: "Maule", lat: -35.5, lng: -71.6667, kmDesdeSantiago: 268 },
+  { nombre: "Pelarco", region: "Maule", lat: -35.3333, lng: -71.4, kmDesdeSantiago: 248 },
+  { nombre: "Pencahue", region: "Maule", lat: -35.3833, lng: -71.8, kmDesdeSantiago: 270 },
+  { nombre: "Río Claro", region: "Maule", lat: -35.55, lng: -71.2167, kmDesdeSantiago: 258 },
+  { nombre: "San Clemente", region: "Maule", lat: -35.5667, lng: -71.5, kmDesdeSantiago: 272 },
+  { nombre: "San Rafael", region: "Maule", lat: -35.2167, lng: -71.1667, kmDesdeSantiago: 240 },
+  { nombre: "Cauquenes", region: "Maule", lat: -35.9667, lng: -72.3167, kmDesdeSantiago: 355 },
+  { nombre: "Chanco", region: "Maule", lat: -35.7333, lng: -72.5333, kmDesdeSantiago: 365 },
+  { nombre: "Pelluhue", region: "Maule", lat: -35.8167, lng: -72.5667, kmDesdeSantiago: 370 },
+  { nombre: "Curicó", region: "Maule", lat: -34.9833, lng: -71.2333, kmDesdeSantiago: 195 },
+  { nombre: "Hualañé", region: "Maule", lat: -34.9667, lng: -71.8, kmDesdeSantiago: 245 },
+  { nombre: "Licantén", region: "Maule", lat: -34.9833, lng: -72.0, kmDesdeSantiago: 258 },
+  { nombre: "Molina", region: "Maule", lat: -35.1167, lng: -71.2833, kmDesdeSantiago: 210 },
+  { nombre: "Rauco", region: "Maule", lat: -34.9167, lng: -71.3, kmDesdeSantiago: 200 },
+  { nombre: "Romeral", region: "Maule", lat: -34.9167, lng: -71.0833, kmDesdeSantiago: 193 },
+  { nombre: "Sagrada Familia", region: "Maule", lat: -34.9833, lng: -71.4, kmDesdeSantiago: 210 },
+  { nombre: "Teno", region: "Maule", lat: -34.8667, lng: -71.1667, kmDesdeSantiago: 188 },
+  { nombre: "Vichuquén", region: "Maule", lat: -34.8667, lng: -72.0, kmDesdeSantiago: 255 },
+  { nombre: "Linares", region: "Maule", lat: -35.8478, lng: -71.5961, kmDesdeSantiago: 305 },
+  { nombre: "Colbún", region: "Maule", lat: -35.7, lng: -71.4167, kmDesdeSantiago: 292 },
+  { nombre: "Longaví", region: "Maule", lat: -36.0333, lng: -71.6667, kmDesdeSantiago: 322 },
+  { nombre: "Parral", region: "Maule", lat: -36.15, lng: -71.8167, kmDesdeSantiago: 335 },
+  { nombre: "Retiro", region: "Maule", lat: -36.0667, lng: -71.7667, kmDesdeSantiago: 325 },
+  { nombre: "San Javier", region: "Maule", lat: -35.5833, lng: -71.75, kmDesdeSantiago: 290 },
+  { nombre: "Villa Alegre", region: "Maule", lat: -35.6667, lng: -71.7667, kmDesdeSantiago: 298 },
+  { nombre: "Yerbas Buenas", region: "Maule", lat: -35.7333, lng: -71.5833, kmDesdeSantiago: 305 },
+
+  // Región de Ñuble (XVI)
+  { nombre: "Chillán", region: "Ñuble", lat: -36.6063, lng: -72.1033, kmDesdeSantiago: 400 },
+  { nombre: "Chillán Viejo", region: "Ñuble", lat: -36.6333, lng: -72.1333, kmDesdeSantiago: 403 },
+  { nombre: "Bulnes", region: "Ñuble", lat: -36.75, lng: -72.3, kmDesdeSantiago: 420 },
+  { nombre: "Cobquecura", region: "Ñuble", lat: -36.1333, lng: -72.7833, kmDesdeSantiago: 415 },
+  { nombre: "Coelemu", region: "Ñuble", lat: -36.4833, lng: -72.7, kmDesdeSantiago: 450 },
+  { nombre: "Coihueco", region: "Ñuble", lat: -36.6167, lng: -71.8333, kmDesdeSantiago: 390 },
+  { nombre: "El Carmen", region: "Ñuble", lat: -36.9, lng: -72.0167, kmDesdeSantiago: 422 },
+  { nombre: "Ninhue", region: "Ñuble", lat: -36.4, lng: -72.4833, kmDesdeSantiago: 435 },
+  { nombre: "Ñiquén", region: "Ñuble", lat: -36.2667, lng: -71.95, kmDesdeSantiago: 380 },
+  { nombre: "Pemuco", region: "Ñuble", lat: -36.9833, lng: -72.0667, kmDesdeSantiago: 430 },
+  { nombre: "Pinto", region: "Ñuble", lat: -36.7, lng: -71.9, kmDesdeSantiago: 405 },
+  { nombre: "Portezuelo", region: "Ñuble", lat: -36.5167, lng: -72.4167, kmDesdeSantiago: 440 },
+  { nombre: "Quillón", region: "Ñuble", lat: -36.7167, lng: -72.4667, kmDesdeSantiago: 430 },
+  { nombre: "Quirihue", region: "Ñuble", lat: -36.2833, lng: -72.5333, kmDesdeSantiago: 440 },
+  { nombre: "Ránquil", region: "Ñuble", lat: -36.6167, lng: -72.5, kmDesdeSantiago: 445 },
+  { nombre: "San Carlos", region: "Ñuble", lat: -36.4167, lng: -71.9333, kmDesdeSantiago: 385 },
+  { nombre: "San Fabián", region: "Ñuble", lat: -36.5667, lng: -71.5333, kmDesdeSantiago: 370 },
+  { nombre: "San Gregorio de Ñiquen", region: "Ñuble", lat: -36.2667, lng: -71.9, kmDesdeSantiago: 375 },
+  { nombre: "San Ignacio", region: "Ñuble", lat: -36.8, lng: -71.95, kmDesdeSantiago: 415 },
+  { nombre: "San Nicolás", region: "Ñuble", lat: -36.4833, lng: -72.1, kmDesdeSantiago: 400 },
+  { nombre: "Treguaco", region: "Ñuble", lat: -36.45, lng: -72.6, kmDesdeSantiago: 448 },
+  { nombre: "Yungay", region: "Ñuble", lat: -37.1167, lng: -72.0167, kmDesdeSantiago: 445 },
+
+  // Región del Biobío (VIII)
+  { nombre: "Concepción", region: "Biobío", lat: -36.827, lng: -73.0503, kmDesdeSantiago: 500 },
+  { nombre: "Coronel", region: "Biobío", lat: -37.0333, lng: -73.15, kmDesdeSantiago: 520 },
+  { nombre: "Chiguayante", region: "Biobío", lat: -36.9167, lng: -73.0167, kmDesdeSantiago: 508 },
+  { nombre: "Florida", region: "Biobío", lat: -37.1333, lng: -72.6667, kmDesdeSantiago: 490 },
+  { nombre: "Hualqui", region: "Biobío", lat: -37.0, lng: -72.9333, kmDesdeSantiago: 505 },
+  { nombre: "Lota", region: "Biobío", lat: -37.0917, lng: -73.1583, kmDesdeSantiago: 525 },
+  { nombre: "Penco", region: "Biobío", lat: -36.7333, lng: -72.9833, kmDesdeSantiago: 495 },
+  { nombre: "San Pedro de la Paz", region: "Biobío", lat: -36.8667, lng: -73.1167, kmDesdeSantiago: 510 },
+  { nombre: "Santa Juana", region: "Biobío", lat: -37.1833, lng: -72.9833, kmDesdeSantiago: 522 },
+  { nombre: "Talcahuano", region: "Biobío", lat: -36.7167, lng: -73.1167, kmDesdeSantiago: 505 },
+  { nombre: "Tomé", region: "Biobío", lat: -36.6167, lng: -72.95, kmDesdeSantiago: 490 },
+  { nombre: "Hualpén", region: "Biobío", lat: -36.7667, lng: -73.1333, kmDesdeSantiago: 508 },
+  { nombre: "Lebu", region: "Biobío", lat: -37.6167, lng: -73.65, kmDesdeSantiago: 580 },
+  { nombre: "Arauco", region: "Biobío", lat: -37.2417, lng: -73.3194, kmDesdeSantiago: 540 },
+  { nombre: "Cañete", region: "Biobío", lat: -37.8, lng: -73.4, kmDesdeSantiago: 595 },
+  { nombre: "Contulmo", region: "Biobío", lat: -38.0, lng: -73.2167, kmDesdeSantiago: 600 },
+  { nombre: "Curanilahue", region: "Biobío", lat: -37.4667, lng: -73.3333, kmDesdeSantiago: 558 },
+  { nombre: "Los Álamos", region: "Biobío", lat: -37.6333, lng: -73.4667, kmDesdeSantiago: 575 },
+  { nombre: "Tirúa", region: "Biobío", lat: -38.3333, lng: -73.5, kmDesdeSantiago: 620 },
+  { nombre: "Los Ángeles", region: "Biobío", lat: -37.4667, lng: -72.35, kmDesdeSantiago: 510 },
+  { nombre: "Antuco", region: "Biobío", lat: -37.3333, lng: -71.5167, kmDesdeSantiago: 475 },
+  { nombre: "Cabrero", region: "Biobío", lat: -37.0333, lng: -72.4, kmDesdeSantiago: 468 },
+  { nombre: "Laja", region: "Biobío", lat: -37.2833, lng: -72.7, kmDesdeSantiago: 492 },
+  { nombre: "Mulchén", region: "Biobío", lat: -37.7167, lng: -72.2333, kmDesdeSantiago: 530 },
+  { nombre: "Nacimiento", region: "Biobío", lat: -37.5, lng: -72.6667, kmDesdeSantiago: 520 },
+  { nombre: "Negrete", region: "Biobío", lat: -37.5833, lng: -72.5333, kmDesdeSantiago: 522 },
+  { nombre: "Quilaco", region: "Biobío", lat: -37.6833, lng: -71.8667, kmDesdeSantiago: 510 },
+  { nombre: "Quilleco", region: "Biobío", lat: -37.45, lng: -71.9333, kmDesdeSantiago: 490 },
+  { nombre: "San Rosendo", region: "Biobío", lat: -37.2667, lng: -72.7, kmDesdeSantiago: 490 },
+  { nombre: "Santa Bárbara", region: "Biobío", lat: -37.6667, lng: -72.0167, kmDesdeSantiago: 520 },
+  { nombre: "Tucapel", region: "Biobío", lat: -37.2667, lng: -71.9333, kmDesdeSantiago: 478 },
+  { nombre: "Yumbel", region: "Biobío", lat: -37.1167, lng: -72.55, kmDesdeSantiago: 472 },
+  { nombre: "Alto Biobío", region: "Biobío", lat: -37.9833, lng: -71.5667, kmDesdeSantiago: 555 },
+
+  // Región de La Araucanía (IX)
+  { nombre: "Temuco", region: "Araucanía", lat: -38.7396, lng: -72.59, kmDesdeSantiago: 675 },
+  { nombre: "Carahue", region: "Araucanía", lat: -38.7167, lng: -73.1667, kmDesdeSantiago: 710 },
+  { nombre: "Cunco", region: "Araucanía", lat: -38.9167, lng: -72.0167, kmDesdeSantiago: 692 },
+  { nombre: "Curarrehue", region: "Araucanía", lat: -39.35, lng: -71.55, kmDesdeSantiago: 718 },
+  { nombre: "Freire", region: "Araucanía", lat: -38.9667, lng: -72.6333, kmDesdeSantiago: 690 },
+  { nombre: "Galvarino", region: "Araucanía", lat: -38.4, lng: -72.7833, kmDesdeSantiago: 660 },
+  { nombre: "Gorbea", region: "Araucanía", lat: -39.1, lng: -72.6833, kmDesdeSantiago: 700 },
+  { nombre: "Lautaro", region: "Araucanía", lat: -38.5333, lng: -72.4333, kmDesdeSantiago: 660 },
+  { nombre: "Loncoche", region: "Araucanía", lat: -39.3667, lng: -72.6333, kmDesdeSantiago: 725 },
+  { nombre: "Melipeuco", region: "Araucanía", lat: -38.85, lng: -71.7, kmDesdeSantiago: 685 },
+  { nombre: "Nueva Imperial", region: "Araucanía", lat: -38.7667, lng: -72.9667, kmDesdeSantiago: 700 },
+  { nombre: "Padre Las Casas", region: "Araucanía", lat: -38.7667, lng: -72.6167, kmDesdeSantiago: 680 },
+  { nombre: "Perquenco", region: "Araucanía", lat: -38.4333, lng: -72.4833, kmDesdeSantiago: 655 },
+  { nombre: "Pitrufquén", region: "Araucanía", lat: -38.9833, lng: -72.6667, kmDesdeSantiago: 693 },
+  { nombre: "Pucón", region: "Araucanía", lat: -39.2742, lng: -71.9794, kmDesdeSantiago: 780 },
+  { nombre: "Saavedra", region: "Araucanía", lat: -38.8, lng: -73.4, kmDesdeSantiago: 728 },
+  { nombre: "Teodoro Schmidt", region: "Araucanía", lat: -38.9833, lng: -73.0833, kmDesdeSantiago: 715 },
+  { nombre: "Toltén", region: "Araucanía", lat: -39.2167, lng: -73.2167, kmDesdeSantiago: 738 },
+  { nombre: "Vilcún", region: "Araucanía", lat: -38.6667, lng: -72.2167, kmDesdeSantiago: 672 },
+  { nombre: "Villarrica", region: "Araucanía", lat: -39.2833, lng: -72.2333, kmDesdeSantiago: 748 },
+  { nombre: "Cholchol", region: "Araucanía", lat: -38.6, lng: -72.8333, kmDesdeSantiago: 668 },
+  { nombre: "Angol", region: "Araucanía", lat: -37.7978, lng: -72.7075, kmDesdeSantiago: 565 },
+  { nombre: "Collipulli", region: "Araucanía", lat: -37.9583, lng: -72.4325, kmDesdeSantiago: 560 },
+  { nombre: "Curacautín", region: "Araucanía", lat: -38.4333, lng: -71.8833, kmDesdeSantiago: 640 },
+  { nombre: "Ercilla", region: "Araucanía", lat: -37.8667, lng: -72.3667, kmDesdeSantiago: 555 },
+  { nombre: "Lonquimay", region: "Araucanía", lat: -38.4333, lng: -71.2333, kmDesdeSantiago: 650 },
+  { nombre: "Los Sauces", region: "Araucanía", lat: -37.9833, lng: -72.8167, kmDesdeSantiago: 572 },
+  { nombre: "Lumaco", region: "Araucanía", lat: -38.15, lng: -73.0, kmDesdeSantiago: 585 },
+  { nombre: "Purén", region: "Araucanía", lat: -37.9833, lng: -73.0, kmDesdeSantiago: 582 },
+  { nombre: "Renaico", region: "Araucanía", lat: -37.6833, lng: -72.5833, kmDesdeSantiago: 550 },
+  { nombre: "Traiguén", region: "Araucanía", lat: -38.2667, lng: -72.6833, kmDesdeSantiago: 600 },
+  { nombre: "Victoria", region: "Araucanía", lat: -38.2333, lng: -72.3333, kmDesdeSantiago: 595 },
+
+  // Región de Los Ríos (XIV)
+  { nombre: "Valdivia", region: "Los Ríos", lat: -39.8196, lng: -73.2452, kmDesdeSantiago: 840 },
+  { nombre: "Corral", region: "Los Ríos", lat: -39.8833, lng: -73.4333, kmDesdeSantiago: 858 },
+  { nombre: "Futrono", region: "Los Ríos", lat: -40.1333, lng: -72.3667, kmDesdeSantiago: 855 },
+  { nombre: "La Unión", region: "Los Ríos", lat: -40.2833, lng: -73.0833, kmDesdeSantiago: 880 },
+  { nombre: "Lago Ranco", region: "Los Ríos", lat: -40.3167, lng: -72.5, kmDesdeSantiago: 870 },
+  { nombre: "Lanco", region: "Los Ríos", lat: -39.8833, lng: -72.7833, kmDesdeSantiago: 842 },
+  { nombre: "Los Lagos", region: "Los Ríos", lat: -39.8667, lng: -72.8167, kmDesdeSantiago: 844 },
+  { nombre: "Máfil", region: "Los Ríos", lat: -39.7, lng: -72.9667, kmDesdeSantiago: 832 },
+  { nombre: "Mariquina", region: "Los Ríos", lat: -39.5667, lng: -72.95, kmDesdeSantiago: 822 },
+  { nombre: "Paillaco", region: "Los Ríos", lat: -40.0833, lng: -72.8667, kmDesdeSantiago: 860 },
+  { nombre: "Panguipulli", region: "Los Ríos", lat: -39.6333, lng: -72.3333, kmDesdeSantiago: 828 },
+  { nombre: "Río Bueno", region: "Los Ríos", lat: -40.3333, lng: -72.9667, kmDesdeSantiago: 878 },
+
+  // Región de Los Lagos (X)
+  { nombre: "Puerto Montt", region: "Los Lagos", lat: -41.4717, lng: -72.9369, kmDesdeSantiago: 1020 },
+  { nombre: "Calbuco", region: "Los Lagos", lat: -41.7667, lng: -73.1167, kmDesdeSantiago: 1048 },
+  { nombre: "Cochamó", region: "Los Lagos", lat: -41.5, lng: -72.3167, kmDesdeSantiago: 1030 },
+  { nombre: "Fresia", region: "Los Lagos", lat: -41.15, lng: -73.4167, kmDesdeSantiago: 1010 },
+  { nombre: "Frutillar", region: "Los Lagos", lat: -41.1333, lng: -73.0667, kmDesdeSantiago: 1005 },
+  { nombre: "Los Muermos", region: "Los Lagos", lat: -41.4, lng: -73.4667, kmDesdeSantiago: 1025 },
+  { nombre: "Llanquihue", region: "Los Lagos", lat: -41.25, lng: -73.0, kmDesdeSantiago: 1008 },
+  { nombre: "Maullín", region: "Los Lagos", lat: -41.6167, lng: -73.5833, kmDesdeSantiago: 1042 },
+  { nombre: "Puerto Varas", region: "Los Lagos", lat: -41.3197, lng: -72.9814, kmDesdeSantiago: 1014 },
+  { nombre: "Castro", region: "Los Lagos", lat: -42.4797, lng: -73.7603, kmDesdeSantiago: 1200 },
+  { nombre: "Ancud", region: "Los Lagos", lat: -41.8686, lng: -73.8203, kmDesdeSantiago: 1105 },
+  { nombre: "Chonchi", region: "Los Lagos", lat: -42.6167, lng: -73.7833, kmDesdeSantiago: 1222 },
+  { nombre: "Curaco de Vélez", region: "Los Lagos", lat: -42.4833, lng: -73.5833, kmDesdeSantiago: 1198 },
+  { nombre: "Dalcahue", region: "Los Lagos", lat: -42.3833, lng: -73.65, kmDesdeSantiago: 1188 },
+  { nombre: "Puqueldón", region: "Los Lagos", lat: -42.6667, lng: -73.5833, kmDesdeSantiago: 1228 },
+  { nombre: "Queilén", region: "Los Lagos", lat: -43.1, lng: -73.5667, kmDesdeSantiago: 1270 },
+  { nombre: "Quellón", region: "Los Lagos", lat: -43.12, lng: -73.6, kmDesdeSantiago: 1280 },
+  { nombre: "Quemchi", region: "Los Lagos", lat: -42.1333, lng: -73.4667, kmDesdeSantiago: 1160 },
+  { nombre: "Quinchao", region: "Los Lagos", lat: -42.5, lng: -73.5, kmDesdeSantiago: 1205 },
+  { nombre: "Osorno", region: "Los Lagos", lat: -40.574, lng: -73.1322, kmDesdeSantiago: 920 },
+  { nombre: "Puerto Octay", region: "Los Lagos", lat: -40.9333, lng: -72.8833, kmDesdeSantiago: 962 },
+  { nombre: "Purranque", region: "Los Lagos", lat: -40.9167, lng: -73.1833, kmDesdeSantiago: 968 },
+  { nombre: "Puyehue", region: "Los Lagos", lat: -40.65, lng: -72.6, kmDesdeSantiago: 938 },
+  { nombre: "Río Negro", region: "Los Lagos", lat: -40.7833, lng: -73.2167, kmDesdeSantiago: 955 },
+  { nombre: "San Juan de la Costa", region: "Los Lagos", lat: -40.7, lng: -73.5, kmDesdeSantiago: 958 },
+  { nombre: "San Pablo", region: "Los Lagos", lat: -40.45, lng: -73.0167, kmDesdeSantiago: 928 },
+  { nombre: "Chaitén", region: "Los Lagos", lat: -42.9167, lng: -72.7, kmDesdeSantiago: 1270 },
+  { nombre: "Futaleufú", region: "Los Lagos", lat: -43.1833, lng: -71.8667, kmDesdeSantiago: 1310 },
+  { nombre: "Hualaihué", region: "Los Lagos", lat: -42.0, lng: -72.65, kmDesdeSantiago: 1145 },
+  { nombre: "Palena", region: "Los Lagos", lat: -43.6167, lng: -71.8167, kmDesdeSantiago: 1360 },
+
+  // Región de Aysén (XI)
+  { nombre: "Coyhaique", region: "Aysén", lat: -45.5719, lng: -72.0669, kmDesdeSantiago: 1620 },
+  { nombre: "Lago Verde", region: "Aysén", lat: -44.3167, lng: -71.8, kmDesdeSantiago: 1520 },
+  { nombre: "Aysén", region: "Aysén", lat: -45.4, lng: -72.7, kmDesdeSantiago: 1640 },
+  { nombre: "Cisnes", region: "Aysén", lat: -44.75, lng: -72.6667, kmDesdeSantiago: 1580 },
+  { nombre: "Guaitecas", region: "Aysén", lat: -43.9333, lng: -73.5, kmDesdeSantiago: 1500 },
+  { nombre: "Cochrane", region: "Aysén", lat: -47.25, lng: -72.5667, kmDesdeSantiago: 1870 },
+  { nombre: "O'Higgins", region: "Aysén", lat: -48.4667, lng: -72.5, kmDesdeSantiago: 2000 },
+  { nombre: "Tortel", region: "Aysén", lat: -47.7667, lng: -73.5333, kmDesdeSantiago: 1940 },
+  { nombre: "Chile Chico", region: "Aysén", lat: -46.5333, lng: -71.7333, kmDesdeSantiago: 1790 },
+  { nombre: "Río Ibáñez", region: "Aysén", lat: -46.2833, lng: -71.95, kmDesdeSantiago: 1765 },
+
+  // Región de Magallanes (XII)
+  { nombre: "Punta Arenas", region: "Magallanes", lat: -53.1638, lng: -70.9171, kmDesdeSantiago: 3070 },
+  { nombre: "Laguna Blanca", region: "Magallanes", lat: -52.5833, lng: -71.3, kmDesdeSantiago: 3010 },
+  { nombre: "Río Verde", region: "Magallanes", lat: -52.2667, lng: -71.5, kmDesdeSantiago: 2980 },
+  { nombre: "San Gregorio", region: "Magallanes", lat: -52.7, lng: -70.1, kmDesdeSantiago: 3030 },
+  { nombre: "Cabo de Hornos", region: "Magallanes", lat: -55.6667, lng: -67.3, kmDesdeSantiago: 3300 },
+  { nombre: "Antártica", region: "Magallanes", lat: -62.0, lng: -58.0, kmDesdeSantiago: 4500 },
+  { nombre: "Natales", region: "Magallanes", lat: -51.7333, lng: -72.5167, kmDesdeSantiago: 2900 },
+  { nombre: "Torres del Paine", region: "Magallanes", lat: -51.05, lng: -72.95, kmDesdeSantiago: 2860 },
+  { nombre: "Porvenir", region: "Magallanes", lat: -53.2833, lng: -70.3667, kmDesdeSantiago: 3090 },
+  { nombre: "Primavera", region: "Magallanes", lat: -54.0167, lng: -69.65, kmDesdeSantiago: 3150 },
+  { nombre: "Timaukel", region: "Magallanes", lat: -54.5, lng: -69.0, kmDesdeSantiago: 3200 },
+];
+
+/**
+ * Busca comunas por nombre o región, ordenadas por relevancia.
+ * Acepta tildes o sin tildes (normaliza).
+ */
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
+
+export function buscarComunas(query: string, limit = 8): Comuna[] {
+  if (!query.trim()) return [];
+  const q = normalize(query);
+  const results: Array<{ comuna: Comuna; score: number }> = [];
+
+  for (const comuna of COMUNAS_CHILE) {
+    const nombre = normalize(comuna.nombre);
+    const region = normalize(comuna.region);
+
+    let score = 0;
+    if (nombre === q) score = 100;
+    else if (nombre.startsWith(q)) score = 80;
+    else if (nombre.includes(q)) score = 60;
+    else if (region.startsWith(q)) score = 40;
+    else if (region.includes(q)) score = 20;
+    else continue;
+
+    results.push({ comuna, score });
+  }
+
+  return results
+    .sort((a, b) => b.score - a.score || a.comuna.nombre.localeCompare(b.comuna.nombre))
+    .slice(0, limit)
+    .map((r) => r.comuna);
+}

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Calculator, Car, CheckCircle2, Clock3, Fuel, Loader2, LocateFixed, MapPin, Navigation, Route } from "lucide-react";
 
 export type { FuelKey } from "@/lib/fuel";
+import { buscarComunas, type Comuna } from "@/data/comunasChile";
 
 interface Props {
   fuelType: FuelKey;
@@ -60,7 +61,24 @@ const CHILE_CITIES = [
   { label: "Arica 🌞", km: 2050, duration: 1530, lat: -18.4783, lng: -70.3126 },
 ] as const;
 
-/** Input con sugerencias de Places (New) restringido a Chile. */
+/** Haversine distance in km between two points */
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/**
+ * Input con sugerencias de comunas de Chile.
+ * Primero intenta Google Places (API key via Supabase); si no está disponible,
+ * cae en el buscador local con todas las 346 comunas del país, de Arica a Punta Arenas.
+ */
 const PlaceField = ({
   placeholder,
   value,
@@ -75,9 +93,10 @@ const PlaceField = ({
   bias?: { lat: number; lng: number };
 }) => {
   const placesLib = useMapsLibrary("places");
-  const [suggestions, setSuggestions] = useState<
+  const [googleSuggestions, setGoogleSuggestions] = useState<
     { placeId: string; primary: string; secondary: string }[]
   >([]);
+  const [localSuggestions, setLocalSuggestions] = useState<Comuna[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const sessionRef = useRef<any>(null);
@@ -87,13 +106,8 @@ const PlaceField = ({
     if (placesLib) sessionRef.current = new placesLib.AutocompleteSessionToken();
   }, [placesLib]);
 
-  const fetchSuggestions = async (input: string) => {
-    if (!placesLib || !input.trim()) {
-      setSuggestions([]);
-      setOpen(false);
-      return;
-    }
-    setLoading(true);
+  const fetchGoogleSuggestions = async (input: string) => {
+    if (!placesLib || !input.trim()) return false;
     try {
       const req: any = {
         input,
@@ -112,10 +126,35 @@ const PlaceField = ({
           primary: s.placePrediction.mainText?.text ?? s.placePrediction.text?.text ?? "",
           secondary: s.placePrediction.secondaryText?.text ?? "",
         }));
-      setSuggestions(mapped);
-      setOpen(mapped.length > 0);
+      if (mapped.length > 0) {
+        setGoogleSuggestions(mapped);
+        setLocalSuggestions([]);
+        setOpen(true);
+        return true;
+      }
     } catch (err) {
-      console.warn("Autocomplete error:", err);
+      console.warn("Google Places error — usando buscador local:", err);
+    }
+    return false;
+  };
+
+  const fetchSuggestions = async (input: string) => {
+    if (!input.trim()) {
+      setGoogleSuggestions([]);
+      setLocalSuggestions([]);
+      setOpen(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const googleOk = await fetchGoogleSuggestions(input);
+      if (!googleOk) {
+        // Fallback: buscador local con comunas de Chile
+        const comunas = buscarComunas(input, 8);
+        setLocalSuggestions(comunas);
+        setGoogleSuggestions([]);
+        setOpen(comunas.length > 0);
+      }
     } finally {
       setLoading(false);
     }
@@ -124,10 +163,10 @@ const PlaceField = ({
   const handleChange = (next: string) => {
     onValueChange(next);
     if (timerRef.current) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => fetchSuggestions(next), 250) as unknown as number;
+    timerRef.current = window.setTimeout(() => fetchSuggestions(next), 200) as unknown as number;
   };
 
-  const pick = async (s: { placeId: string; primary: string; secondary: string }) => {
+  const pickGoogle = async (s: { placeId: string; primary: string; secondary: string }) => {
     setOpen(false);
     if (!placesLib) return;
     try {
@@ -144,12 +183,27 @@ const PlaceField = ({
     }
   };
 
+  const pickLocal = (comuna: Comuna) => {
+    setOpen(false);
+    const name = `${comuna.nombre}, ${comuna.region}`;
+    onValueChange(name);
+    // Calcular distancia real desde bias (GPS) o usar la de Santiago como referencia
+    let km = comuna.kmDesdeSantiago;
+    if (bias) {
+      km = Math.round(haversineKm(bias.lat, bias.lng, comuna.lat, comuna.lng) * 1.25); // factor ruta
+    }
+    onSelect({ lat: comuna.lat, lng: comuna.lng, name });
+  };
+
+  const hasGoogle = googleSuggestions.length > 0;
+  const hasLocal = localSuggestions.length > 0;
+
   return (
     <div className="relative">
       <input
         value={value}
         onChange={(e) => handleChange(e.target.value)}
-        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        onFocus={() => (hasGoogle || hasLocal) && setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 200)}
         placeholder={placeholder}
         aria-label={placeholder}
@@ -158,23 +212,47 @@ const PlaceField = ({
       {loading && (
         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-white/80" aria-hidden="true" />
       )}
-      {open && suggestions.length > 0 && (
+      {open && (hasGoogle || hasLocal) && (
         <ul
           role="listbox"
           className="absolute z-50 left-0 right-0 mt-1 max-h-72 overflow-y-auto rounded-xl bg-popover border border-border shadow-elegant text-left"
         >
-          {suggestions.map((s) => (
+          {/* Google Places suggestions */}
+          {googleSuggestions.map((s) => (
             <li key={s.placeId}>
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => pick(s)}
-                className="w-full text-left px-3 py-2.5 hover:bg-accent"
+                onClick={() => pickGoogle(s)}
+                className="w-full text-left px-3 py-2.5 hover:bg-accent flex items-start gap-2"
               >
-                <div className="text-sm font-medium text-foreground truncate">{s.primary}</div>
-                {s.secondary && (
-                  <div className="text-xs text-muted-foreground truncate">{s.secondary}</div>
-                )}
+                <MapPin className="w-3.5 h-3.5 mt-0.5 text-muted-foreground shrink-0" aria-hidden="true" />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-foreground truncate">{s.primary}</div>
+                  {s.secondary && (
+                    <div className="text-xs text-muted-foreground truncate">{s.secondary}</div>
+                  )}
+                </div>
+              </button>
+            </li>
+          ))}
+          {/* Local comuna suggestions (fallback) */}
+          {localSuggestions.map((c) => (
+            <li key={`${c.nombre}-${c.region}`}>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => pickLocal(c)}
+                className="w-full text-left px-3 py-2.5 hover:bg-accent flex items-center gap-2"
+              >
+                <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-foreground truncate">{c.nombre}</div>
+                  <div className="text-xs text-muted-foreground truncate">{c.region}</div>
+                </div>
+                <div className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                  ~{c.kmDesdeSantiago.toLocaleString("es-CL")} km
+                </div>
               </button>
             </li>
           ))}
