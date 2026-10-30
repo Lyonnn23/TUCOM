@@ -10,7 +10,8 @@ import { DEFAULT_PRICES } from "@/lib/priceRanges";
 import { toast } from "sonner";
 import { Calculator, Car, CheckCircle2, Clock3, Fuel, Loader2, LocateFixed, MapPin, Navigation, Route } from "lucide-react";
 
-export type { FuelKey } from "@/lib/fuel";
+import type { FuelKey } from "@/lib/fuel";
+export type { FuelKey };
 import { buscarComunas, type Comuna } from "@/data/comunasChile";
 
 interface Props {

@@ -50,7 +50,7 @@ function stationsOnRoute(
     .filter((s) => {
       if (!(s.prices as Record<string, number>)?.[fuel]) return false;
       const sLat = s.lat ?? 0;
-      const sLng = s.lng ?? s.lon ?? 0;
+      const sLng = s.lng ?? 0;
       // Station must be within ≤20% of the total detour distance
       const dFromOrigin = haversineKm(origin.lat, origin.lng, sLat, sLng);
       const dToDestination = haversineKm(sLat, sLng, dest.lat, dest.lng);
@@ -198,7 +198,14 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => navigate(`/calculadora?destLat=${route.destLat}&destLng=${route.destLng}&destName=${encodeURIComponent(route.destName)}`)}
+            onClick={() => {
+              const qs = new URLSearchParams({ dest: route.destName });
+              if (userLocation) {
+                const km = Math.round(haversineKm(userLocation.lat, userLocation.lng, route.destLat, route.destLng) * 1.25);
+                if (km > 0) qs.set("km", String(km));
+              }
+              navigate(`/calculadora?${qs.toString()}`);
+            }}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
             aria-label="Calcular ruta"
           >

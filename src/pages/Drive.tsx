@@ -462,7 +462,7 @@ const Drive = () => {
 
   return (
     <div className="lg:flex min-h-screen">
-      <SideNav active={"prices" as any} onChange={() => {}} />
+      <SideNav active={null as any} onChange={(tab) => navigate(`/?tab=${tab}`)} />
     <div
       className="flex-1 min-h-screen text-white pb-[env(safe-area-inset-bottom)] motion-reduce:transition-none lg:ml-56"
       style={{ backgroundColor: "#0A0A0A" }}
