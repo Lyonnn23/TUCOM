@@ -50,7 +50,7 @@ function stationsOnRoute(
     .filter((s) => {
       if (!(s.prices as Record<string, number>)?.[fuel]) return false;
       const sLat = s.lat ?? 0;
-      const sLng = s.lng ?? s.lon ?? 0;
+      const sLng = s.lng ?? 0;
       // Station must be within ≤20% of the total detour distance
       const dFromOrigin = haversineKm(origin.lat, origin.lng, sLat, sLng);
       const dToDestination = haversineKm(sLat, sLng, dest.lat, dest.lng);
