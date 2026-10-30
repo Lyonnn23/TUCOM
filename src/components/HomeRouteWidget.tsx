@@ -198,7 +198,14 @@ const HomeRouteWidget = ({ userLocation, stations, preferredFuel = "gasoline95" 
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => navigate(`/calculadora?destLat=${route.destLat}&destLng=${route.destLng}&destName=${encodeURIComponent(route.destName)}`)}
+            onClick={() => {
+              const qs = new URLSearchParams({ dest: route.destName });
+              if (userLocation) {
+                const km = Math.round(haversineKm(userLocation.lat, userLocation.lng, route.destLat, route.destLng) * 1.25);
+                if (km > 0) qs.set("km", String(km));
+              }
+              navigate(`/calculadora?${qs.toString()}`);
+            }}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
             aria-label="Calcular ruta"
           >
