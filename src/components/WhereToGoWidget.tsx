@@ -40,6 +40,16 @@ export default function WhereToGoWidget({ userLocation }: Props) {
   const [usingFallback, setUsingFallback] = useState(false);
   const pendingRef = useRef<{ km: number; label: string | null } | null>(null);
 
+  // Hooks must come before any useMemo that uses their values
+  const { primary: primaryVehicle } = useUserVehicles();
+  const { preferences } = useUserPreferences();
+  const { data: nationalPrices } = useFuelPrices();
+
+  const fuelType: FuelTypeKey = useMemo(() => {
+    const f = (primaryVehicle?.fuel_type ?? preferences?.preferred_fuel ?? "gasoline95") as FuelTypeKey;
+    return f;
+  }, [primaryVehicle, preferences]);
+
   // Fallback: usar precio MEPCO real del tipo de combustible, o hardcoded si API no ha cargado
   const fallbackPrice = useMemo(() => {
     if (nationalPrices && nationalPrices.length > 0) {
@@ -56,15 +66,6 @@ export default function WhereToGoWidget({ userLocation }: Props) {
     };
     return STATIC_FALLBACK[fuelType] ?? 1150;
   }, [nationalPrices, fuelType]);
-
-  const { primary: primaryVehicle } = useUserVehicles();
-  const { preferences } = useUserPreferences();
-  const { data: nationalPrices } = useFuelPrices();
-
-  const fuelType: FuelTypeKey = useMemo(() => {
-    const f = (primaryVehicle?.fuel_type ?? preferences?.preferred_fuel ?? "gasoline95") as FuelTypeKey;
-    return f;
-  }, [primaryVehicle, preferences]);
 
   const consumption = primaryVehicle?.consumption_kml && primaryVehicle.consumption_kml > 0
     ? primaryVehicle.consumption_kml
