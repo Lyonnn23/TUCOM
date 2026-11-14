@@ -8,6 +8,13 @@
       "when": 1794692052816,
       "tag": "0000_lock_spatial_ref_sys",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794692145590,
+      "tag": "0001_revoke_st_estimatedextent_execute",
+      "breakpoints": true
     }
   ]
 }
