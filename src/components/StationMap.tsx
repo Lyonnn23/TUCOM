@@ -1,4 +1,4 @@
-import { APIProvider, Map, Marker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { LocateFixed } from "lucide-react";
 import { memo, useState, useEffect, useMemo } from "react";
 
@@ -105,23 +105,30 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
           defaultZoom={13}
           gestureHandling="greedy"
           disableDefaultUI={false}
+          mapId="tucom-map"
           style={{ width: "100%", height: "100%" }}
         >
           {userLocation && (
-            <Marker
-              position={userLocation}
-              title="Tu ubicación"
-              icon={getMarkerIcon("hsl(var(--primary))", 10)}
-            />
+            <AdvancedMarker position={userLocation} title="Tu ubicación">
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  background: "#7C3AED",
+                  border: "3px solid #fff",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                }}
+              />
+            </AdvancedMarker>
           )}
 
           {visibleStations.map((station) => {
             const isCheapest = highlightStationId === station.id;
             const isNearest = nearbyIds.has(station.id);
-            // Status color: nearest = blue, open = green, closed = red.
-            // Cheapest overrides with gold star (highest visual priority).
             const isOpen = (station as any).is_open !== false;
             const statusColor = isNearest ? "#3b82f6" : isOpen ? "#22c55e" : "#ef4444";
+            const bgColor = isCheapest ? "#10B981" : statusColor;
             const fuelPrice =
               selectedFuel && selectedFuel !== "all"
                 ? (station.prices as any)[selectedFuel] ?? 0
@@ -129,32 +136,41 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
             const priceLabel = fuelPrice > 0 ? `$${Math.round(fuelPrice)}` : "";
             const showPrice = !isCheapest && priceLabel !== "";
             const isSelected = selected?.id === station.id;
-            const baseScale = isCheapest ? 19.6 : isNearest ? 18 : showPrice ? 18 : 14;
+            const scale = isSelected ? 1.25 : 1;
             return (
-              <Marker
+              <AdvancedMarker
                 key={station.id}
                 position={{ lat: station.lat, lng: station.lng }}
                 onClick={() => setSelected(station)}
                 title={`${station.brand} · ${station.name}${isCheapest ? " · La más barata" : isNearest ? " · Cercana" : isOpen ? " · Abierta" : " · Cerrada"}${priceLabel ? ` · ${priceLabel}` : ""}`}
-                label={
-                  isCheapest
-                    ? { text: "★", color: "#ffffff", fontSize: "16px", fontWeight: "900" }
-                    : showPrice
-                      ? { text: priceLabel, color: "#fff", fontSize: "10px", fontWeight: "800" }
-                      : undefined
-                }
-                icon={getMarkerIcon(
-                  isCheapest ? "#10B981" : statusColor,
-                  isSelected ? baseScale * 1.2 : baseScale,
-                  isCheapest || isSelected ? 3 : 2,
-                )}
                 zIndex={isCheapest ? 999 : isSelected ? 800 : isNearest ? 500 : undefined}
-                animation={
-                  isSelected
-                    ? (globalThis as any).google?.maps?.Animation?.BOUNCE
-                    : (globalThis as any).google?.maps?.Animation?.DROP
-                }
-              />
+              >
+                <div
+                  style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: "center bottom",
+                    transition: "transform 0.15s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: bgColor,
+                    color: "#fff",
+                    borderRadius: showPrice || isCheapest ? "12px" : "50%",
+                    padding: showPrice || isCheapest ? "3px 7px" : "0",
+                    width: showPrice || isCheapest ? "auto" : 14,
+                    height: showPrice || isCheapest ? "auto" : 14,
+                    minWidth: showPrice || isCheapest ? 36 : 14,
+                    fontSize: isCheapest ? 14 : 10,
+                    fontWeight: 800,
+                    border: `2px solid #fff`,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.35)",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {isCheapest ? "★" : showPrice ? priceLabel : ""}
+                </div>
+              </AdvancedMarker>
             );
           })}
 
@@ -206,18 +222,6 @@ const StationMap = ({ stations, userLocation, onStationClick, routePath, highlig
   );
 };
 
-function getMarkerIcon(color: string, scale: number, strokeWeight = 2) {
-  const maps = (globalThis as any).google?.maps;
-  if (!maps?.SymbolPath) return undefined;
-  return {
-    path: maps.SymbolPath.CIRCLE,
-    scale,
-    fillColor: color,
-    fillOpacity: 1,
-    strokeColor: "#fff",
-    strokeWeight,
-  };
-}
 
 const CenterOnMeButton = ({ location }: { location: { lat: number; lng: number } }) => {
   const map = useMap();
